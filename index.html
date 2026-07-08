@@ -192,34 +192,28 @@
             color: #202124;
         }
 
-        /* 🔥 완벽하게 수정된 플로팅 이모티콘 CSS 애니메이션 🔥 */
+        /* 플로팅 이모티콘 CSS 애니메이션 */
         .floating-emoji {
-            /* absolute 대신 fixed를 써야 버튼의 화면상 위치와 100% 정확하게 일치합니다 */
             position: fixed; 
             pointer-events: none;
             font-size: 28px;
             z-index: 999;
-            /* 1.7초로 맞추고, both를 추가해 딜레이 중에도 투명도/크기 0 상태가 유지되도록 함 */
             animation: floatUp 1.7s ease-out both; 
         }
 
         @keyframes floatUp {
             0% {
-                /* 완전 투명, 크기 0으로 시작 */
                 opacity: 0;
                 transform: translate(-50%, -50%) scale(0);
             }
             15% {
-                /* 팝! 하고 나타남 */
                 opacity: 1;
                 transform: translate(-50%, -50%) scale(1.2);
             }
             30% {
-                /* 양성부력 효과: 밑으로 살짝 가라앉음 (+15px) */
                 transform: translate(-50%, calc(-50% + 15px)) scale(1);
             }
             100% {
-                /* 위로 떠오르며 퍼지고 사라짐 */
                 opacity: 0;
                 transform: translate(calc(-50% + var(--spread-x)), -150px) scale(1);
             }
@@ -243,7 +237,7 @@
         
         <form action="https://www.google.com/search" method="GET">
             <div class="search-box">
-                <input type="text" name="q" placeholder="똑똑한 신현일이 무엇이든 검색해줍니다..." autofocus>
+                <input type="text" id="search-input" name="q" placeholder="똑똑한 신현일이 무엇이든 검색해줍니다..." autofocus>
             </div>
             
             <div class="button-group">
@@ -267,13 +261,20 @@
         toggleSwitch.addEventListener('change', switchTheme, false);
 
 
-        // 2. Feeling Good 이모티콘 애니메이션 기능
+        // 2. Feeling Good 버튼 확장 (이스터에그 및 이모티콘 애니메이션)
         const feelingBtn = document.getElementById('feeling-btn');
+        const searchInput = document.getElementById('search-input');
         const emojiList = ['🤣', '😍', '😂', '❤️', '😘', '😁', '👍', '💕'];
 
         feelingBtn.addEventListener('click', function(e) {
-            const numEmojis = Math.floor(Math.random() * 4) + 2; 
+            // 입력값이 'hyunil gravity'인지 파악 (공백 제거 및 소문자 변환 검사)
+            if (searchInput.value.trim().toLowerCase() === 'hyunil gravity') {
+                window.location.href = 'gravity.html'; // 중력 페이지로 리다이렉트
+                return;
+            }
 
+            // 조건이 맞지 않으면 기존 이모티콘 효과 실행
+            const numEmojis = Math.floor(Math.random() * 4) + 2; 
             for (let i = 0; i < numEmojis; i++) {
                 createEmoji();
             }
@@ -286,22 +287,18 @@
             const randomEmoji = emojiList[Math.floor(Math.random() * emojiList.length)];
             emoji.innerText = randomEmoji;
 
-            // 버튼의 정가운데 좌표를 절대적으로 가져옴
             const btnRect = feelingBtn.getBoundingClientRect();
             emoji.style.left = (btnRect.left + btnRect.width / 2) + 'px';
             emoji.style.top = (btnRect.top + btnRect.height / 2) + 'px'; 
 
-            // 양옆으로 퍼지는 넓이 랜덤 설정 (-80px 부터 +80px 사이)
             const spreadX = (Math.random() - 0.5) * 160;
             emoji.style.setProperty('--spread-x', `${spreadX}px`);
 
-            // 겹치지 않게 약간의 딜레이 부여
             const delay = Math.random() * 0.2;
             emoji.style.animationDelay = `${delay}s`;
 
             document.body.appendChild(emoji);
 
-            // 애니메이션 시간(1.7초) + 딜레이 후 삭제
             setTimeout(() => {
                 emoji.remove();
             }, (1.7 + delay) * 1000);
