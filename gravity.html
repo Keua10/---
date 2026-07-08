@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>신현일의 이모저모 - Gravity</title>
+    
+    <style>
+        @charset "UTF-8";
+        
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #202124;
+            --link-color: #4285F4;
+            --switch-bg: #e5e5e5;
+            --thumb-bg: #87CEEB;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #3C3C3C;
+            --text-color: #f1f3f4;
+            --link-color: #8ab4f8;
+            --switch-bg: #2a2a2a;
+            --thumb-bg: #000080;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Malgun Gothic', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 물리 법칙을 적용할 개별 요소 대상 공통 세팅 */
+        .gravity-elem {
+            position: fixed !important;
+            margin: 0 !important;
+            z-index: 10;
+            transform-origin: center center;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+
+        /* 초기 정렬 상태 */
+        .theme-switch-wrapper { position: fixed; top: 20px; left: 20px; }
+        .theme-switch { display: inline-block; width: 64px; height: 34px; position: relative; }
+        .theme-switch input { display: none; }
+        .slider { position: absolute; background-color: var(--switch-bg); border-radius: 34px; top: 0; left: 0; right: 0; bottom: 0; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); }
+        .slider:before { position: absolute; content: "☀️"; display: flex; justify-content: center; align-items: center; font-size: 15px; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: var(--thumb-bg); border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+
+        .top-link { position: fixed; top: 15%; left: 50%; transform: translate(-50%, -50%); text-decoration: none; color: var(--link-color) !important; font-weight: bold; white-space: nowrap; }
+        .main-logo { position: fixed; top: 35%; left: 50%; transform: translate(-50%, -50%); font-size: 3.5rem; font-weight: bold; letter-spacing: -1px; white-space: nowrap; }
+        .main-logo span:nth-child(1) { color: #4285F4; }
+        .main-logo span:nth-child(2) { color: #EA4335; }
+        .main-logo span:nth-child(3) { color: #FBBC05; }
+        .main-logo span:nth-child(4) { color: #34A853; }
+        .main-logo span:nth-child(5) { color: var(--text-color); font-size: 2.5rem; }
+
+        .search-box-wrap { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; max-width: 580px; padding: 0 20px; box-sizing: border-box; }
+        .search-box-wrap input { width: 100%; padding: 15px 25px; font-size: 16px; border: 1px solid #dfe1e5; border-radius: 24px; outline: none; box-sizing: border-box; background-color: var(--bg-color); color: var(--text-color); }
+
+        .button-group-wrap { position: fixed; top: 62%; left: 50%; transform: translate(-50%, -50%); display: flex; gap: 12px; }
+        .btn { background-color: #f8f9fa; border: 1px solid #f8f9fa; border-radius: 4px; color: #3c4043; font-size: 14px; padding: 0 16px; line-height: 37px; height: 37px; min-width: 54px; text-align: center; cursor: pointer; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+</head>
+<body>
+
+    <div class="theme-switch-wrapper gravity-elem">
+        <label class="theme-switch">
+            <input type="checkbox" id="checkbox" disabled>
+            <div class="slider round"></div>
+        </label>
+    </div>
+
+    <a href="#" class="top-link gravity-elem" draggable="false" onclick="return false;">신현일의 라이브 직캠을 지금 보세요!!</a>
+
+    <div class="main-logo gravity-elem">
+        <span>신</span><span>현</span><span>일</span><span>의</span><span>Search</span>
+    </div>
+    
+    <div class="search-box-wrap gravity-elem">
+        <input type="text" value="hyunil gravity" readonly>
+    </div>
+    
+    <div class="button-group-wrap">
+        <button type="button" class="btn gravity-elem" draggable="false">Vibe 검색</button>
+        <button type="button" class="btn gravity-elem" draggable="false">Feeling Good!</button>
+    </div>
+
+    <script>
+        // Events 모듈 추가 추출
+        const { Engine, World, Bodies, Mouse, MouseConstraint, Runner, Events } = Matter;
+
+        const engine = Engine.create();
+        const runner = Runner.create();
+        
+        // 1. 중력 세기 대폭 강화 (1.2 -> 3.2): 바닥으로 묵직하고 빠르게 꽂히도록 수정
+        engine.gravity.y = 1.4;
+
+        // 화면 탈출 방지용 벽면 세팅
+        const wallThickness = 500;
+        const ground = Bodies.rectangle(window.innerWidth / 2, window.innerHeight + wallThickness/2, window.innerWidth * 2, wallThickness, { isStatic: true });
+        const leftWall = Bodies.rectangle(-wallThickness/2, window.innerHeight / 2, wallThickness, window.innerHeight * 2, { isStatic: true });
+        const rightWall = Bodies.rectangle(window.innerWidth + wallThickness/2, window.innerHeight / 2, wallThickness, window.innerHeight * 2, { isStatic: true });
+        const topWall = Bodies.rectangle(window.innerWidth / 2, -wallThickness/2, window.innerWidth * 2, wallThickness, { isStatic: true });
+        
+        World.add(engine.world, [ground, leftWall, rightWall, topWall]);
+
+        const gravityElements = document.querySelectorAll('.gravity-elem');
+        const physicsBodies = [];
+
+        setTimeout(() => {
+            Runner.run(runner, engine);
+            initGravity();
+        }, 800);
+
+        function initGravity() {
+            gravityElements.forEach(el => {
+                document.body.appendChild(el);
+            });
+
+            gravityElements.forEach(el => {
+                const rect = el.getBoundingClientRect();
+                const x = rect.left + rect.width / 2;
+                const y = rect.top + rect.height / 2;
+                
+                // 2. 공기 저항 최소화(0.04 -> 0.01): 저항 없이 진짜 가속도가 붙으며 무섭게 떨어지도록 조절
+                const body = Bodies.rectangle(x, y, rect.width, rect.height, {
+                    restitution: 0.1,   // 바닥 충돌 시 과하게 튀지 않도록 탄성 하향
+                    friction: 0.2,
+                    frictionAir: 0.01   
+                });
+
+                physicsBodies.push({ el, body });
+                World.add(engine.world, body);
+
+                el.style.left = '0px';
+                el.style.top = '0px';
+            });
+
+            const mouse = Mouse.create(document.body);
+            const mouseConstraint = MouseConstraint.create(engine, {
+                mouse: mouse,
+                constraint: {
+                    stiffness: 0.05,
+                    angularStiffness: 0.05,
+                    render: { visible: false }
+                }
+            });
+            World.add(engine.world, mouseConstraint);
+
+            // 3. 🔥 구글 그래비티 특유의 거리별 가속도 및 스프링 억제 알고리즘 구현 🔥
+            Events.on(engine, 'beforeUpdate', () => {
+                if (mouseConstraint.body) {
+                    const body = mouseConstraint.body;
+                    
+                    // 마우스 커서와 잡힌 물체 중심점 간의 거리(Distance) 계산
+                    const dx = mouse.position.x - body.position.x;
+                    const dy = mouse.position.y - body.position.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance > 180) {
+                        // [멀리 있을 때]: 가속도를 엄청나게 키워서 묵직하고 빠르게 마우스 쪽으로 끌고 옴
+                        mouseConstraint.constraint.stiffness = 0.5;
+                        mouseConstraint.constraint.damping = 0.01; // 저항을 줄여 가속 극대화
+                    } else if (distance > 40) {
+                        // [중간 거리]: 다가올수록 탄성을 점진적으로 줄임
+                        mouseConstraint.constraint.stiffness = 0.15;
+                        mouseConstraint.constraint.damping = 0.05;
+                    } else {
+                        // [가까워졌을 때]: 탄성을 완전히 죽이고 감쇄력을 극대화(0.4)하여
+                        // 무한정 좌우로 통통 튕기는 현상을 막고 한두 번만 튕긴 뒤 마우스 주변에 쫀득하게 착 안착(맴돎)시킴
+                        mouseConstraint.constraint.stiffness = 0.03;
+                        mouseConstraint.constraint.damping = 0.4; 
+                    }
+                }
+            });
+
+            // 실시간 물리 좌표 렌더링 루프
+            (function rerender() {
+                physicsBodies.forEach(({ el, body }) => {
+                    const x = body.position.x - el.offsetWidth / 2;
+                    const y = body.position.y - el.offsetHeight / 2;
+                    el.style.transform = `translate(${x}px, ${y}px) rotate(${body.angle}rad)`;
+                });
+                requestAnimationFrame(rerender);
+            })();
+        }
+
+        window.addEventListener('resize', () => {
+            Matter.Body.setPosition(ground, { x: window.innerWidth / 2, y: window.innerHeight + wallThickness/2 });
+            Matter.Body.setPosition(rightWall, { x: window.innerWidth + wallThickness/2, y: window.innerHeight / 2 });
+            Matter.Body.setPosition(leftWall, { x: -wallThickness/2, y: window.innerHeight / 2 });
+            Matter.Body.setPosition(topWall, { x: window.innerWidth / 2, y: -wallThickness/2 });
+        });
+    </script>
+</body>
+</html>
