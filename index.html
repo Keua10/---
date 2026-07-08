@@ -3,30 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>신현일의 이모저모</title>
+    <title>신현일의 이모저모 검색엔진</title>
     
     <style>
         @charset "UTF-8";
+        
+        /* 다크모드/라이트모드 색상 변수 설정 */
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #202124;
+            --link-color: #4285F4;
+            --switch-bg: #e5e5e5;
+            --thumb-bg: #87CEEB;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #3C3C3C;
+            --text-color: #f1f3f4;
+            --link-color: #8ab4f8;
+            --switch-bg: #2a2a2a;
+            --thumb-bg: #000080;
+        }
         
         /* 전체 화면 초기화 및 배경 설정 */
         body {
             margin: 0;
             padding: 0;
             font-family: 'Malgun Gothic', sans-serif;
-            background-color: #ffffff;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.4s, color 0.4s;
             display: flex;
-            flex-direction: column; /* 위아래로 배치하기 위해 추가 */
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh; /* 브라우저 높이 전체를 사용 */
+            height: 100vh;
+            overflow: hidden;
         }
 
-        /* 야돈코리아 링크 스타일 (보기 좋게 약간 수정) */
+        /* 좌측 상단 테마 스위치 스타일 */
+        .theme-switch-wrapper {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+        }
+
+        .theme-switch {
+            display: inline-block;
+            width: 64px;
+            height: 34px;
+            position: relative;
+        }
+
+        .theme-switch input {
+            display: none;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--switch-bg);
+            border-radius: 34px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+            transition: 0.4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "☀️";
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 15px;
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: var(--thumb-bg);
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            transition: 0.4s;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(30px);
+            content: "🌙";
+            background-color: var(--thumb-bg);
+        }
+
+        @media (max-width: 600px) {
+            .theme-switch {
+                width: 52px;
+                height: 28px;
+            }
+            .slider:before {
+                height: 20px;
+                width: 20px;
+                left: 4px;
+                bottom: 4px;
+                font-size: 12px;
+            }
+            input:checked + .slider:before {
+                transform: translateX(24px);
+            }
+        }
+
+        /* 기존 UI 스타일들 */
         a {
             margin-bottom: 20px;
+            color: var(--link-color) !important;
+            transition: color 0.4s;
         }
 
-        /* 검색 컴포넌트들을 감싸는 컨테이너 */
         .search-container {
             text-align: center;
             width: 100%;
@@ -34,7 +124,6 @@
             padding: 20px;
         }
 
-        /* 로고 스타일 (알록달록한 바이브) */
         .logo {
             font-size: 3.5rem;
             font-weight: bold;
@@ -45,9 +134,8 @@
         .logo span:nth-child(2) { color: #EA4335; }
         .logo span:nth-child(3) { color: #FBBC05; }
         .logo span:nth-child(4) { color: #34A853; }
-        .logo span:nth-child(5) { color: #1a1a1a; font-size: 2.5rem; }
+        .logo span:nth-child(5) { color: var(--text-color); font-size: 2.5rem; transition: color 0.4s; }
 
-        /* 검색창 박스 스타일 */
         .search-box {
             margin-bottom: 25px;
         }
@@ -57,24 +145,25 @@
             padding: 15px 25px;
             font-size: 16px;
             border: 1px solid #dfe1e5;
-            border-radius: 24px; /* 둥근 테두리 */
+            border-radius: 24px;
             outline: none;
             box-sizing: border-box;
-            transition: box-shadow 0.2s; /* 부드러운 효과 */
+            transition: box-shadow 0.2s;
+            background-color: var(--bg-color);
+            color: var(--text-color);
         }
 
-        /* 검색창에 마우스를 올리거나 클릭했을 때 그림자 효과 */
         .search-box input:hover,
         .search-box input:focus {
             box-shadow: 0 1px 6px rgba(32,33,36,0.28);
             border-color: rgba(223,225,229,0);
         }
 
-        /* 버튼 그룹 및 개별 버튼 스타일 */
         .button-group {
             display: flex;
             justify-content: center;
             gap: 12px;
+            position: relative;
         }
 
         .btn {
@@ -92,19 +181,60 @@
             cursor: pointer;
             user-select: none;
             transition: all 0.1s;
+            position: relative;
+            z-index: 10;
         }
 
-        /* 버튼에 마우스를 올렸을 때 */
         .btn:hover {
             box-shadow: 0 1px 1px rgba(0,0,0,0.1);
             background-color: #f8f9fa;
             border: 1px solid #dadce0;
             color: #202124;
         }
+
+        /* 🔥 완벽하게 수정된 플로팅 이모티콘 CSS 애니메이션 🔥 */
+        .floating-emoji {
+            /* absolute 대신 fixed를 써야 버튼의 화면상 위치와 100% 정확하게 일치합니다 */
+            position: fixed; 
+            pointer-events: none;
+            font-size: 28px;
+            z-index: 999;
+            /* 1.7초로 맞추고, both를 추가해 딜레이 중에도 투명도/크기 0 상태가 유지되도록 함 */
+            animation: floatUp 1.7s ease-out both; 
+        }
+
+        @keyframes floatUp {
+            0% {
+                /* 완전 투명, 크기 0으로 시작 */
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0);
+            }
+            15% {
+                /* 팝! 하고 나타남 */
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+            30% {
+                /* 양성부력 효과: 밑으로 살짝 가라앉음 (+15px) */
+                transform: translate(-50%, calc(-50% + 15px)) scale(1);
+            }
+            100% {
+                /* 위로 떠오르며 퍼지고 사라짐 */
+                opacity: 0;
+                transform: translate(calc(-50% + var(--spread-x)), -150px) scale(1);
+            }
+        }
     </style>
 </head>
 <body>
-    <a href="Untitled-2.html" style="color: #4285F4; text-decoration: none;">신현일의 라이브 직캠을 지금 보세요!!</a>
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch">
+            <input type="checkbox" id="checkbox">
+            <div class="slider round"></div>
+        </label>
+    </div>
+
+    <a href="Untitled-2.html" style="text-decoration: none;">신현일의 라이브 직캠을 지금 보세요!!</a>
 
     <div class="search-container">
         <div class="logo">
@@ -112,18 +242,70 @@
         </div>
         
         <form action="https://www.google.com/search" method="GET">
-            
             <div class="search-box">
-                <input type="text" name="q" placeholder="똑똑한 신현일이 모든 검색해줍니다..." autofocus>
+                <input type="text" name="q" placeholder="똑똑한 신현일이 무엇이든 검색해줍니다..." autofocus>
             </div>
             
             <div class="button-group">
                 <button type="submit" class="btn">Vibe 검색</button>
-                <button class="btn">Feeling Good!</button>
+                <button type="button" class="btn" id="feeling-btn">Feeling Good!</button>
             </div>
-            
         </form>
-        
     </div>
+
+    <script>
+        // 1. 다크모드 스위치 기능
+        const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
+        
+        function switchTheme(e) {
+            if (e.target.checked) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }    
+        }
+        toggleSwitch.addEventListener('change', switchTheme, false);
+
+
+        // 2. Feeling Good 이모티콘 애니메이션 기능
+        const feelingBtn = document.getElementById('feeling-btn');
+        const emojiList = ['🤣', '😍', '😂', '❤️', '😘', '😁', '👍', '💕'];
+
+        feelingBtn.addEventListener('click', function(e) {
+            const numEmojis = Math.floor(Math.random() * 4) + 2; 
+
+            for (let i = 0; i < numEmojis; i++) {
+                createEmoji();
+            }
+        });
+
+        function createEmoji() {
+            const emoji = document.createElement('div');
+            emoji.classList.add('floating-emoji');
+            
+            const randomEmoji = emojiList[Math.floor(Math.random() * emojiList.length)];
+            emoji.innerText = randomEmoji;
+
+            // 버튼의 정가운데 좌표를 절대적으로 가져옴
+            const btnRect = feelingBtn.getBoundingClientRect();
+            emoji.style.left = (btnRect.left + btnRect.width / 2) + 'px';
+            emoji.style.top = (btnRect.top + btnRect.height / 2) + 'px'; 
+
+            // 양옆으로 퍼지는 넓이 랜덤 설정 (-80px 부터 +80px 사이)
+            const spreadX = (Math.random() - 0.5) * 160;
+            emoji.style.setProperty('--spread-x', `${spreadX}px`);
+
+            // 겹치지 않게 약간의 딜레이 부여
+            const delay = Math.random() * 0.2;
+            emoji.style.animationDelay = `${delay}s`;
+
+            document.body.appendChild(emoji);
+
+            // 애니메이션 시간(1.7초) + 딜레이 후 삭제
+            setTimeout(() => {
+                emoji.remove();
+            }, (1.7 + delay) * 1000);
+        }
+    </script>
 </body>
 </html>
