@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>신현일의 이모저모</title>
+    
+    <style>
+        @charset "UTF-8";
+        
+        /* 전체 화면 초기화 및 배경 설정 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Malgun Gothic', sans-serif;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column; /* 위아래로 배치하기 위해 추가 */
+            justify-content: center;
+            align-items: center;
+            height: 100vh; /* 브라우저 높이 전체를 사용 */
+        }
+
+        /* 야돈코리아 링크 스타일 (보기 좋게 약간 수정) */
+        a {
+            margin-bottom: 20px;
+        }
+
+        /* 검색 컴포넌트들을 감싸는 컨테이너 */
+        .search-container {
+            text-align: center;
+            width: 100%;
+            max-width: 580px;
+            padding: 20px;
+        }
+
+        /* 로고 스타일 (알록달록한 바이브) */
+        .logo {
+            font-size: 3.5rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+            letter-spacing: -1px;
+        }
+        .logo span:nth-child(1) { color: #4285F4; }
+        .logo span:nth-child(2) { color: #EA4335; }
+        .logo span:nth-child(3) { color: #FBBC05; }
+        .logo span:nth-child(4) { color: #34A853; }
+        .logo span:nth-child(5) { color: #1a1a1a; font-size: 2.5rem; }
+
+        /* 검색창 박스 스타일 */
+        .search-box {
+            margin-bottom: 25px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 15px 25px;
+            font-size: 16px;
+            border: 1px solid #dfe1e5;
+            border-radius: 24px; /* 둥근 테두리 */
+            outline: none;
+            box-sizing: border-box;
+            transition: box-shadow 0.2s; /* 부드러운 효과 */
+        }
+
+        /* 검색창에 마우스를 올리거나 클릭했을 때 그림자 효과 */
+        .search-box input:hover,
+        .search-box input:focus {
+            box-shadow: 0 1px 6px rgba(32,33,36,0.28);
+            border-color: rgba(223,225,229,0);
+        }
+
+        /* 버튼 그룹 및 개별 버튼 스타일 */
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .btn {
+            background-color: #f8f9fa;
+            border: 1px solid #f8f9fa;
+            border-radius: 4px;
+            color: #3c4043;
+            font-size: 14px;
+            margin: 11px 4px;
+            padding: 0 16px;
+            line-height: 27px;
+            height: 36px;
+            min-width: 54px;
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.1s;
+        }
+
+        /* 버튼에 마우스를 올렸을 때 */
+        .btn:hover {
+            box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+            background-color: #f8f9fa;
+            border: 1px solid #dadce0;
+            color: #202124;
+        }
+    </style>
+</head>
+<body>
+    <a href="Untitled-2.html" style="color: #4285F4; text-decoration: none;">신현일의 라이브 직캠을 지금 보세요!!</a>
+
+    <div class="search-container">
+        <div class="logo">
+            <span>신</span><span>현</span><span>일</span><span>의</span><span>Search</span>
+        </div>
+        
+        <form action="https://www.google.com/search" method="GET">
+            
+            <div class="search-box">
+                <input type="text" name="q" placeholder="똑똑한 신현일이 모든 검색해줍니다..." autofocus>
+            </div>
+            
+            <div class="button-group">
+                <button type="submit" class="btn">Vibe 검색</button>
+                <button class="btn">Feeling Good!</button>
+            </div>
+            
+        </form>
+        
+    </div>
+</body>
+</html>

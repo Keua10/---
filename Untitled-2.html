@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GIF 보기</title>
+    
+    <style>
+        body {
+            /* 브라우저 기본 여백 없애기 */
+            margin: 0;
+            padding: 0;
+            
+            /* 크롬 다크모드 기본 배경색 */
+            background-color: #202124; 
+            
+            /* 화면 전체 높이를 사용하고, 요소를 상하좌우 정중앙에 배치! */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        img {
+            /* GIF가 화면보다 클 경우를 대비해 최대 크기 제한 */
+            max-width: 90%;
+            max-height: 90vh;
+            
+            /* 원한다면 그림자 효과로 살짝 띄워보일 수도 있습니다 */
+            /* box-shadow: 0 4px 12px rgba(0,0,0,0.5); */
+        }
+    </style>
+</head>
+<body>
+    <img src="Hyunnil_Live.gif" alt="멋진 GIF">
+</body>
+</html>
