@@ -34,7 +34,7 @@
         body { 
             margin: 0; background: var(--bg-color); color: var(--text-color);
             display: flex; flex-direction: column; align-items: center; 
-            height: 100vh; overflow: hidden; /* 💡 화면 전체 스크롤 절대 방지 */
+            height: 100vh; overflow: hidden; 
             font-family: 'Malgun Gothic', sans-serif; transition: 0.3s;
             justify-content: flex-start;
             padding-top: 20vh;
@@ -95,25 +95,23 @@
             box-sizing: border-box;
         }
 
-        /* 💡 글자 밀림 방지용 상대 좌표 래퍼 설정 */
         .header-row {
             position: relative;
             display: flex;
             align-items: center;
-            justify-content: center; /* 무조건 정중앙 정렬 */
+            justify-content: center;
             width: 100%;
             margin-bottom: 20px;
         }
 
-        /* 💡 컴퓨터(데스크톱) 환경에서는 카메라 전환 버튼을 완전히 감춤 */
         .camera-flip-btn {
             position: absolute;
-            right: 0; /* 우측 끝에 배치하여 타이틀 글자 정렬을 방해하지 않음 */
+            right: 0; 
             width: 34px;
             height: 34px;
             border-radius: 50%;
             background-color: var(--canvas-bg);
-            display: none; /* 기본 숨김 */
+            display: none; 
             justify-content: center;
             align-items: center;
             color: var(--text-color);
@@ -121,6 +119,7 @@
             cursor: pointer;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
             transition: transform 0.2s;
+            z-index: 10; /* 터치가 잘 되도록 제일 위로 올림 */
         }
         .camera-flip-btn:hover { transform: scale(1.1); }
 
@@ -152,11 +151,10 @@
         
         .panel-title { margin: 0; color: var(--text-color); font-size: 28px; font-weight: bold; text-align: center; }
 
-        /* 📱 모바일 스마트폰 전용 미디어 쿼리 (스크롤 없이 한 화면에 다 구겨넣는 마법의 레이아웃) */
         @media (max-width: 850px) {
             body {
                 padding-top: 75px;
-                overflow: hidden; /* 모바일에서도 강제 스크롤 차단 */
+                overflow: hidden;
             }
             .main-layout {
                 flex-direction: column;
@@ -168,13 +166,12 @@
             .panel {
                 flex: 1;
                 width: 100%;
-                height: calc(50% - 5px); /* 반반씩 균등 배분 */
+                height: calc(50% - 5px);
                 padding: 12px;
                 justify-content: space-around;
             }
-            /* 화면 너비를 넘기지 않기 위해 모바일 가로 해상도에 맞춘 컴팩트 크기 조절 */
             .virtual-canvas-wrapper, .video-wrapper {
-                max-height: 22vh; /* 폰 기종 높이에 연동되어 절대 안 넘침 */
+                max-height: 22vh; 
                 width: auto;
             }
             .virtual-canvas-wrapper { aspect-ratio: 1/1; }
@@ -187,7 +184,7 @@
             #hand-title, .panel-title { font-size: 20px !important; }
             .header-row { margin-bottom: 5px; }
 
-            .camera-flip-btn { display: flex !important; } /* 💡 모바일 환경에서만 카메라 변환 활성화 */
+            .camera-flip-btn { display: flex !important; } 
         }
     </style>
 </head>
@@ -257,9 +254,10 @@
         const vCtx = virtualCanvas.getContext('2d');
         
         let currentHandType = 'human';
-        let currentFacingMode = 'user'; // 'user' (전면 셀카), 'environment' (후면 카메라)
+        let currentFacingMode = 'user'; // 'user' (전면), 'environment' (후면)
         let currentStream = null;
-        let isLooping = false; // 💡 무한 루프 중복 방지 플래그 변수 추가
+        let isLooping = false;
+        let isSwitching = false; // 카메라 전환 중 중복 클릭 방지
 
         function changeHand(type, btn) {
             if (type === 'sign') {
@@ -271,43 +269,63 @@
             btn.classList.add('active');
         }
 
-        // 💡 모바일 다중 트랙 충돌을 우회하는 안전한 카메라 실행 엔진
+        // 💡 카메라 시작 및 전환 함수 전면 재설계 (버그 픽스 핵심)
         async function startCamera() {
+            if (isSwitching) return; // 이미 전환 중이면 무시
+            isSwitching = true;
+
+            // 1. 기존 카메라 스트림 완벽히 정지 및 소스 해제
             if (currentStream) {
-                currentStream.getTracks().forEach(track => track.stop());
+                currentStream.getTracks().forEach(track => {
+                    track.stop();
+                });
+                videoElement.srcObject = null;
+                
+                // 💡 핵심: 삼성 기기 등에서 카메라 하드웨어 락이 풀릴 때까지 잠시 대기
+                await new Promise(resolve => setTimeout(resolve, 250));
             }
             
+            // 2. 아이폰(Safari)과 안드로이드(Chrome) 모두 잘 작동하는 제약 조건 설정 로직
             const constraints = {
-                video: {
-                    facingMode: { ideal: currentFacingMode },
-                    width: { ideal: 640 },
-                    height: { ideal: 480 }
-                },
-                audio: false
+                audio: false,
+                video: currentFacingMode === 'user' 
+                    ? { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
+                    : { facingMode: { exact: 'environment' }, width: { ideal: 640 }, height: { ideal: 480 } }
             };
             
             try {
                 currentStream = await navigator.mediaDevices.getUserMedia(constraints);
-                videoElement.srcObject = currentStream;
-                
-                // 전면 카메라일 때만 화면 반전 (후면 카메라는 거울 모드 해제해야 자연스러움)
-                if (currentFacingMode === 'user') {
-                    canvasElement.style.transform = 'scaleX(-1)';
-                } else {
-                    canvasElement.style.transform = 'scaleX(1)';
-                }
-                
-                await videoElement.play();
-
-                // 💡 이벤트 중복 등록을 원천 차단하여 프레임 루프를 단 한 개만 실행시킴 (검은 화면 버그 완전 해결)
-                if (!isLooping) {
-                    isLooping = true;
-                    renderLoop();
-                }
             } catch (err) {
-                console.error("Camera Device Open Error: ", err);
-                alert("카메라 연결에 실패했습니다. 상단 주소창 왼쪽의 권한설정에서 카메라를 허용해주세요!");
+                // 'exact: environment' 조건이 삼성 기기 등에서 에러를 뱉을 때를 대비한 Fallback(안전망) 로직
+                console.warn("Exact environment mode failed, falling back to simple mode...", err);
+                try {
+                    currentStream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } },
+                        audio: false
+                    });
+                } catch(e) {
+                    alert("카메라 권한을 얻어오지 못했습니다. 권한을 확인해주세요.");
+                    isSwitching = false;
+                    return;
+                }
             }
+
+            videoElement.srcObject = currentStream;
+            
+            if (currentFacingMode === 'user') {
+                canvasElement.style.transform = 'scaleX(-1)';
+            } else {
+                canvasElement.style.transform = 'scaleX(1)';
+            }
+            
+            await videoElement.play();
+
+            if (!isLooping) {
+                isLooping = true;
+                renderLoop();
+            }
+            
+            isSwitching = false; // 전환 완료
         }
 
         async function renderLoop() {
@@ -315,7 +333,7 @@
                 try {
                     await hands.send({ image: videoElement });
                 } catch(e) {
-                    console.error("MediaPipe Process Core Warning: ", e);
+                    // 미디어 전환 시 발생할 수 있는 일시적 충돌 무시
                 }
             }
             requestAnimationFrame(renderLoop);
@@ -334,8 +352,10 @@
                     const dy = (landmarks[0].y - landmarks[9].y) * canvasElement.height;
                     const scale = Math.max(0.3, Math.sqrt(dx * dx + dy * dy) / 150);
 
+                    canvasCtx.save();
                     drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {color: '#00FF00', lineWidth: 5 * scale});
                     drawLandmarks(canvasCtx, landmarks, {color: '#FF0000', lineWidth: 1, radius: 4 * scale});
+                    canvasCtx.restore();
                     
                     drawVirtualHand(landmarks, scale);
                 }
@@ -380,10 +400,10 @@
         hands.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
         hands.onResults(onResults);
 
-        // 첫 카메라 실행 작동 호출
+        // 첫 카메라 실행
         startCamera();
 
-        // 💡 클릭 시 전면 / 후면 미디어 스트림을 실시간 스위칭하는 이벤트 바인딩
+        // 카메라 전환 버튼 이벤트 바인딩
         document.getElementById('flip-btn').addEventListener('click', () => {
             currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
             startCamera();
