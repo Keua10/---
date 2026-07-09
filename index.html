@@ -104,7 +104,8 @@
             text-align: center;
             width: 100%;
             max-width: 580px;
-            padding: 0 20px;
+            padding: 0 24px; /* 모바일 대응 양옆 여백 확보 */
+            box-sizing: border-box;
         }
 
         .logo {
@@ -138,7 +139,6 @@
             box-shadow: 0 1px 8px rgba(32,33,36,0.2);
         }
 
-        /* 아이콘 기준선 시각적 보정 (calc 사용) */
         .search-icon-left {
             position: absolute;
             left: 18px;
@@ -146,7 +146,7 @@
             color: var(--icon-color);
             pointer-events: none;
             top: 50%;
-            transform: translateY(calc(-50% - 2px)); /* 위로 2px 미세 조정 */
+            transform: translateY(calc(-50% - 2px));
         }
 
         .camera-icon-right {
@@ -156,12 +156,12 @@
             text-decoration: none;
             cursor: pointer;
             top: 50%;
-            transform: translateY(calc(-50% - 5px)); /* 위로 2px 미세 조정 */
+            transform: translateY(calc(-50% - 2px));
             transition: transform 0.2s;
         }
         
         .camera-icon-right:hover { 
-            transform: translateY(calc(-50% - 5px)) scale(1.15); 
+            transform: translateY(calc(-50% - 2px)) scale(1.15); 
         }
 
         .search-box-wrapper input {
@@ -172,7 +172,7 @@
             outline: none;
             font-size: 16px;
             color: var(--text-color);
-            padding: 0 50px 0 45px; /* 양옆 아이콘 위치만큼 패딩 확보 */
+            padding: 0 50px 0 45px;
             box-sizing: border-box;
         }
 
@@ -200,6 +200,14 @@
         .btn:hover {
             border: 1px solid #dadce0;
             box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        /* 모바일 반응형 미세 스케일 조정 */
+        @media (max-width: 600px) {
+            body { padding-top: 15vh; }
+            .logo { font-size: 2.3rem; margin-bottom: 25px; }
+            .logo span:nth-child(5) { font-size: 1.8rem; }
+            .search-box-wrapper { height: 46px; }
         }
     </style>
 </head>
@@ -234,12 +242,14 @@
 
     <script>
         const themeCheckbox = document.getElementById('theme-checkbox');
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        themeCheckbox.checked = (savedTheme === 'dark');
+
         themeCheckbox.addEventListener('change', (e) => {
-            if (e.target.checked) {
-                document.documentElement.setAttribute('data-theme', 'dark');
-            } else {
-                document.documentElement.setAttribute('data-theme', 'light');
-            }
+            const theme = e.target.checked ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
         });
 
         const feelingBtn = document.getElementById('feeling-btn');
