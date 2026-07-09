@@ -6,26 +6,26 @@
     <title>신현일의 이모저모 검색엔진</title>
     
     <style>
-        @charset "UTF-8";
-        
-        /* 다크모드/라이트모드 색상 변수 설정 */
         :root {
             --bg-color: #ffffff;
             --text-color: #202124;
             --link-color: #4285F4;
+            --input-border: #dfe1e5;
+            --btn-bg: #f8f9fa;
             --switch-bg: #e5e5e5;
-            --thumb-bg: #87CEEB;
+            --icon-color: #9aa0a6;
         }
 
         [data-theme="dark"] {
-            --bg-color: #3C3C3C;
+            --bg-color: #181818;
             --text-color: #f1f3f4;
             --link-color: #8ab4f8;
-            --switch-bg: #2a2a2a;
-            --thumb-bg: #000080;
+            --input-border: #3c4043;
+            --btn-bg: #303134;
+            --switch-bg: #444;
+            --icon-color: #9aa0a6;
         }
         
-        /* 전체 화면 초기화 및 배경 설정 */
         body {
             margin: 0;
             padding: 0;
@@ -35,39 +35,38 @@
             transition: background-color 0.4s, color 0.4s;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
             height: 100vh;
             overflow: hidden;
+            justify-content: flex-start;
+            padding-top: 20vh;
+            box-sizing: border-box;
         }
 
-        /* 좌측 상단 테마 스위치 스타일 */
-        .theme-switch-wrapper {
+        .top-left-controls {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 100;
+            top: 25px;
+            left: 25px;
+            z-index: 1000;
         }
 
         .theme-switch {
             display: inline-block;
-            width: 64px;
-            height: 34px;
+            width: 55px;
+            height: 30px;
             position: relative;
         }
 
-        .theme-switch input {
-            display: none;
-        }
+        .theme-switch input { display: none; }
 
         .slider {
             position: absolute;
             cursor: pointer;
             top: 0; left: 0; right: 0; bottom: 0;
             background-color: var(--switch-bg);
-            border-radius: 34px;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+            border-radius: 30px;
             transition: 0.4s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
         .slider:before {
@@ -76,159 +75,143 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 15px;
-            height: 26px;
-            width: 26px;
+            font-size: 12px;
+            height: 22px;
+            width: 22px;
             left: 4px;
             bottom: 4px;
-            background-color: var(--thumb-bg);
+            background-color: #87CEEB;
             border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
             transition: 0.4s;
         }
 
         input:checked + .slider:before {
-            transform: translateX(30px);
+            transform: translateX(25px);
             content: "🌙";
-            background-color: var(--thumb-bg);
+            background-color: #000080;
+            color: white;
         }
 
-        @media (max-width: 600px) {
-            .theme-switch {
-                width: 52px;
-                height: 28px;
-            }
-            .slider:before {
-                height: 20px;
-                width: 20px;
-                left: 4px;
-                bottom: 4px;
-                font-size: 12px;
-            }
-            input:checked + .slider:before {
-                transform: translateX(24px);
-            }
-        }
-
-        /* 기존 UI 스타일들 */
-        a {
-            margin-bottom: 20px;
-            color: var(--link-color) !important;
-            transition: color 0.4s;
+        .live-link {
+            margin-bottom: 25px;
+            color: var(--link-color);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
         }
 
         .search-container {
             text-align: center;
             width: 100%;
             max-width: 580px;
-            padding: 20px;
+            padding: 0 20px;
         }
 
         .logo {
             font-size: 3.5rem;
             font-weight: bold;
-            margin-bottom: 30px;
-            letter-spacing: -1px;
+            margin-bottom: 35px;
+            letter-spacing: -1.5px;
         }
         .logo span:nth-child(1) { color: #4285F4; }
         .logo span:nth-child(2) { color: #EA4335; }
         .logo span:nth-child(3) { color: #FBBC05; }
         .logo span:nth-child(4) { color: #34A853; }
-        .logo span:nth-child(5) { color: var(--text-color); font-size: 2.5rem; transition: color 0.4s; }
+        .logo span:nth-child(5) { color: var(--text-color); font-size: 2.5rem; margin-left: 5px; }
 
-        .search-box {
-            margin-bottom: 25px;
-        }
-
-        .search-box input {
+        .search-box-wrapper {
+            position: relative;
             width: 100%;
-            padding: 15px 25px;
-            font-size: 16px;
-            border: 1px solid #dfe1e5;
-            border-radius: 24px;
-            outline: none;
-            box-sizing: border-box;
-            transition: box-shadow 0.2s;
+            height: 48px;
+            margin-bottom: 30px;
             background-color: var(--bg-color);
-            color: var(--text-color);
+            border: 1px solid var(--input-border);
+            border-radius: 24px;
+            box-shadow: 0 1px 6px rgba(32,33,36,0.1);
+            transition: box-shadow 0.2s;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
         }
 
-        .search-box input:hover,
-        .search-box input:focus {
-            box-shadow: 0 1px 6px rgba(32,33,36,0.28);
-            border-color: rgba(223,225,229,0);
+        .search-box-wrapper:focus-within {
+            box-shadow: 0 1px 8px rgba(32,33,36,0.2);
+        }
+
+        /* 아이콘 기준선 시각적 보정 (calc 사용) */
+        .search-icon-left {
+            position: absolute;
+            left: 18px;
+            font-size: 18px;
+            color: var(--icon-color);
+            pointer-events: none;
+            top: 50%;
+            transform: translateY(calc(-50% - 2px)); /* 위로 2px 미세 조정 */
+        }
+
+        .camera-icon-right {
+            position: absolute;
+            right: 18px;
+            font-size: 20px;
+            text-decoration: none;
+            cursor: pointer;
+            top: 50%;
+            transform: translateY(calc(-50% - 5px)); /* 위로 2px 미세 조정 */
+            transition: transform 0.2s;
+        }
+        
+        .camera-icon-right:hover { 
+            transform: translateY(calc(-50% - 5px)) scale(1.15); 
+        }
+
+        .search-box-wrapper input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 16px;
+            color: var(--text-color);
+            padding: 0 50px 0 45px; /* 양옆 아이콘 위치만큼 패딩 확보 */
+            box-sizing: border-box;
         }
 
         .button-group {
             display: flex;
             justify-content: center;
             gap: 12px;
-            position: relative;
         }
 
         .btn {
-            background-color: #f8f9fa;
-            border: 1px solid #f8f9fa;
+            background-color: var(--btn-bg);
+            border: 1px solid var(--btn-bg);
             border-radius: 4px;
-            color: #3c4043;
+            color: var(--text-color);
             font-size: 14px;
-            margin: 11px 4px;
             padding: 0 16px;
-            line-height: 27px;
+            line-height: 36px;
             height: 36px;
             min-width: 54px;
             text-align: center;
             cursor: pointer;
-            user-select: none;
-            transition: all 0.1s;
-            position: relative;
-            z-index: 10;
+            transition: all 0.2s;
         }
 
         .btn:hover {
-            box-shadow: 0 1px 1px rgba(0,0,0,0.1);
-            background-color: #f8f9fa;
             border: 1px solid #dadce0;
-            color: #202124;
-        }
-
-        /* 플로팅 이모티콘 CSS 애니메이션 */
-        .floating-emoji {
-            position: fixed; 
-            pointer-events: none;
-            font-size: 28px;
-            z-index: 999;
-            animation: floatUp 1.7s ease-out both; 
-        }
-
-        @keyframes floatUp {
-            0% {
-                opacity: 0;
-                transform: translate(-50%, -50%) scale(0);
-            }
-            15% {
-                opacity: 1;
-                transform: translate(-50%, -50%) scale(1.2);
-            }
-            30% {
-                transform: translate(-50%, calc(-50% + 15px)) scale(1);
-            }
-            100% {
-                opacity: 0;
-                transform: translate(calc(-50% + var(--spread-x)), -150px) scale(1);
-            }
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
     </style>
 </head>
 <body>
-    <div class="theme-switch-wrapper">
+    <div class="top-left-controls">
         <label class="theme-switch">
-            <input type="checkbox" id="checkbox">
-            <div class="slider round"></div>
+            <input type="checkbox" id="theme-checkbox">
+            <div class="slider"></div>
         </label>
     </div>
 
-    <a href="Untitled-2.html" style="text-decoration: none;">신현일의 라이브 직캠을 지금 보세요!!</a>
+    <a href="Untitled-2.html" class="live-link">신현일의 라이브 직캠을 지금 보세요!!</a>
 
     <div class="search-container">
         <div class="logo">
@@ -236,8 +219,10 @@
         </div>
         
         <form action="https://www.google.com/search" method="GET">
-            <div class="search-box">
-                <input type="text" id="search-input" name="q" placeholder="똑똑한 신현일이 무엇이든 검색해줍니다..." autofocus>
+            <div class="search-box-wrapper">
+                <span class="search-icon-left">🔍</span>
+                <input type="text" id="search-input" name="q" placeholder="무엇이든 검색해보세요..." autofocus>
+                <a href="hand_tracking.html" class="camera-icon-right" title="손 인식 카메라">📷</a>
             </div>
             
             <div class="button-group">
@@ -248,61 +233,25 @@
     </div>
 
     <script>
-        // 1. 다크모드 스위치 기능
-        const toggleSwitch = document.querySelector('.theme-switch input[type="checkbox"]');
-        
-        function switchTheme(e) {
+        const themeCheckbox = document.getElementById('theme-checkbox');
+        themeCheckbox.addEventListener('change', (e) => {
             if (e.target.checked) {
                 document.documentElement.setAttribute('data-theme', 'dark');
             } else {
                 document.documentElement.setAttribute('data-theme', 'light');
-            }    
-        }
-        toggleSwitch.addEventListener('change', switchTheme, false);
-
-
-        // 2. Feeling Good 버튼 확장 (이스터에그 및 이모티콘 애니메이션)
-        const feelingBtn = document.getElementById('feeling-btn');
-        const searchInput = document.getElementById('search-input');
-        const emojiList = ['🤣', '😍', '😂', '❤️', '😘', '😁', '👍', '💕'];
-
-        feelingBtn.addEventListener('click', function(e) {
-            // 입력값이 'hyunil gravity'인지 파악 (공백 제거 및 소문자 변환 검사)
-            if (searchInput.value.trim().toLowerCase() === 'hyunil gravity') {
-                window.location.href = 'gravity.html'; // 중력 페이지로 리다이렉트
-                return;
-            }
-
-            // 조건이 맞지 않으면 기존 이모티콘 효과 실행
-            const numEmojis = Math.floor(Math.random() * 4) + 2; 
-            for (let i = 0; i < numEmojis; i++) {
-                createEmoji();
             }
         });
 
-        function createEmoji() {
-            const emoji = document.createElement('div');
-            emoji.classList.add('floating-emoji');
-            
-            const randomEmoji = emojiList[Math.floor(Math.random() * emojiList.length)];
-            emoji.innerText = randomEmoji;
+        const feelingBtn = document.getElementById('feeling-btn');
+        const searchInput = document.getElementById('search-input');
 
-            const btnRect = feelingBtn.getBoundingClientRect();
-            emoji.style.left = (btnRect.left + btnRect.width / 2) + 'px';
-            emoji.style.top = (btnRect.top + btnRect.height / 2) + 'px'; 
-
-            const spreadX = (Math.random() - 0.5) * 160;
-            emoji.style.setProperty('--spread-x', `${spreadX}px`);
-
-            const delay = Math.random() * 0.2;
-            emoji.style.animationDelay = `${delay}s`;
-
-            document.body.appendChild(emoji);
-
-            setTimeout(() => {
-                emoji.remove();
-            }, (1.7 + delay) * 1000);
-        }
+        feelingBtn.addEventListener('click', () => {
+            if (searchInput.value.trim().toLowerCase() === 'hyunil gravity') {
+                window.location.href = 'gravity.html'; 
+            } else {
+                alert('오늘 하루도 기분 좋은 하루 되세요! 😍');
+            }
+        });
     </script>
 </body>
 </html>
