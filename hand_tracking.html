@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Virtual Hand Controller - v2.0</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --text-color: #000000; 
+            --container-bg: #ffffff;
+            --canvas-bg: rgba(0, 0, 0, 0.08); 
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            --switch-bg: #ccc;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --text-color: #ffffff; 
+            --container-bg: #242424;
+            --canvas-bg: rgba(0, 0, 0, 0.4); 
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            --switch-bg: #444;
+        }
+
+        body { 
+            margin: 0; background: var(--bg-color); color: var(--text-color);
+            display: flex; flex-direction: column; align-items: center; 
+            height: 100vh; font-family: 'Malgun Gothic', sans-serif; transition: 0.3s;
+            justify-content: flex-start;
+            padding-top: 20vh; /* index.html과 높이 완벽 통일 */
+            box-sizing: border-box;
+        }
+
+        .top-left-group {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        /* 💡 수정된 부분: 다크모드 스위치와 동일한 세로 30px 적용 및 FontAwesome 화살표 배치 */
+        .back-btn {
+            height: 30px;
+            width: 50px;
+            border-radius: 15px; 
+            background: var(--container-bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: var(--shadow);
+            text-decoration: none;
+            color: var(--text-color);
+            font-size: 16px;
+            transition: 0.2s;
+            border: none;
+            box-sizing: border-box;
+        }
+        .back-btn:hover { transform: scale(1.05); }
+
+        .theme-switch { display: inline-block; width: 55px; height: 30px; position: relative; }
+        .theme-switch input { display: none; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--switch-bg); border-radius: 30px; transition: 0.4s; box-shadow: var(--shadow); }
+        
+        /* 💡 수정된 부분: 해/달 배경색 복구 */
+        .slider:before { 
+            position: absolute; content: "☀️"; display: flex; justify-content: center; align-items: center; font-size: 12px; height: 22px; width: 22px; left: 4px; bottom: 4px; background-color: #87CEEB; border-radius: 50%; transition: 0.4s; 
+        }
+        input:checked + .slider:before { 
+            transform: translateX(25px); content: "🌙"; background-color: #000080; color: #fff; 
+        }
+
+        .main-layout { display: flex; gap: 30px; align-items: center; justify-content: center; width: 95%; max-width: 1200px; }
+        
+        .panel {
+            flex: 1; 
+            background: var(--container-bg); 
+            padding: 30px; 
+            border-radius: 25px; 
+            box-shadow: var(--shadow); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+            transition: 0.3s;
+        }
+
+        .virtual-canvas-wrapper {
+            background: var(--canvas-bg);
+            border-radius: 20px;
+            width: 100%;
+            max-content: 500px;
+            aspect-ratio: 1/1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        #virtualCanvas { width: 95%; height: 95%; }
+
+        .hand-selector { display: flex; gap: 12px; margin-top: 25px; }
+        .selector-btn {
+            width: 85px; height: 85px; border-radius: 18px; border: 3px solid transparent;
+            cursor: pointer; background: var(--bg-color); color: var(--text-color);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s;
+        }
+        .selector-btn.active { border-color: #9c27b0; transform: translateY(-5px); }
+        .selector-btn span { font-size: 10px; margin-top: 5px; font-weight: bold; }
+
+        .video-wrapper { width: 100%; max-width: 500px; aspect-ratio: 4/3; background: #000; border-radius: 15px; overflow: hidden; position: relative; }
+        #output_canvas { transform: scaleX(-1); width: 100%; height: 100%; }
+        #input_video { display: none; }
+        
+        #hand-title { margin-bottom: 20px; color: var(--text-color); font-size: 28px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="top-left-group">
+        <a href="index.html" class="back-btn" title="뒤로가기">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <label class="theme-switch">
+            <input type="checkbox" id="theme-toggle">
+            <div class="slider"></div>
+        </label>
+    </div>
+
+    <div class="main-layout">
+        <div class="panel">
+            <h2 id="hand-title">Virtual Hand</h2>
+            <div class="virtual-canvas-wrapper">
+                <canvas id="virtualCanvas" width="600" height="600"></canvas>
+            </div>
+            
+            <div class="hand-selector">
+                <div class="selector-btn active" onclick="changeHand('human', this)">
+                    <span style="font-size: 30px;">✋</span><span>Human</span>
+                </div>
+                <div class="selector-btn" onclick="changeHand('robot', this)">
+                    <span style="font-size: 30px;">🤖</span><span>Robot</span>
+                </div>
+                <div class="selector-btn" onclick="changeHand('sign', this)">
+                    <span style="font-size: 30px;">🖐️</span><span>Sign Lang.</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2 style="margin-bottom: 20px;">Live Tracking</h2>
+            <div class="video-wrapper">
+                <video id="input_video"></video>
+                <canvas id="output_canvas" width="640" height="480"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const themeToggle = document.getElementById('theme-toggle');
+        themeToggle.addEventListener('change', () => {
+            document.documentElement.setAttribute('data-theme', themeToggle.checked ? 'dark' : 'light');
+        });
+
+        const videoElement = document.getElementById('input_video');
+        const canvasElement = document.getElementById('output_canvas');
+        const canvasCtx = canvasElement.getContext('2d');
+        const virtualCanvas = document.getElementById('virtualCanvas');
+        const vCtx = virtualCanvas.getContext('2d');
+        
+        let currentHandType = 'human';
+
+        function changeHand(type, btn) {
+            if (type === 'sign') {
+                alert('수화 통역 모델은 준비 중입니다.');
+                return;
+            }
+            currentHandType = type;
+            document.querySelectorAll('.selector-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function onResults(results) {
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+            
+            vCtx.clearRect(0, 0, virtualCanvas.width, virtualCanvas.height);
+
+            if (results.multiHandLandmarks) {
+                for (const landmarks of results.multiHandLandmarks) {
+                    const dx = (landmarks[0].x - landmarks[9].x) * canvasElement.width;
+                    const dy = (landmarks[0].y - landmarks[9].y) * canvasElement.height;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const scale = Math.max(0.3, distance / 150);
+
+                    drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {color: '#00FF00', lineWidth: 5 * scale});
+                    drawLandmarks(canvasCtx, landmarks, {color: '#FF0000', lineWidth: 1, radius: 4 * scale});
+                    
+                    drawVirtualHand(landmarks, scale);
+                }
+            }
+            canvasCtx.restore();
+        }
+
+        function drawVirtualHand(landmarks, scale) {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const color = currentHandType === 'human' ? '#ffe0bd' : (isDark ? '#555' : '#b0bec5');
+            const jointColor = currentHandType === 'human' ? '#ffccbc' : '#00e5ff';
+
+            vCtx.lineCap = "round";
+            vCtx.lineJoin = "round";
+            vCtx.strokeStyle = color;
+            vCtx.lineWidth = 25 * scale;
+
+            const connections = [[0,1,2,3,4], [0,5,6,7,8], [5,9,13,17,0], [9,10,11,12], [13,14,15,16], [17,18,19,20]];
+            
+            connections.forEach(path => {
+                vCtx.beginPath();
+                path.forEach((idx, i) => {
+                    const x = (1 - landmarks[idx].x) * virtualCanvas.width;
+                    const y = landmarks[idx].y * virtualCanvas.height;
+                    if (i === 0) vCtx.moveTo(x, y);
+                    else vCtx.lineTo(x, y);
+                });
+                vCtx.stroke();
+            });
+
+            landmarks.forEach(point => {
+                const x = (1 - point.x) * virtualCanvas.width;
+                const y = point.y * virtualCanvas.height;
+                vCtx.beginPath();
+                vCtx.arc(x, y, 10 * scale, 0, 2 * Math.PI);
+                vCtx.fillStyle = jointColor;
+                vCtx.fill();
+            });
+        }
+
+        const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+        hands.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+        hands.onResults(onResults);
+
+        const camera = new Camera(videoElement, {
+            onFrame: async () => { await hands.send({image: videoElement}); },
+            width: 640, height: 480
+        });
+        camera.start();
+    </script>
+</body>
+</html>
