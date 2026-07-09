@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Virtual Hand Controller - v2.0</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
@@ -17,6 +18,7 @@
             --canvas-bg: rgba(0, 0, 0, 0.08); 
             --shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
             --switch-bg: #ccc;
+            --input-border: #dfe1e5;
         }
 
         [data-theme="dark"] {
@@ -26,17 +28,19 @@
             --canvas-bg: rgba(0, 0, 0, 0.4); 
             --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             --switch-bg: #444;
+            --input-border: #3c4043;
         }
 
         body { 
             margin: 0; background: var(--bg-color); color: var(--text-color);
             display: flex; flex-direction: column; align-items: center; 
-            height: 100vh; font-family: 'Malgun Gothic', sans-serif; transition: 0.3s;
+            min-height: 100vh; font-family: 'Malgun Gothic', sans-serif; transition: 0.3s;
             justify-content: flex-start;
-            padding-top: 20vh; /* index.html과 높이 완벽 통일 */
+            padding-top: 20vh;
             box-sizing: border-box;
         }
 
+        /* 메인화면과 완벽하게 일치된 조절 바 */
         .top-left-group {
             position: absolute;
             top: 25px;
@@ -47,30 +51,27 @@
             z-index: 1000;
         }
 
-        /* 💡 수정된 부분: 다크모드 스위치와 동일한 세로 30px 적용 및 FontAwesome 화살표 배치 */
         .back-btn {
             height: 30px;
-            width: 50px;
+            width: 55px;
             border-radius: 15px; 
             background: var(--container-bg);
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: var(--shadow);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             text-decoration: none;
             color: var(--text-color);
-            font-size: 16px;
-            transition: 0.2s;
-            border: none;
+            font-size: 14px;
+            border: 1px solid var(--input-border);
             box-sizing: border-box;
         }
         .back-btn:hover { transform: scale(1.05); }
 
         .theme-switch { display: inline-block; width: 55px; height: 30px; position: relative; }
         .theme-switch input { display: none; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--switch-bg); border-radius: 30px; transition: 0.4s; box-shadow: var(--shadow); }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--switch-bg); border-radius: 30px; transition: 0.4s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         
-        /* 💡 수정된 부분: 해/달 배경색 복구 */
         .slider:before { 
             position: absolute; content: "☀️"; display: flex; justify-content: center; align-items: center; font-size: 12px; height: 22px; width: 22px; left: 4px; bottom: 4px; background-color: #87CEEB; border-radius: 50%; transition: 0.4s; 
         }
@@ -78,7 +79,7 @@
             transform: translateX(25px); content: "🌙"; background-color: #000080; color: #fff; 
         }
 
-        .main-layout { display: flex; gap: 30px; align-items: center; justify-content: center; width: 95%; max-width: 1200px; }
+        .main-layout { display: flex; gap: 30px; align-items: flex-start; justify-content: center; width: 95%; max-width: 1200px; }
         
         .panel {
             flex: 1; 
@@ -90,13 +91,41 @@
             flex-direction: column; 
             align-items: center;
             transition: 0.3s;
+            width: 100%;
+            box-sizing: border-box;
         }
+
+        .header-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        /* 앞뒤 카메라 전환 입체형 버튼 */
+        .camera-flip-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background-color: var(--canvas-bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-color);
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .camera-flip-btn:hover { transform: scale(1.1); }
 
         .virtual-canvas-wrapper {
             background: var(--canvas-bg);
             border-radius: 20px;
             width: 100%;
-            max-content: 500px;
+            max-width: 500px;
             aspect-ratio: 1/1;
             display: flex;
             align-items: center;
@@ -115,10 +144,29 @@
         .selector-btn span { font-size: 10px; margin-top: 5px; font-weight: bold; }
 
         .video-wrapper { width: 100%; max-width: 500px; aspect-ratio: 4/3; background: #000; border-radius: 15px; overflow: hidden; position: relative; }
-        #output_canvas { transform: scaleX(-1); width: 100%; height: 100%; }
+        #output_canvas { width: 100%; height: 100%; }
         #input_video { display: none; }
         
-        #hand-title { margin-bottom: 20px; color: var(--text-color); font-size: 28px; font-weight: bold; }
+        .panel-title { margin: 0; color: var(--text-color); font-size: 28px; font-weight: bold; }
+
+        /* 📱 모바일 디바이스용 미디어 쿼리 (위아래 배치 구성) */
+        @media (max-width: 850px) {
+            body {
+                overflow-y: auto;
+                height: auto;
+                padding-top: 100px;
+                padding-bottom: 40px;
+            }
+            .main-layout {
+                flex-direction: column;
+                align-items: center;
+                gap: 25px;
+            }
+            .panel {
+                width: 100%;
+                padding: 20px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -134,7 +182,9 @@
 
     <div class="main-layout">
         <div class="panel">
-            <h2 id="hand-title">Virtual Hand</h2>
+            <div class="header-row">
+                <h2 class="panel-title">Virtual Hand</h2>
+            </div>
             <div class="virtual-canvas-wrapper">
                 <canvas id="virtualCanvas" width="600" height="600"></canvas>
             </div>
@@ -153,9 +203,14 @@
         </div>
 
         <div class="panel">
-            <h2 style="margin-bottom: 20px;">Live Tracking</h2>
+            <div class="header-row">
+                <h2 class="panel-title">Live Tracking</h2>
+                <button class="camera-flip-btn" id="flip-btn" title="카메라 전환">
+                    <i class="fa-solid fa-rotate"></i>
+                </button>
+            </div>
             <div class="video-wrapper">
-                <video id="input_video"></video>
+                <video id="input_video" autoplay playsinline muted></video>
                 <canvas id="output_canvas" width="640" height="480"></canvas>
             </div>
         </div>
@@ -163,8 +218,14 @@
 
     <script>
         const themeToggle = document.getElementById('theme-toggle');
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        themeToggle.checked = (savedTheme === 'dark');
+
         themeToggle.addEventListener('change', () => {
-            document.documentElement.setAttribute('data-theme', themeToggle.checked ? 'dark' : 'light');
+            const theme = themeToggle.checked ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
         });
 
         const videoElement = document.getElementById('input_video');
@@ -174,6 +235,8 @@
         const vCtx = virtualCanvas.getContext('2d');
         
         let currentHandType = 'human';
+        let currentFacingMode = 'user'; // 'user'는 전면, 'environment'는 후면 카메라
+        let currentStream = null;
 
         function changeHand(type, btn) {
             if (type === 'sign') {
@@ -183,6 +246,39 @@
             currentHandType = type;
             document.querySelectorAll('.selector-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+        }
+
+        // 모바일 웹캠 최적화 및 권한 허용 엔진 함수
+        async function startCamera() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+            
+            const constraints = {
+                video: {
+                    facingMode: currentFacingMode,
+                    width: { ideal: 640 },
+                    height: { ideal: 480 }
+                },
+                audio: false
+            };
+            
+            try {
+                currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+                videoElement.srcObject = currentStream;
+                
+                // 전면 카메라일 때만 화면 거울 모드 렌더링 (후면 카메라는 정방향 렌더링)
+                if (currentFacingMode === 'user') {
+                    canvasElement.style.transform = 'scaleX(-1)';
+                } else {
+                    canvasElement.style.transform = 'scaleX(1)';
+                }
+                
+                await videoElement.play();
+            } catch (err) {
+                console.error("Camera error: ", err);
+                alert("카메라 연결 실패! 권한을 허용했는지, 혹은 HTTPS 보안 환경인지 확인해 주세요.");
+            }
         }
 
         function onResults(results) {
@@ -196,11 +292,13 @@
                 for (const landmarks of results.multiHandLandmarks) {
                     const dx = (landmarks[0].x - landmarks[9].x) * canvasElement.width;
                     const dy = (landmarks[0].y - landmarks[9].y) * canvasElement.height;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    const scale = Math.max(0.3, distance / 150);
+                    const scale = Math.max(0.3, Math.sqrt(dx * dx + dy * dy) / 150);
 
+                    // 화면 전환 모드 상태에 맞는 반전 드로잉 연산
+                    canvasCtx.save();
                     drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {color: '#00FF00', lineWidth: 5 * scale});
                     drawLandmarks(canvasCtx, landmarks, {color: '#FF0000', lineWidth: 1, radius: 4 * scale});
+                    canvasCtx.restore();
                     
                     drawVirtualHand(landmarks, scale);
                 }
@@ -223,6 +321,7 @@
             connections.forEach(path => {
                 vCtx.beginPath();
                 path.forEach((idx, i) => {
+                    // 기본 전면 카메라 구조 비례 대칭 렌더링 연산 적용
                     const x = (1 - landmarks[idx].x) * virtualCanvas.width;
                     const y = landmarks[idx].y * virtualCanvas.height;
                     if (i === 0) vCtx.moveTo(x, y);
@@ -245,11 +344,24 @@
         hands.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
         hands.onResults(onResults);
 
-        const camera = new Camera(videoElement, {
-            onFrame: async () => { await hands.send({image: videoElement}); },
-            width: 640, height: 480
+        // 비디오 실행 추적 감지 브라우저 수동 프레임 루프 구조
+        videoElement.addEventListener('playing', () => {
+            async function step() {
+                if (!videoElement.paused && !videoElement.ended) {
+                    await hands.send({ image: videoElement });
+                }
+                requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
         });
-        camera.start();
+
+        // 카메라 초기 구동 호출 및 토글 이벤트 바인딩
+        startCamera();
+
+        document.getElementById('flip-btn').addEventListener('click', () => {
+            currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
+            startCamera();
+        });
     </script>
 </body>
 </html>
