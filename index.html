@@ -3,264 +3,364 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>신현일의 이모저모 검색엔진</title>
+    <title>Virtual Hand Controller - v2.0</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
     
     <style>
         :root {
-            --bg-color: #ffffff;
-            --text-color: #202124;
-            --link-color: #4285F4;
+            --bg-color: #f0f2f5;
+            --text-color: #000000; 
+            --container-bg: #ffffff;
+            --canvas-bg: rgba(0, 0, 0, 0.08); 
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            --switch-bg: #ccc;
             --input-border: #dfe1e5;
-            --btn-bg: #f8f9fa;
-            --switch-bg: #e5e5e5;
-            --icon-color: #9aa0a6;
         }
 
         [data-theme="dark"] {
-            --bg-color: #181818;
-            --text-color: #f1f3f4;
-            --link-color: #8ab4f8;
-            --input-border: #3c4043;
-            --btn-bg: #303134;
+            --bg-color: #121212;
+            --text-color: #ffffff; 
+            --container-bg: #242424;
+            --canvas-bg: rgba(0, 0, 0, 0.4); 
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             --switch-bg: #444;
-            --icon-color: #9aa0a6;
+            --input-border: #3c4043;
         }
-        
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Malgun Gothic', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            transition: background-color 0.4s, color 0.4s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
+
+        body { 
+            margin: 0; background: var(--bg-color); color: var(--text-color);
+            display: flex; flex-direction: column; align-items: center; 
+            min-height: 100vh; font-family: 'Malgun Gothic', sans-serif; transition: 0.3s;
             justify-content: flex-start;
             padding-top: 20vh;
             box-sizing: border-box;
         }
 
-        .top-left-controls {
+        /* 메인화면과 완벽하게 일치된 조절 바 */
+        .top-left-group {
             position: absolute;
             top: 25px;
             left: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
             z-index: 1000;
         }
 
-        .theme-switch {
-            display: inline-block;
-            width: 55px;
+        .back-btn {
             height: 30px;
-            position: relative;
-        }
-
-        .theme-switch input { display: none; }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: var(--switch-bg);
-            border-radius: 30px;
-            transition: 0.4s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "☀️";
+            width: 55px;
+            border-radius: 15px; 
+            background: var(--container-bg);
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 12px;
-            height: 22px;
-            width: 22px;
-            left: 4px;
-            bottom: 4px;
-            background-color: #87CEEB;
-            border-radius: 50%;
-            transition: 0.4s;
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(25px);
-            content: "🌙";
-            background-color: #000080;
-            color: white;
-        }
-
-        .live-link {
-            margin-bottom: 25px;
-            color: var(--link-color);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             text-decoration: none;
+            color: var(--text-color);
             font-size: 14px;
-            font-weight: bold;
-        }
-
-        .search-container {
-            text-align: center;
-            width: 100%;
-            max-width: 580px;
-            padding: 0 24px; /* 모바일 대응 양옆 여백 확보 */
-            box-sizing: border-box;
-        }
-
-        .logo {
-            font-size: 3.5rem;
-            font-weight: bold;
-            margin-bottom: 35px;
-            letter-spacing: -1.5px;
-        }
-        .logo span:nth-child(1) { color: #4285F4; }
-        .logo span:nth-child(2) { color: #EA4335; }
-        .logo span:nth-child(3) { color: #FBBC05; }
-        .logo span:nth-child(4) { color: #34A853; }
-        .logo span:nth-child(5) { color: var(--text-color); font-size: 2.5rem; margin-left: 5px; }
-
-        .search-box-wrapper {
-            position: relative;
-            width: 100%;
-            height: 48px;
-            margin-bottom: 30px;
-            background-color: var(--bg-color);
             border: 1px solid var(--input-border);
-            border-radius: 24px;
-            box-shadow: 0 1px 6px rgba(32,33,36,0.1);
-            transition: box-shadow 0.2s;
             box-sizing: border-box;
+        }
+        .back-btn:hover { transform: scale(1.05); }
+
+        .theme-switch { display: inline-block; width: 55px; height: 30px; position: relative; }
+        .theme-switch input { display: none; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--switch-bg); border-radius: 30px; transition: 0.4s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        .slider:before { 
+            position: absolute; content: "☀️"; display: flex; justify-content: center; align-items: center; font-size: 12px; height: 22px; width: 22px; left: 4px; bottom: 4px; background-color: #87CEEB; border-radius: 50%; transition: 0.4s; 
+        }
+        input:checked + .slider:before { 
+            transform: translateX(25px); content: "🌙"; background-color: #000080; color: #fff; 
+        }
+
+        .main-layout { display: flex; gap: 30px; align-items: flex-start; justify-content: center; width: 95%; max-width: 1200px; }
+        
+        .panel {
+            flex: 1; 
+            background: var(--container-bg); 
+            padding: 30px; 
+            border-radius: 25px; 
+            box-shadow: var(--shadow); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+            transition: 0.3s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .header-row {
             display: flex;
             align-items: center;
-        }
-
-        .search-box-wrapper:focus-within {
-            box-shadow: 0 1px 8px rgba(32,33,36,0.2);
-        }
-
-        .search-icon-left {
-            position: absolute;
-            left: 18px;
-            font-size: 18px;
-            color: var(--icon-color);
-            pointer-events: none;
-            top: 50%;
-            transform: translateY(calc(-50% - 2px));
-        }
-
-        .camera-icon-right {
-            position: absolute;
-            right: 18px;
-            font-size: 20px;
-            text-decoration: none;
-            cursor: pointer;
-            top: 50%;
-            transform: translateY(calc(-50% - 2px));
-            transition: transform 0.2s;
-        }
-        
-        .camera-icon-right:hover { 
-            transform: translateY(calc(-50% - 2px)) scale(1.15); 
-        }
-
-        .search-box-wrapper input {
-            width: 100%;
-            height: 100%;
-            border: none;
-            background: transparent;
-            outline: none;
-            font-size: 16px;
-            color: var(--text-color);
-            padding: 0 50px 0 45px;
-            box-sizing: border-box;
-        }
-
-        .button-group {
-            display: flex;
             justify-content: center;
             gap: 12px;
+            margin-bottom: 20px;
+            width: 100%;
         }
 
-        .btn {
-            background-color: var(--btn-bg);
-            border: 1px solid var(--btn-bg);
-            border-radius: 4px;
+        /* 앞뒤 카메라 전환 입체형 버튼 */
+        .camera-flip-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background-color: var(--canvas-bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
             color: var(--text-color);
-            font-size: 14px;
-            padding: 0 16px;
-            line-height: 36px;
-            height: 36px;
-            min-width: 54px;
-            text-align: center;
+            border: none;
             cursor: pointer;
-            transition: all 0.2s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            transition: transform 0.2s, background-color 0.2s;
         }
+        .camera-flip-btn:hover { transform: scale(1.1); }
 
-        .btn:hover {
-            border: 1px solid #dadce0;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        .virtual-canvas-wrapper {
+            background: var(--canvas-bg);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 1/1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
         }
+        #virtualCanvas { width: 95%; height: 95%; }
 
-        /* 모바일 반응형 미세 스케일 조정 */
-        @media (max-width: 600px) {
-            body { padding-top: 15vh; }
-            .logo { font-size: 2.3rem; margin-bottom: 25px; }
-            .logo span:nth-child(5) { font-size: 1.8rem; }
-            .search-box-wrapper { height: 46px; }
+        .hand-selector { display: flex; gap: 12px; margin-top: 25px; }
+        .selector-btn {
+            width: 85px; height: 85px; border-radius: 18px; border: 3px solid transparent;
+            cursor: pointer; background: var(--bg-color); color: var(--text-color);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s;
+        }
+        .selector-btn.active { border-color: #9c27b0; transform: translateY(-5px); }
+        .selector-btn span { font-size: 10px; margin-top: 5px; font-weight: bold; }
+
+        .video-wrapper { width: 100%; max-width: 500px; aspect-ratio: 4/3; background: #000; border-radius: 15px; overflow: hidden; position: relative; }
+        #output_canvas { width: 100%; height: 100%; }
+        #input_video { display: none; }
+        
+        .panel-title { margin: 0; color: var(--text-color); font-size: 28px; font-weight: bold; }
+
+        /* 📱 모바일 디바이스용 미디어 쿼리 (위아래 배치 구성) */
+        @media (max-width: 850px) {
+            body {
+                overflow-y: auto;
+                height: auto;
+                padding-top: 100px;
+                padding-bottom: 40px;
+            }
+            .main-layout {
+                flex-direction: column;
+                align-items: center;
+                gap: 25px;
+            }
+            .panel {
+                width: 100%;
+                padding: 20px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="top-left-controls">
+    <div class="top-left-group">
+        <a href="index.html" class="back-btn" title="뒤로가기">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
         <label class="theme-switch">
-            <input type="checkbox" id="theme-checkbox">
+            <input type="checkbox" id="theme-toggle">
             <div class="slider"></div>
         </label>
     </div>
 
-    <a href="Untitled-2.html" class="live-link">신현일의 라이브 직캠을 지금 보세요!!</a>
-
-    <div class="search-container">
-        <div class="logo">
-            <span>신</span><span>현</span><span>일</span><span>의</span><span>Search</span>
-        </div>
-        
-        <form action="https://www.google.com/search" method="GET">
-            <div class="search-box-wrapper">
-                <span class="search-icon-left">🔍</span>
-                <input type="text" id="search-input" name="q" placeholder="무엇이든 검색해보세요..." autofocus>
-                <a href="hand_tracking.html" class="camera-icon-right" title="손 인식 카메라">📷</a>
+    <div class="main-layout">
+        <div class="panel">
+            <div class="header-row">
+                <h2 class="panel-title">Virtual Hand</h2>
+            </div>
+            <div class="virtual-canvas-wrapper">
+                <canvas id="virtualCanvas" width="600" height="600"></canvas>
             </div>
             
-            <div class="button-group">
-                <button type="submit" class="btn">Vibe 검색</button>
-                <button type="button" class="btn" id="feeling-btn">Feeling Good!</button>
+            <div class="hand-selector">
+                <div class="selector-btn active" onclick="changeHand('human', this)">
+                    <span style="font-size: 30px;">✋</span><span>Human</span>
+                </div>
+                <div class="selector-btn" onclick="changeHand('robot', this)">
+                    <span style="font-size: 30px;">🤖</span><span>Robot</span>
+                </div>
+                <div class="selector-btn" onclick="changeHand('sign', this)">
+                    <span style="font-size: 30px;">🖐️</span><span>Sign Lang.</span>
+                </div>
             </div>
-        </form>
+        </div>
+
+        <div class="panel">
+            <div class="header-row">
+                <h2 class="panel-title">Live Tracking</h2>
+                <button class="camera-flip-btn" id="flip-btn" title="카메라 전환">
+                    <i class="fa-solid fa-rotate"></i>
+                </button>
+            </div>
+            <div class="video-wrapper">
+                <video id="input_video" autoplay playsinline muted></video>
+                <canvas id="output_canvas" width="640" height="480"></canvas>
+            </div>
+        </div>
     </div>
 
     <script>
-        const themeCheckbox = document.getElementById('theme-checkbox');
+        const themeToggle = document.getElementById('theme-toggle');
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
-        themeCheckbox.checked = (savedTheme === 'dark');
+        themeToggle.checked = (savedTheme === 'dark');
 
-        themeCheckbox.addEventListener('change', (e) => {
-            const theme = e.target.checked ? 'dark' : 'light';
+        themeToggle.addEventListener('change', () => {
+            const theme = themeToggle.checked ? 'dark' : 'light';
             document.documentElement.setAttribute('data-theme', theme);
             localStorage.setItem('theme', theme);
         });
 
-        const feelingBtn = document.getElementById('feeling-btn');
-        const searchInput = document.getElementById('search-input');
+        const videoElement = document.getElementById('input_video');
+        const canvasElement = document.getElementById('output_canvas');
+        const canvasCtx = canvasElement.getContext('2d');
+        const virtualCanvas = document.getElementById('virtualCanvas');
+        const vCtx = virtualCanvas.getContext('2d');
+        
+        let currentHandType = 'human';
+        let currentFacingMode = 'user'; // 'user'는 전면, 'environment'는 후면 카메라
+        let currentStream = null;
 
-        feelingBtn.addEventListener('click', () => {
-            if (searchInput.value.trim().toLowerCase() === 'hyunil gravity') {
-                window.location.href = 'gravity.html'; 
-            } else {
-                alert('오늘 하루도 기분 좋은 하루 되세요! 😍');
+        function changeHand(type, btn) {
+            if (type === 'sign') {
+                alert('수화 통역 모델은 준비 중입니다.');
+                return;
             }
+            currentHandType = type;
+            document.querySelectorAll('.selector-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        // 모바일 웹캠 최적화 및 권한 허용 엔진 함수
+        async function startCamera() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+            
+            const constraints = {
+                video: {
+                    facingMode: currentFacingMode,
+                    width: { ideal: 640 },
+                    height: { ideal: 480 }
+                },
+                audio: false
+            };
+            
+            try {
+                currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+                videoElement.srcObject = currentStream;
+                
+                // 전면 카메라일 때만 화면 거울 모드 렌더링 (후면 카메라는 정방향 렌더링)
+                if (currentFacingMode === 'user') {
+                    canvasElement.style.transform = 'scaleX(-1)';
+                } else {
+                    canvasElement.style.transform = 'scaleX(1)';
+                }
+                
+                await videoElement.play();
+            } catch (err) {
+                console.error("Camera error: ", err);
+                alert("카메라 연결 실패! 권한을 허용했는지, 혹은 HTTPS 보안 환경인지 확인해 주세요.");
+            }
+        }
+
+        function onResults(results) {
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+            
+            vCtx.clearRect(0, 0, virtualCanvas.width, virtualCanvas.height);
+
+            if (results.multiHandLandmarks) {
+                for (const landmarks of results.multiHandLandmarks) {
+                    const dx = (landmarks[0].x - landmarks[9].x) * canvasElement.width;
+                    const dy = (landmarks[0].y - landmarks[9].y) * canvasElement.height;
+                    const scale = Math.max(0.3, Math.sqrt(dx * dx + dy * dy) / 150);
+
+                    // 화면 전환 모드 상태에 맞는 반전 드로잉 연산
+                    canvasCtx.save();
+                    drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {color: '#00FF00', lineWidth: 5 * scale});
+                    drawLandmarks(canvasCtx, landmarks, {color: '#FF0000', lineWidth: 1, radius: 4 * scale});
+                    canvasCtx.restore();
+                    
+                    drawVirtualHand(landmarks, scale);
+                }
+            }
+            canvasCtx.restore();
+        }
+
+        function drawVirtualHand(landmarks, scale) {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const color = currentHandType === 'human' ? '#ffe0bd' : (isDark ? '#555' : '#b0bec5');
+            const jointColor = currentHandType === 'human' ? '#ffccbc' : '#00e5ff';
+
+            vCtx.lineCap = "round";
+            vCtx.lineJoin = "round";
+            vCtx.strokeStyle = color;
+            vCtx.lineWidth = 25 * scale;
+
+            const connections = [[0,1,2,3,4], [0,5,6,7,8], [5,9,13,17,0], [9,10,11,12], [13,14,15,16], [17,18,19,20]];
+            
+            connections.forEach(path => {
+                vCtx.beginPath();
+                path.forEach((idx, i) => {
+                    // 기본 전면 카메라 구조 비례 대칭 렌더링 연산 적용
+                    const x = (1 - landmarks[idx].x) * virtualCanvas.width;
+                    const y = landmarks[idx].y * virtualCanvas.height;
+                    if (i === 0) vCtx.moveTo(x, y);
+                    else vCtx.lineTo(x, y);
+                });
+                vCtx.stroke();
+            });
+
+            landmarks.forEach(point => {
+                const x = (1 - point.x) * virtualCanvas.width;
+                const y = point.y * virtualCanvas.height;
+                vCtx.beginPath();
+                vCtx.arc(x, y, 10 * scale, 0, 2 * Math.PI);
+                vCtx.fillStyle = jointColor;
+                vCtx.fill();
+            });
+        }
+
+        const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+        hands.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+        hands.onResults(onResults);
+
+        // 비디오 실행 추적 감지 브라우저 수동 프레임 루프 구조
+        videoElement.addEventListener('playing', () => {
+            async function step() {
+                if (!videoElement.paused && !videoElement.ended) {
+                    await hands.send({ image: videoElement });
+                }
+                requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        });
+
+        // 카메라 초기 구동 호출 및 토글 이벤트 바인딩
+        startCamera();
+
+        document.getElementById('flip-btn').addEventListener('click', () => {
+            currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
+            startCamera();
         });
     </script>
 </body>
