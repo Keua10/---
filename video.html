@@ -512,7 +512,7 @@
             const canManage = currentUser && (iAmAdmin || canUploadToSeries(series, currentUser.email));
             const card = document.createElement('div');
             card.innerHTML = `
-                <a class="video-card" href="${v.youtubeUrl}" target="_blank" rel="noopener">
+                <a class="video-card" href="watch.html?s=${v.seriesId}&v=${v.id}">
                     <div class="thumb-wrap"><img src="${v.thumbnailUrl}" alt="${v.title}"></div>
                 </a>
                 <div class="video-title-row">

@@ -18,6 +18,7 @@ import {
   deleteDoc,
   arrayUnion,
   arrayRemove,
+  increment,
   serverTimestamp,
   collection,
   addDoc,
@@ -137,6 +138,14 @@ export async function removeSeriesOwner(seriesId, email) {
   });
 }
 
+export async function updateSeries(seriesId, { name, description, thumbnail }) {
+  const data = {};
+  if (name !== undefined) data.name = name;
+  if (description !== undefined) data.description = description;
+  if (thumbnail !== undefined) data.thumbnail = thumbnail;
+  await updateDoc(doc(db, "series", seriesId), data);
+}
+
 export async function deleteSeries(seriesId) {
   // 하위 영상들을 먼저 삭제한 뒤 시리즈 문서를 삭제
   const videosSnap = await getDocs(collection(db, "series", seriesId, "videos"));
@@ -211,6 +220,70 @@ export async function getRandomRecommendedVideos(count = 12) {
     [all[i], all[j]] = [all[j], all[i]];
   }
   return all.slice(0, count);
+}
+
+export async function getVideo(seriesId, videoId) {
+  const snap = await getDoc(doc(db, "series", seriesId, "videos", videoId));
+  return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+}
+
+// ---------- 조회수 ----------
+export async function incrementVideoView(seriesId, videoId) {
+  await updateDoc(doc(db, "series", seriesId, "videos", videoId), {
+    views: increment(1),
+  });
+}
+
+// ---------- 영상 좋아요 (계정당 1개, 토글) ----------
+export async function likeVideo(seriesId, videoId, uid) {
+  await updateDoc(doc(db, "series", seriesId, "videos", videoId), {
+    likes: arrayUnion(uid),
+  });
+}
+
+export async function unlikeVideo(seriesId, videoId, uid) {
+  await updateDoc(doc(db, "series", seriesId, "videos", videoId), {
+    likes: arrayRemove(uid),
+  });
+}
+
+// ---------- 댓글 (계정당 1개, 댓글 문서 ID = uid) ----------
+export async function getComments(seriesId, videoId) {
+  const snap = await getDocs(
+    query(collection(db, "series", seriesId, "videos", videoId, "comments"), orderBy("createdAt", "desc"))
+  );
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+export async function getMyComment(seriesId, videoId, uid) {
+  const snap = await getDoc(doc(db, "series", seriesId, "videos", videoId, "comments", uid));
+  return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+}
+
+export async function upsertComment(seriesId, videoId, uid, { authorName, authorPhoto, text }) {
+  const ref = doc(db, "series", seriesId, "videos", videoId, "comments", uid);
+  const snap = await getDoc(ref);
+  if (snap.exists()) {
+    await updateDoc(ref, { text, authorName, authorPhoto });
+  } else {
+    await setDoc(ref, { text, authorName, authorPhoto: authorPhoto || "", likes: [], createdAt: serverTimestamp() });
+  }
+}
+
+export async function deleteComment(seriesId, videoId, uid) {
+  await deleteDoc(doc(db, "series", seriesId, "videos", videoId, "comments", uid));
+}
+
+export async function likeComment(seriesId, videoId, commentUid, likerUid) {
+  await updateDoc(doc(db, "series", seriesId, "videos", videoId, "comments", commentUid), {
+    likes: arrayUnion(likerUid),
+  });
+}
+
+export async function unlikeComment(seriesId, videoId, commentUid, likerUid) {
+  await updateDoc(doc(db, "series", seriesId, "videos", videoId, "comments", commentUid), {
+    likes: arrayRemove(likerUid),
+  });
 }
 
 export function timeAgo(timestamp) {

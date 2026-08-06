@@ -32,6 +32,15 @@
         font-weight: bold; cursor: pointer; background: var(--accent); color: #fff;
     }
     .sub-btn.subscribed { background: var(--panel-bg); color: var(--text-color); border: 1px solid var(--border-color); }
+    .series-settings-btn {
+        background: var(--panel-bg); border: 1px solid var(--border-color); color: var(--text-color);
+        border-radius: 16px; padding: 6px 14px; font-size: 0.82rem; cursor: pointer; margin-left: 8px;
+    }
+    .series-settings-btn:hover { border-color: var(--sub-text); }
+    .modal-box textarea {
+        width: 100%; min-height: 60px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color);
+        background: var(--panel-bg); color: var(--text-color); font-size: 0.85rem; font-family: inherit; resize: vertical;
+    }
     .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 18px; }
     .video-card { text-decoration: none; color: var(--text-color); display: block; }
     .thumb-wrap { width: 100%; aspect-ratio: 16/9; border-radius: 10px; overflow: hidden; background: var(--panel-bg); }
@@ -88,6 +97,21 @@
     <div class="video-grid" id="video-grid"></div>
 </div>
 
+<div class="modal-overlay" id="edit-series-modal">
+    <div class="modal-box">
+        <button class="modal-close" data-close="edit-series-modal">✕</button>
+        <h3>시리즈 설정</h3>
+        <label>시리즈 이름</label>
+        <input type="text" id="edit-series-name">
+        <label>썸네일(아이콘) 이미지 URL</label>
+        <input type="url" id="edit-series-thumb">
+        <label>설명 (시리즈 이름 아래 작게 표시됩니다 — URL이나 소개 글 등)</label>
+        <textarea id="edit-series-desc" rows="3"></textarea>
+        <button class="action" id="edit-series-save">저장</button>
+        <div class="modal-msg" id="edit-series-msg"></div>
+    </div>
+</div>
+
 <div class="modal-overlay" id="edit-video-modal">
     <div class="modal-box">
         <button class="modal-close" data-close="edit-video-modal">✕</button>
@@ -113,7 +137,7 @@
     import {
         watchAuth, signInWithGoogle, getSeries, getVideosForSeries,
         getUserDoc, subscribeToSeries, unsubscribeFromSeries,
-        canUploadToSeries, isSiteOwner, updateVideo, deleteVideoFromSeries, formatDate
+        canUploadToSeries, isSiteOwner, updateVideo, deleteVideoFromSeries, formatDate, updateSeries
     } from './auth.js';
 
     const params = new URLSearchParams(location.search);
@@ -128,12 +152,14 @@
     function renderHeader() {
         if (!series) return;
         const isSub = currentSubs.includes(seriesId);
+        const canManageSeries = currentUser && (isSiteOwner(currentUser.email) || canUploadToSeries(series, currentUser.email));
         headerEl.innerHTML = `
             <div class="avatar">${series.thumbnail ? `<img src="${series.thumbnail}">` : series.name[0]}</div>
             <div>
                 <div class="series-name">${series.name}</div>
                 <div class="series-desc">${series.description || ''}</div>
                 <button class="sub-btn ${isSub ? 'subscribed' : ''}" id="sub-btn">${isSub ? '구독중' : '구독'}</button>
+                ${canManageSeries ? '<button class="series-settings-btn" id="series-settings-btn">시리즈 설정</button>' : ''}
             </div>
         `;
         document.getElementById('sub-btn').addEventListener('click', async () => {
@@ -149,7 +175,38 @@
             }
             renderHeader();
         });
+        const settingsBtn = document.getElementById('series-settings-btn');
+        if (settingsBtn) {
+            settingsBtn.addEventListener('click', () => openEditSeriesModal());
+        }
     }
+
+    function openEditSeriesModal() {
+        document.getElementById('edit-series-name').value = series.name || '';
+        document.getElementById('edit-series-thumb').value = series.thumbnail || '';
+        document.getElementById('edit-series-desc').value = series.description || '';
+        document.getElementById('edit-series-msg').textContent = '';
+        document.getElementById('edit-series-modal').classList.add('open');
+    }
+
+    document.getElementById('edit-series-save').addEventListener('click', async () => {
+        const name = document.getElementById('edit-series-name').value.trim();
+        const thumbnail = document.getElementById('edit-series-thumb').value.trim();
+        const description = document.getElementById('edit-series-desc').value.trim();
+        const msg = document.getElementById('edit-series-msg');
+        if (!name) { msg.textContent = '시리즈 이름을 입력해주세요.'; msg.className = 'modal-msg err'; return; }
+        try {
+            await updateSeries(seriesId, { name, thumbnail, description });
+        } catch (e) {
+            msg.textContent = '오류: ' + e.message; msg.className = 'modal-msg err';
+            return;
+        }
+        msg.textContent = '저장되었습니다!'; msg.className = 'modal-msg ok';
+        series.name = name;
+        series.thumbnail = thumbnail;
+        series.description = description;
+        renderHeader();
+    });
 
     async function renderVideos() {
         let videos = [];
@@ -167,7 +224,7 @@
         const canManage = currentUser && (isSiteOwner(currentUser.email) || canUploadToSeries(series, currentUser.email));
         gridEl.innerHTML = videos.map(v => `
             <div>
-                <a class="video-card" href="${v.youtubeUrl}" target="_blank" rel="noopener">
+                <a class="video-card" href="watch.html?s=${seriesId}&v=${v.id}">
                     <div class="thumb-wrap"><img src="${v.thumbnailUrl}" alt="${v.title}"></div>
                 </a>
                 <div class="video-title-row">
