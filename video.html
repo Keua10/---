@@ -229,19 +229,6 @@
         width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color);
         background: var(--panel-bg); color: var(--text-color); font-size: 0.85rem;
     }
-    .file-drop {
-        display: flex; align-items: center; gap: 12px;
-        border: 1px dashed var(--border-color); border-radius: 8px; padding: 10px;
-        background: var(--panel-bg); cursor: pointer;
-    }
-    .file-drop .preview {
-        width: 64px; height: 40px; border-radius: 6px; background: var(--bg-color);
-        display: flex; align-items: center; justify-content: center; overflow: hidden;
-        flex-shrink: 0; font-size: 0.7rem; color: var(--sub-text); border: 1px solid var(--border-color);
-    }
-    .file-drop .preview img { width: 100%; height: 100%; object-fit: cover; }
-    .file-drop .file-label { font-size: 0.8rem; color: var(--sub-text); }
-    .file-drop input[type="file"] { display: none; }
     .modal-panel button.action {
         margin-top: 14px; background: var(--link-color); color: #fff; border: none;
         border-radius: 8px; padding: 9px 16px; font-size: 0.85rem; font-weight: bold; cursor: pointer;
@@ -331,12 +318,8 @@
         <select id="video-series-select"></select>
         <label>제목</label>
         <input type="text" id="video-title-input" placeholder="영상 제목">
-        <label>썸네일 이미지</label>
-        <label class="file-drop" for="video-thumb-file">
-            <span class="preview" id="video-thumb-preview">미리보기</span>
-            <span class="file-label" id="video-thumb-filename">이미지 파일을 선택하세요 (5MB 이하)</span>
-            <input type="file" id="video-thumb-file" accept="image/*">
-        </label>
+        <label>썸네일 이미지 URL</label>
+        <input type="url" id="video-thumb-input" placeholder="https://...">
         <label>유튜브 링크</label>
         <input type="url" id="video-url-input" placeholder="https://youtube.com/watch?v=...">
         <button class="action" id="upload-video-submit">업로드</button>
@@ -362,12 +345,8 @@
                 <input type="text" id="new-series-name" placeholder="예: 나이트 크롤러">
                 <label>설명</label>
                 <textarea id="new-series-desc" rows="2" placeholder="시리즈 소개"></textarea>
-                <label>썸네일(아이콘) 이미지</label>
-                <label class="file-drop" for="new-series-thumb-file">
-                    <span class="preview" id="new-series-thumb-preview">미리보기</span>
-                    <span class="file-label" id="new-series-thumb-filename">이미지 파일을 선택하세요 (5MB 이하)</span>
-                    <input type="file" id="new-series-thumb-file" accept="image/*">
-                </label>
+                <label>썸네일(아이콘) 이미지 URL</label>
+                <input type="url" id="new-series-thumb-input" placeholder="https://...">
                 <label>업로드 권한을 함께 줄 계정 이메일 (선택, 쉼표로 구분)</label>
                 <input type="text" id="new-series-owners" placeholder="user1@gmail.com, user2@gmail.com">
                 <button class="action" id="create-series-btn">시리즈 만들기</button>
@@ -418,7 +397,7 @@
         watchAuth, signInWithGoogle, signOutUser,
         getRecentVideosAcrossAllSeries, getAllSeries, getSeries,
         getUserDoc, subscribeToSeries, unsubscribeFromSeries,
-        canUploadToSeries, addVideoToSeries, uploadThumbnail,
+        canUploadToSeries, addVideoToSeries,
         isSiteOwner, canUserCreateSeries, canUserDeleteSeries, createSeries, deleteSeries,
         getPermissions, setPermission, addSeriesOwner, removeSeriesOwner
     } from './auth.js';
@@ -457,22 +436,6 @@
             if (e.target === overlay) overlay.classList.remove('open');
         });
     });
-
-    function wireFilePreview(fileInputId, previewId, filenameId) {
-        const fileInput = document.getElementById(fileInputId);
-        const preview = document.getElementById(previewId);
-        const filenameEl = document.getElementById(filenameId);
-        fileInput.addEventListener('change', () => {
-            const file = fileInput.files[0];
-            if (!file) return;
-            filenameEl.textContent = file.name;
-            const reader = new FileReader();
-            reader.onload = (e) => { preview.innerHTML = `<img src="${e.target.result}">`; };
-            reader.readAsDataURL(file);
-        });
-    }
-    wireFilePreview('video-thumb-file', 'video-thumb-preview', 'video-thumb-filename');
-    wireFilePreview('new-series-thumb-file', 'new-series-thumb-preview', 'new-series-thumb-filename');
 
     async function loadSeriesCache() {
         const all = await getAllSeries();
@@ -555,21 +518,17 @@
     document.getElementById('upload-video-submit').addEventListener('click', async () => {
         const seriesId = document.getElementById('video-series-select').value;
         const title = document.getElementById('video-title-input').value.trim();
-        const thumbFile = document.getElementById('video-thumb-file').files[0];
+        const thumbnailUrl = document.getElementById('video-thumb-input').value.trim();
         const youtubeUrl = document.getElementById('video-url-input').value.trim();
         const msg = document.getElementById('upload-video-msg');
-        if (!seriesId || !title || !thumbFile || !youtubeUrl) {
+        if (!seriesId || !title || !thumbnailUrl || !youtubeUrl) {
             msg.textContent = '모든 항목을 입력해주세요.'; msg.className = 'modal-msg err'; return;
         }
         try {
-            msg.textContent = '이미지 업로드 중...'; msg.className = 'modal-msg';
-            const thumbnailUrl = await uploadThumbnail(thumbFile, 'video-thumbnails');
             await addVideoToSeries(seriesId, { title, thumbnailUrl, youtubeUrl, uploaderEmail: currentUser.email });
             msg.textContent = '영상이 업로드되었습니다!'; msg.className = 'modal-msg ok';
             document.getElementById('video-title-input').value = '';
-            document.getElementById('video-thumb-file').value = '';
-            document.getElementById('video-thumb-preview').innerHTML = '미리보기';
-            document.getElementById('video-thumb-filename').textContent = '이미지 파일을 선택하세요 (5MB 이하)';
+            document.getElementById('video-thumb-input').value = '';
             document.getElementById('video-url-input').value = '';
             await loadSeriesCache();
             await renderVideos();
@@ -613,24 +572,17 @@
     document.getElementById('create-series-btn').addEventListener('click', async () => {
         const name = document.getElementById('new-series-name').value.trim();
         const description = document.getElementById('new-series-desc').value.trim();
-        const thumbFile = document.getElementById('new-series-thumb-file').files[0];
+        const thumbnail = document.getElementById('new-series-thumb-input').value.trim();
         const ownersRaw = document.getElementById('new-series-owners').value.trim();
         const ownerEmails = ownersRaw ? ownersRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
         const msg = document.getElementById('create-series-msg');
         if (!name) { msg.textContent = '시리즈 이름을 입력해주세요.'; msg.className = 'modal-msg err'; return; }
         try {
-            let thumbnail = '';
-            if (thumbFile) {
-                msg.textContent = '이미지 업로드 중...'; msg.className = 'modal-msg';
-                thumbnail = await uploadThumbnail(thumbFile, 'series-thumbnails');
-            }
             await createSeries({ name, description, thumbnail, ownerEmails, creatorEmail: currentUser.email });
             msg.textContent = '시리즈가 생성되었습니다!'; msg.className = 'modal-msg ok';
             document.getElementById('new-series-name').value = '';
             document.getElementById('new-series-desc').value = '';
-            document.getElementById('new-series-thumb-file').value = '';
-            document.getElementById('new-series-thumb-preview').innerHTML = '미리보기';
-            document.getElementById('new-series-thumb-filename').textContent = '이미지 파일을 선택하세요 (5MB 이하)';
+            document.getElementById('new-series-thumb-input').value = '';
             document.getElementById('new-series-owners').value = '';
             await refreshUserState();
             buildSettingsTabs();

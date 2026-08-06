@@ -28,30 +28,11 @@ import {
   collectionGroup,
   where,
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
-import {
-  getStorage,
-  ref as storageRef,
-  uploadBytes,
-  getDownloadURL,
-} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-storage.js";
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-export const storage = getStorage(app);
 const provider = new GoogleAuthProvider();
-
-// ---------- 이미지 업로드 (Firebase Storage) ----------
-// file: <input type="file"> 에서 받은 File 객체, folder: "series-thumbnails" | "video-thumbnails"
-export async function uploadThumbnail(file, folder) {
-  if (!file) throw new Error("파일이 없습니다.");
-  if (!file.type.startsWith("image/")) throw new Error("이미지 파일만 업로드할 수 있습니다.");
-  if (file.size > 5 * 1024 * 1024) throw new Error("이미지 크기는 5MB 이하여야 합니다.");
-  const path = `${folder}/${Date.now()}_${file.name}`;
-  const ref = storageRef(storage, path);
-  await uploadBytes(ref, file);
-  return await getDownloadURL(ref);
-}
 
 // ---------- 로그인 / 로그아웃 ----------
 export async function signInWithGoogle() {
