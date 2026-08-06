@@ -15,6 +15,7 @@ import {
   getDoc,
   setDoc,
   updateDoc,
+  deleteDoc,
   arrayUnion,
   arrayRemove,
   serverTimestamp,
@@ -27,11 +28,30 @@ import {
   collectionGroup,
   where,
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import {
+  getStorage,
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL,
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-storage.js";
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const storage = getStorage(app);
 const provider = new GoogleAuthProvider();
+
+// ---------- 이미지 업로드 (Firebase Storage) ----------
+// file: <input type="file"> 에서 받은 File 객체, folder: "series-thumbnails" | "video-thumbnails"
+export async function uploadThumbnail(file, folder) {
+  if (!file) throw new Error("파일이 없습니다.");
+  if (!file.type.startsWith("image/")) throw new Error("이미지 파일만 업로드할 수 있습니다.");
+  if (file.size > 5 * 1024 * 1024) throw new Error("이미지 크기는 5MB 이하여야 합니다.");
+  const path = `${folder}/${Date.now()}_${file.name}`;
+  const ref = storageRef(storage, path);
+  await uploadBytes(ref, file);
+  return await getDownloadURL(ref);
+}
 
 // ---------- 로그인 / 로그아웃 ----------
 export async function signInWithGoogle() {
@@ -75,21 +95,28 @@ export function isSiteOwner(email) {
 }
 
 // ---------- 전역 권한 (permissions/{email}) ----------
-// 사이트 관리자(SITE_OWNER_EMAILS)가 다른 계정에게 "시리즈 생성 권한"을 부여할 수 있음
+// 사이트 관리자(SITE_OWNER_EMAILS)가 다른 계정에게 "시리즈 생성 권한" / "시리즈 삭제 권한"을 부여할 수 있음
 export async function getPermissions(email) {
-  if (!email) return null;
+  if (!email) return { canCreateSeries: false, canDeleteSeries: false };
   const snap = await getDoc(doc(db, "permissions", email));
-  return snap.exists() ? snap.data() : null;
+  return snap.exists() ? snap.data() : { canCreateSeries: false, canDeleteSeries: false };
 }
 
-export async function grantCreateSeriesPermission(email) {
-  await setDoc(doc(db, "permissions", email), { canCreateSeries: true }, { merge: true });
+// field: "canCreateSeries" | "canDeleteSeries"
+export async function setPermission(email, field, enabled) {
+  await setDoc(doc(db, "permissions", email), { [field]: enabled }, { merge: true });
 }
 
 export async function canUserCreateSeries(email) {
   if (isSiteOwner(email)) return true;
   const perm = await getPermissions(email);
   return !!(perm && perm.canCreateSeries);
+}
+
+export async function canUserDeleteSeries(email) {
+  if (isSiteOwner(email)) return true;
+  const perm = await getPermissions(email);
+  return !!(perm && perm.canDeleteSeries);
 }
 
 // ---------- 구독 ----------
@@ -105,7 +132,7 @@ export async function unsubscribeFromSeries(uid, seriesId) {
   });
 }
 
-// ---------- 시리즈(채널) ----------
+// ---------- 시리즈 ----------
 export async function createSeries({ name, description, thumbnail, ownerEmails, creatorEmail }) {
   const ref = await addDoc(collection(db, "series"), {
     name,
@@ -121,6 +148,19 @@ export async function addSeriesOwner(seriesId, email) {
   await updateDoc(doc(db, "series", seriesId), {
     ownerEmails: arrayUnion(email),
   });
+}
+
+export async function removeSeriesOwner(seriesId, email) {
+  await updateDoc(doc(db, "series", seriesId), {
+    ownerEmails: arrayRemove(email),
+  });
+}
+
+export async function deleteSeries(seriesId) {
+  // 하위 영상들을 먼저 삭제한 뒤 시리즈 문서를 삭제
+  const videosSnap = await getDocs(collection(db, "series", seriesId, "videos"));
+  await Promise.all(videosSnap.docs.map((d) => deleteDoc(d.ref)));
+  await deleteDoc(doc(db, "series", seriesId));
 }
 
 export async function getSeries(seriesId) {

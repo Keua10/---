@@ -1,0 +1,21 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // 시리즈/영상 썸네일 이미지: 누구나 볼 수 있고, 로그인한 사람만 올릴 수 있음
+    // (실제 시리즈/영상 문서 생성 권한은 firestore.rules 에서 별도로 검사합니다)
+    match /series-thumbnails/{fileName} {
+      allow read: if true;
+      allow write: if request.auth != null
+                   && request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+
+    match /video-thumbnails/{fileName} {
+      allow read: if true;
+      allow write: if request.auth != null
+                   && request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+  }
+}

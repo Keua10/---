@@ -192,7 +192,6 @@
     .sub-series-item .meta-sub { font-size: 0.75rem; color: var(--sub-text); }
     .empty-state { color: var(--sub-text); font-size: 0.85rem; padding: 20px 0; }
 
-    /* ---- 모달 공통 ---- */
     .modal-overlay {
         display: none;
         position: fixed; inset: 0; background: rgba(0,0,0,0.5);
@@ -225,18 +224,54 @@
     .modal-panel h3 { font-size: 0.95rem; margin: 18px 0 8px; }
     .modal-panel h3:first-child { margin-top: 0; }
     .modal-panel label { display: block; font-size: 0.82rem; color: var(--sub-text); margin: 10px 0 4px; }
-    .modal-panel input, .modal-panel textarea, .modal-panel select {
+    .modal-panel input[type="text"], .modal-panel input[type="email"], .modal-panel input[type="url"],
+    .modal-panel textarea, .modal-panel select {
         width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color);
         background: var(--panel-bg); color: var(--text-color); font-size: 0.85rem;
     }
+    .file-drop {
+        display: flex; align-items: center; gap: 12px;
+        border: 1px dashed var(--border-color); border-radius: 8px; padding: 10px;
+        background: var(--panel-bg); cursor: pointer;
+    }
+    .file-drop .preview {
+        width: 64px; height: 40px; border-radius: 6px; background: var(--bg-color);
+        display: flex; align-items: center; justify-content: center; overflow: hidden;
+        flex-shrink: 0; font-size: 0.7rem; color: var(--sub-text); border: 1px solid var(--border-color);
+    }
+    .file-drop .preview img { width: 100%; height: 100%; object-fit: cover; }
+    .file-drop .file-label { font-size: 0.8rem; color: var(--sub-text); }
+    .file-drop input[type="file"] { display: none; }
     .modal-panel button.action {
         margin-top: 14px; background: var(--link-color); color: #fff; border: none;
         border-radius: 8px; padding: 9px 16px; font-size: 0.85rem; font-weight: bold; cursor: pointer;
     }
+    .modal-panel button.action.danger { background: #c0392b; }
     .modal-msg { font-size: 0.8rem; margin-top: 8px; }
     .modal-msg.ok { color: #1a7f37; }
     .modal-msg.err { color: #c0392b; }
     hr.sep { border: none; border-top: 1px solid var(--border-color); margin: 18px 0; }
+
+    .toggle-row {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 8px 0; font-size: 0.85rem;
+    }
+    .switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .switch-slider {
+        position: absolute; cursor: pointer; inset: 0; background: var(--border-color);
+        border-radius: 22px; transition: 0.2s;
+    }
+    .switch-slider:before {
+        content: ""; position: absolute; height: 16px; width: 16px; left: 3px; bottom: 3px;
+        background: #fff; border-radius: 50%; transition: 0.2s;
+    }
+    .switch input:checked + .switch-slider { background: var(--accent); }
+    .switch input:checked + .switch-slider:before { transform: translateX(18px); }
+    .series-row {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 6px 0; font-size: 0.82rem;
+    }
 
     @media (max-width: 800px) {
         .layout { flex-direction: column; }
@@ -288,7 +323,6 @@
     </aside>
 </div>
 
-<!-- 업로드 모달 -->
 <div class="modal-overlay" id="upload-modal">
     <div class="modal-box">
         <button class="modal-close" data-close="upload-modal">✕</button>
@@ -296,17 +330,20 @@
         <label>시리즈 선택</label>
         <select id="video-series-select"></select>
         <label>제목</label>
-        <input id="video-title-input" placeholder="영상 제목">
-        <label>썸네일 이미지 URL</label>
-        <input id="video-thumb-input" placeholder="https://...">
+        <input type="text" id="video-title-input" placeholder="영상 제목">
+        <label>썸네일 이미지</label>
+        <label class="file-drop" for="video-thumb-file">
+            <span class="preview" id="video-thumb-preview">미리보기</span>
+            <span class="file-label" id="video-thumb-filename">이미지 파일을 선택하세요 (5MB 이하)</span>
+            <input type="file" id="video-thumb-file" accept="image/*">
+        </label>
         <label>유튜브 링크</label>
-        <input id="video-url-input" placeholder="https://youtube.com/watch?v=...">
+        <input type="url" id="video-url-input" placeholder="https://youtube.com/watch?v=...">
         <button class="action" id="upload-video-submit">업로드</button>
         <div class="modal-msg" id="upload-video-msg"></div>
     </div>
 </div>
 
-<!-- 프로필 설정 모달 -->
 <div class="modal-overlay" id="settings-modal">
     <div class="modal-box">
         <button class="modal-close" data-close="settings-modal">✕</button>
@@ -318,36 +355,55 @@
             <div class="empty-state">설정 기능은 준비 중입니다.</div>
         </div>
 
-        <div class="modal-panel" id="tab-create">
-            <h3>새 시리즈(채널) 만들기</h3>
-            <label>시리즈 이름</label>
-            <input id="new-series-name" placeholder="예: 나이트 크롤러">
-            <label>설명</label>
-            <textarea id="new-series-desc" rows="2" placeholder="시리즈 소개"></textarea>
-            <label>썸네일(아이콘) 이미지 URL</label>
-            <input id="new-series-thumb" placeholder="https://...">
-            <label>업로드 권한을 함께 줄 계정 이메일 (선택, 쉼표로 구분)</label>
-            <input id="new-series-owners" placeholder="user1@gmail.com, user2@gmail.com">
-            <button class="action" id="create-series-btn">시리즈 만들기</button>
-            <div class="modal-msg" id="create-series-msg"></div>
+        <div class="modal-panel" id="tab-manage">
+            <div id="manage-create-section">
+                <h3>새 시리즈 만들기</h3>
+                <label>시리즈 이름</label>
+                <input type="text" id="new-series-name" placeholder="예: 나이트 크롤러">
+                <label>설명</label>
+                <textarea id="new-series-desc" rows="2" placeholder="시리즈 소개"></textarea>
+                <label>썸네일(아이콘) 이미지</label>
+                <label class="file-drop" for="new-series-thumb-file">
+                    <span class="preview" id="new-series-thumb-preview">미리보기</span>
+                    <span class="file-label" id="new-series-thumb-filename">이미지 파일을 선택하세요 (5MB 이하)</span>
+                    <input type="file" id="new-series-thumb-file" accept="image/*">
+                </label>
+                <label>업로드 권한을 함께 줄 계정 이메일 (선택, 쉼표로 구분)</label>
+                <input type="text" id="new-series-owners" placeholder="user1@gmail.com, user2@gmail.com">
+                <button class="action" id="create-series-btn">시리즈 만들기</button>
+                <div class="modal-msg" id="create-series-msg"></div>
+            </div>
+
+            <div id="manage-delete-section">
+                <hr class="sep">
+                <h3>시리즈 삭제</h3>
+                <label>시리즈 선택</label>
+                <select id="delete-series-select"></select>
+                <button class="action danger" id="delete-series-btn">이 시리즈 삭제</button>
+                <div class="modal-msg" id="delete-series-msg"></div>
+            </div>
         </div>
 
         <div class="modal-panel" id="tab-admin">
-            <h3>시리즈 생성 권한 부여</h3>
-            <label>권한을 줄 계정 이메일</label>
-            <input id="grant-create-email" placeholder="user@gmail.com">
-            <button class="action" id="grant-create-btn">권한 부여</button>
-            <div class="modal-msg" id="grant-create-msg"></div>
+            <h3>계정별 권한 관리</h3>
+            <label>이메일</label>
+            <input type="email" id="perm-email-input" placeholder="user@gmail.com">
+            <button class="action" id="perm-lookup-btn">조회</button>
+            <div class="modal-msg" id="perm-lookup-msg"></div>
 
-            <hr class="sep">
-
-            <h3>업로드 권한 부여</h3>
-            <label>시리즈 선택</label>
-            <select id="grant-upload-series"></select>
-            <label>권한을 줄 계정 이메일</label>
-            <input id="grant-upload-email" placeholder="user@gmail.com">
-            <button class="action" id="grant-upload-btn">권한 부여</button>
-            <div class="modal-msg" id="grant-upload-msg"></div>
+            <div id="perm-toggles" style="display:none;">
+                <div class="toggle-row">
+                    <span>시리즈 생성 권한</span>
+                    <label class="switch"><input type="checkbox" id="toggle-create"><span class="switch-slider"></span></label>
+                </div>
+                <div class="toggle-row">
+                    <span>시리즈 삭제 권한</span>
+                    <label class="switch"><input type="checkbox" id="toggle-delete"><span class="switch-slider"></span></label>
+                </div>
+                <hr class="sep">
+                <h3>시리즈별 업로드 권한</h3>
+                <div id="perm-series-list"></div>
+            </div>
         </div>
     </div>
 </div>
@@ -362,9 +418,9 @@
         watchAuth, signInWithGoogle, signOutUser,
         getRecentVideosAcrossAllSeries, getAllSeries, getSeries,
         getUserDoc, subscribeToSeries, unsubscribeFromSeries,
-        canUploadToSeries, addVideoToSeries,
-        isSiteOwner, canUserCreateSeries, createSeries,
-        grantCreateSeriesPermission, addSeriesOwner
+        canUploadToSeries, addVideoToSeries, uploadThumbnail,
+        isSiteOwner, canUserCreateSeries, canUserDeleteSeries, createSeries, deleteSeries,
+        getPermissions, setPermission, addSeriesOwner, removeSeriesOwner
     } from './auth.js';
 
     const loginBtn = document.getElementById('login-btn');
@@ -380,18 +436,17 @@
     let currentUser = null;
     let currentSubs = [];
     let seriesCache = {};
-    let mySeries = []; // 업로드 권한이 있는 시리즈들
+    let mySeries = [];
     let iCanCreateSeries = false;
+    let iCanDeleteSeries = false;
     let iAmAdmin = false;
 
-    // ---------- 로그인 ----------
     loginBtn.addEventListener('click', async () => {
         try { await signInWithGoogle(); }
         catch (err) { alert('로그인에 실패했습니다: ' + err.message); }
     });
     logoutBtn.addEventListener('click', () => signOutUser());
 
-    // ---------- 모달 공통 열기/닫기 ----------
     document.querySelectorAll('.modal-close').forEach(btn => {
         btn.addEventListener('click', () => {
             document.getElementById(btn.dataset.close).classList.remove('open');
@@ -403,7 +458,22 @@
         });
     });
 
-    // ---------- 시리즈 캐시 / 비디오 렌더 ----------
+    function wireFilePreview(fileInputId, previewId, filenameId) {
+        const fileInput = document.getElementById(fileInputId);
+        const preview = document.getElementById(previewId);
+        const filenameEl = document.getElementById(filenameId);
+        fileInput.addEventListener('change', () => {
+            const file = fileInput.files[0];
+            if (!file) return;
+            filenameEl.textContent = file.name;
+            const reader = new FileReader();
+            reader.onload = (e) => { preview.innerHTML = `<img src="${e.target.result}">`; };
+            reader.readAsDataURL(file);
+        });
+    }
+    wireFilePreview('video-thumb-file', 'video-thumb-preview', 'video-thumb-filename');
+    wireFilePreview('new-series-thumb-file', 'new-series-thumb-preview', 'new-series-thumb-filename');
+
     async function loadSeriesCache() {
         const all = await getAllSeries();
         seriesCache = {};
@@ -476,7 +546,6 @@
         }
     }
 
-    // ---------- 업로드 버튼 / 모달 ----------
     uploadBtn.addEventListener('click', () => {
         const sel = document.getElementById('video-series-select');
         sel.innerHTML = mySeries.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
@@ -486,17 +555,21 @@
     document.getElementById('upload-video-submit').addEventListener('click', async () => {
         const seriesId = document.getElementById('video-series-select').value;
         const title = document.getElementById('video-title-input').value.trim();
-        const thumbnailUrl = document.getElementById('video-thumb-input').value.trim();
+        const thumbFile = document.getElementById('video-thumb-file').files[0];
         const youtubeUrl = document.getElementById('video-url-input').value.trim();
         const msg = document.getElementById('upload-video-msg');
-        if (!seriesId || !title || !thumbnailUrl || !youtubeUrl) {
+        if (!seriesId || !title || !thumbFile || !youtubeUrl) {
             msg.textContent = '모든 항목을 입력해주세요.'; msg.className = 'modal-msg err'; return;
         }
         try {
+            msg.textContent = '이미지 업로드 중...'; msg.className = 'modal-msg';
+            const thumbnailUrl = await uploadThumbnail(thumbFile, 'video-thumbnails');
             await addVideoToSeries(seriesId, { title, thumbnailUrl, youtubeUrl, uploaderEmail: currentUser.email });
             msg.textContent = '영상이 업로드되었습니다!'; msg.className = 'modal-msg ok';
             document.getElementById('video-title-input').value = '';
-            document.getElementById('video-thumb-input').value = '';
+            document.getElementById('video-thumb-file').value = '';
+            document.getElementById('video-thumb-preview').innerHTML = '미리보기';
+            document.getElementById('video-thumb-filename').textContent = '이미지 파일을 선택하세요 (5MB 이하)';
             document.getElementById('video-url-input').value = '';
             await loadSeriesCache();
             await renderVideos();
@@ -505,7 +578,6 @@
         }
     });
 
-    // ---------- 프로필 버튼 / 설정 모달 ----------
     profileBtn.addEventListener('click', () => {
         buildSettingsTabs();
         document.getElementById('settings-modal').classList.add('open');
@@ -514,8 +586,11 @@
     function buildSettingsTabs() {
         const tabsWrap = document.getElementById('settings-tabs');
         tabsWrap.innerHTML = '<button class="modal-tab active" data-tab="general">설정</button>';
-        if (iCanCreateSeries) tabsWrap.innerHTML += '<button class="modal-tab" data-tab="create">채널 만들기</button>';
+        if (iCanCreateSeries || iCanDeleteSeries) tabsWrap.innerHTML += '<button class="modal-tab" data-tab="manage">시리즈 관리</button>';
         if (iAmAdmin) tabsWrap.innerHTML += '<button class="modal-tab" data-tab="admin">관리자</button>';
+
+        document.getElementById('manage-create-section').style.display = iCanCreateSeries ? 'block' : 'none';
+        document.getElementById('manage-delete-section').style.display = iCanDeleteSeries ? 'block' : 'none';
 
         document.querySelectorAll('.modal-panel').forEach(p => p.classList.remove('active'));
         document.getElementById('tab-general').classList.add('active');
@@ -529,8 +604,8 @@
             });
         });
 
-        if (iAmAdmin) {
-            const sel = document.getElementById('grant-upload-series');
+        if (iCanDeleteSeries) {
+            const sel = document.getElementById('delete-series-select');
             sel.innerHTML = Object.values(seriesCache).map(s => `<option value="${s.id}">${s.name}</option>`).join('');
         }
     }
@@ -538,64 +613,116 @@
     document.getElementById('create-series-btn').addEventListener('click', async () => {
         const name = document.getElementById('new-series-name').value.trim();
         const description = document.getElementById('new-series-desc').value.trim();
-        const thumbnail = document.getElementById('new-series-thumb').value.trim();
+        const thumbFile = document.getElementById('new-series-thumb-file').files[0];
         const ownersRaw = document.getElementById('new-series-owners').value.trim();
         const ownerEmails = ownersRaw ? ownersRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
         const msg = document.getElementById('create-series-msg');
         if (!name) { msg.textContent = '시리즈 이름을 입력해주세요.'; msg.className = 'modal-msg err'; return; }
         try {
+            let thumbnail = '';
+            if (thumbFile) {
+                msg.textContent = '이미지 업로드 중...'; msg.className = 'modal-msg';
+                thumbnail = await uploadThumbnail(thumbFile, 'series-thumbnails');
+            }
             await createSeries({ name, description, thumbnail, ownerEmails, creatorEmail: currentUser.email });
             msg.textContent = '시리즈가 생성되었습니다!'; msg.className = 'modal-msg ok';
             document.getElementById('new-series-name').value = '';
             document.getElementById('new-series-desc').value = '';
-            document.getElementById('new-series-thumb').value = '';
+            document.getElementById('new-series-thumb-file').value = '';
+            document.getElementById('new-series-thumb-preview').innerHTML = '미리보기';
+            document.getElementById('new-series-thumb-filename').textContent = '이미지 파일을 선택하세요 (5MB 이하)';
             document.getElementById('new-series-owners').value = '';
             await refreshUserState();
+            buildSettingsTabs();
         } catch (e) {
             msg.textContent = '오류: ' + e.message; msg.className = 'modal-msg err';
         }
     });
 
-    document.getElementById('grant-create-btn').addEventListener('click', async () => {
-        const email = document.getElementById('grant-create-email').value.trim();
-        const msg = document.getElementById('grant-create-msg');
+    document.getElementById('delete-series-btn').addEventListener('click', async () => {
+        const seriesId = document.getElementById('delete-series-select').value;
+        const msg = document.getElementById('delete-series-msg');
+        if (!seriesId) { msg.textContent = '삭제할 시리즈를 선택해주세요.'; msg.className = 'modal-msg err'; return; }
+        const series = seriesCache[seriesId];
+        if (!confirm(`정말 "${series ? series.name : seriesId}" 시리즈를 삭제할까요? 이 작업은 되돌릴 수 없습니다.`)) return;
+        try {
+            await deleteSeries(seriesId);
+            msg.textContent = '시리즈가 삭제되었습니다.'; msg.className = 'modal-msg ok';
+            await refreshUserState();
+            buildSettingsTabs();
+        } catch (e) {
+            msg.textContent = '오류: ' + e.message; msg.className = 'modal-msg err';
+        }
+    });
+
+    document.getElementById('perm-lookup-btn').addEventListener('click', async () => {
+        const email = document.getElementById('perm-email-input').value.trim();
+        const msg = document.getElementById('perm-lookup-msg');
+        const togglesWrap = document.getElementById('perm-toggles');
         if (!email) { msg.textContent = '이메일을 입력해주세요.'; msg.className = 'modal-msg err'; return; }
         try {
-            await grantCreateSeriesPermission(email);
-            msg.textContent = `${email} 님에게 시리즈 생성 권한을 부여했습니다.`; msg.className = 'modal-msg ok';
-            document.getElementById('grant-create-email').value = '';
+            msg.textContent = ''; msg.className = 'modal-msg';
+            const perm = await getPermissions(email);
+            document.getElementById('toggle-create').checked = !!perm.canCreateSeries;
+            document.getElementById('toggle-delete').checked = !!perm.canDeleteSeries;
+
+            const seriesListEl = document.getElementById('perm-series-list');
+            const allSeries = Object.values(seriesCache);
+            if (allSeries.length === 0) {
+                seriesListEl.innerHTML = '<div class="empty-state">아직 만들어진 시리즈가 없습니다.</div>';
+            } else {
+                seriesListEl.innerHTML = allSeries.map(s => `
+                    <div class="series-row">
+                        <span>${s.name}</span>
+                        <label class="switch">
+                            <input type="checkbox" class="upload-toggle" data-series="${s.id}" ${(s.ownerEmails || []).includes(email) ? 'checked' : ''}>
+                            <span class="switch-slider"></span>
+                        </label>
+                    </div>
+                `).join('');
+                seriesListEl.querySelectorAll('.upload-toggle').forEach(t => {
+                    t.addEventListener('change', async () => {
+                        try {
+                            if (t.checked) await addSeriesOwner(t.dataset.series, email);
+                            else await removeSeriesOwner(t.dataset.series, email);
+                            await loadSeriesCache();
+                        } catch (e) {
+                            alert('오류: ' + e.message);
+                            t.checked = !t.checked;
+                        }
+                    });
+                });
+            }
+            togglesWrap.style.display = 'block';
         } catch (e) {
             msg.textContent = '오류: ' + e.message; msg.className = 'modal-msg err';
         }
     });
 
-    document.getElementById('grant-upload-btn').addEventListener('click', async () => {
-        const seriesId = document.getElementById('grant-upload-series').value;
-        const email = document.getElementById('grant-upload-email').value.trim();
-        const msg = document.getElementById('grant-upload-msg');
-        if (!seriesId || !email) { msg.textContent = '시리즈와 이메일을 모두 입력해주세요.'; msg.className = 'modal-msg err'; return; }
-        try {
-            await addSeriesOwner(seriesId, email);
-            msg.textContent = `${email} 님에게 업로드 권한을 부여했습니다.`; msg.className = 'modal-msg ok';
-            document.getElementById('grant-upload-email').value = '';
-            await loadSeriesCache();
-        } catch (e) {
-            msg.textContent = '오류: ' + e.message; msg.className = 'modal-msg err';
-        }
+    document.getElementById('toggle-create').addEventListener('change', async (e) => {
+        const email = document.getElementById('perm-email-input').value.trim();
+        try { await setPermission(email, 'canCreateSeries', e.target.checked); }
+        catch (err) { alert('오류: ' + err.message); e.target.checked = !e.target.checked; }
+    });
+    document.getElementById('toggle-delete').addEventListener('change', async (e) => {
+        const email = document.getElementById('perm-email-input').value.trim();
+        try { await setPermission(email, 'canDeleteSeries', e.target.checked); }
+        catch (err) { alert('오류: ' + err.message); e.target.checked = !e.target.checked; }
     });
 
-    // ---------- 로그인 상태에 따른 전체 갱신 ----------
     async function refreshUserState() {
         await loadSeriesCache();
         if (currentUser) {
             mySeries = Object.values(seriesCache).filter(s => canUploadToSeries(s, currentUser.email));
             uploadBtn.style.display = mySeries.length > 0 ? 'inline-block' : 'none';
             iCanCreateSeries = await canUserCreateSeries(currentUser.email);
+            iCanDeleteSeries = await canUserDeleteSeries(currentUser.email);
             iAmAdmin = isSiteOwner(currentUser.email);
         } else {
             mySeries = [];
             uploadBtn.style.display = 'none';
             iCanCreateSeries = false;
+            iCanDeleteSeries = false;
             iAmAdmin = false;
         }
         await renderVideos();
