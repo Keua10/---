@@ -1,0 +1,34 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // users/{uid} : 본인만 자기 문서를 읽고 쓸 수 있음 (구독 목록 등)
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create: if request.auth != null && request.auth.uid == uid;
+      allow update: if request.auth != null && request.auth.uid == uid;
+      allow delete: if false;
+    }
+
+    // series/{seriesId} : 누구나 읽기 가능(로그인 없이도 목록/채널 페이지 열람 가능)
+    // 생성/수정은 로그인한 사용자만, ownerEmails 배열에 자기 이메일이 있는 사람만 수정 가능
+    match /series/{seriesId} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.auth.token.email in request.resource.data.ownerEmails;
+      allow update: if request.auth != null
+                    && request.auth.token.email in resource.data.ownerEmails;
+      allow delete: if false;
+
+      // series/{seriesId}/videos/{videoId} : 누구나 읽기 가능
+      // 업로드는 해당 시리즈의 ownerEmails 에 포함된 사람만 가능
+      match /videos/{videoId} {
+        allow read: if true;
+        allow create: if request.auth != null
+                      && request.auth.token.email in get(/databases/$(database)/documents/series/$(seriesId)).data.ownerEmails;
+        allow update, delete: if request.auth != null
+                      && request.auth.token.email in get(/databases/$(database)/documents/series/$(seriesId)).data.ownerEmails;
+      }
+    }
+  }
+}

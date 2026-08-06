@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>전체 시리즈 - HYUNIL VIDEO</title>
+<style>
+    :root {
+        --bg-color: #ffffff; --panel-bg: #f8f9fa; --text-color: #202124;
+        --sub-text: #606368; --border-color: #e5e5e5; --link-color: #4285F4;
+    }
+    [data-theme="dark"] {
+        --bg-color: #181818; --panel-bg: #232323; --text-color: #f1f3f4;
+        --sub-text: #aaaaaa; --border-color: #333; --link-color: #8ab4f8;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Malgun Gothic', sans-serif; background: var(--bg-color); color: var(--text-color); }
+    header { display: flex; align-items: center; gap: 16px; padding: 14px 28px; border-bottom: 1px solid var(--border-color); }
+    header a.back { text-decoration: none; color: var(--text-color); font-weight: bold; }
+    .content { padding: 24px 28px; }
+    .series-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
+    .series-card { text-decoration: none; color: var(--text-color); text-align: center; }
+    .avatar {
+        width: 84px; height: 84px; border-radius: 50%; background: var(--panel-bg); margin: 0 auto 10px;
+        display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: bold; overflow: hidden;
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .series-name { font-size: 0.95rem; font-weight: 600; }
+    .empty-state { color: var(--sub-text); font-size: 0.9rem; padding: 20px 0; }
+</style>
+</head>
+<body>
+<header><a href="video.html" class="back">← HYUNIL VIDEO</a></header>
+<div class="content">
+    <div class="series-grid" id="series-grid"><div class="empty-state">불러오는 중...</div></div>
+</div>
+<script>
+    document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'light');
+</script>
+<script type="module">
+    import { getAllSeries } from './auth.js';
+    getAllSeries().then(list => {
+        const grid = document.getElementById('series-grid');
+        if (list.length === 0) {
+            grid.innerHTML = '<div class="empty-state">아직 만들어진 시리즈가 없습니다.</div>';
+            return;
+        }
+        grid.innerHTML = list.map(s => `
+            <a class="series-card" href="series.html?id=${s.id}">
+                <div class="avatar">${s.thumbnail ? `<img src="${s.thumbnail}">` : s.name[0]}</div>
+                <div class="series-name">${s.name}</div>
+            </a>
+        `).join('');
+    });
+</script>
+</body>
+</html>

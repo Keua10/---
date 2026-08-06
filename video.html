@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HYUNIL VIDEO</title>
+<style>
+    :root {
+        --bg-color: #ffffff;
+        --panel-bg: #f8f9fa;
+        --text-color: #202124;
+        --sub-text: #606368;
+        --border-color: #e5e5e5;
+        --accent: #ff0000;
+        --link-color: #4285F4;
+    }
+    [data-theme="dark"] {
+        --bg-color: #181818;
+        --panel-bg: #232323;
+        --text-color: #f1f3f4;
+        --sub-text: #aaaaaa;
+        --border-color: #333;
+        --accent: #ff4d4d;
+        --link-color: #8ab4f8;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        font-family: 'Malgun Gothic', sans-serif;
+        background: var(--bg-color);
+        color: var(--text-color);
+    }
+    header {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 14px 28px;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .logo-link {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 1.2rem;
+        color: var(--text-color);
+        white-space: nowrap;
+    }
+    .logo-link .rainbow span:nth-child(1) { color: #4285F4; }
+    .logo-link .rainbow span:nth-child(2) { color: #EA4335; }
+    .logo-link .rainbow span:nth-child(3) { color: #FBBC05; }
+    .logo-link .rainbow span:nth-child(4) { color: #34A853; }
+    .badge {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        background: var(--accent);
+        color: #fff;
+        border-radius: 4px;
+        padding: 3px 6px;
+        font-size: 11px;
+    }
+    .search-bar {
+        flex: 1;
+        max-width: 520px;
+        display: flex;
+        align-items: center;
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 8px 16px;
+        color: var(--sub-text);
+        background: var(--panel-bg);
+    }
+    .header-right {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+    .login-btn {
+        background-color: var(--link-color);
+        color: #fff;
+        border: none;
+        border-radius: 18px;
+        padding: 8px 18px;
+        font-size: 14px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .user-area { display: none; align-items: center; gap: 10px; }
+    .user-area img { width: 30px; height: 30px; border-radius: 50%; }
+    .logout-btn {
+        background: var(--panel-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 6px 14px;
+        font-size: 13px;
+        color: var(--text-color);
+        cursor: pointer;
+    }
+    .layout {
+        display: flex;
+        gap: 24px;
+        padding: 24px 28px;
+        align-items: flex-start;
+    }
+    main { flex: 1; min-width: 0; }
+    h2.section-title { font-size: 1.1rem; margin: 0 0 16px; }
+    .video-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 18px;
+    }
+    .video-card {
+        text-decoration: none;
+        color: var(--text-color);
+        display: block;
+    }
+    .thumb-wrap {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16/9;
+        border-radius: 10px;
+        overflow: hidden;
+        background: var(--panel-bg);
+    }
+    .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .video-title { margin: 8px 0 2px; font-size: 0.92rem; font-weight: 600; line-height: 1.3; }
+    .video-meta { font-size: 0.8rem; color: var(--sub-text); display: flex; align-items: center; gap: 6px; }
+    .sub-pill {
+        display: inline-block;
+        font-size: 0.7rem;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 1px 8px;
+        cursor: pointer;
+        background: var(--panel-bg);
+    }
+    .sub-pill.subscribed { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    aside {
+        width: 260px;
+        flex-shrink: 0;
+    }
+    .aside-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        font-size: 0.95rem;
+    }
+    .aside-header a { color: var(--link-color); font-size: 0.8rem; text-decoration: none; }
+    .sub-series-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 0;
+        text-decoration: none;
+        color: var(--text-color);
+    }
+    .sub-series-item .avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--panel-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+    .sub-series-item .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .sub-series-item .meta-title { font-size: 0.85rem; font-weight: 600; }
+    .sub-series-item .meta-sub { font-size: 0.75rem; color: var(--sub-text); }
+    .empty-state {
+        color: var(--sub-text);
+        font-size: 0.85rem;
+        padding: 20px 0;
+    }
+    @media (max-width: 800px) {
+        .layout { flex-direction: column; }
+        aside { width: 100%; }
+        .search-bar { display: none; }
+    }
+</style>
+</head>
+<body>
+
+<header>
+    <a href="index.html" class="logo-link">
+        <span class="rainbow"><span>신</span><span>현</span><span>일</span><span>의</span></span> Search
+        <span class="badge">▶ HYUNIL VIDEO</span>
+    </a>
+    <div class="search-bar">🔍 무엇이든 검색해보세요...</div>
+    <div class="header-right">
+        <button class="login-btn" id="login-btn">로그인</button>
+        <div class="user-area" id="user-area">
+            <img id="user-photo" src="" alt="프로필">
+            <span id="user-name"></span>
+            <button class="logout-btn" id="logout-btn">로그아웃</button>
+        </div>
+    </div>
+</header>
+
+<div class="layout">
+    <main>
+        <h2 class="section-title">추천 비디오</h2>
+        <div class="video-grid" id="video-grid">
+            <div class="empty-state">불러오는 중...</div>
+        </div>
+    </main>
+
+    <aside>
+        <div class="aside-header">
+            <span>구독 시리즈</span>
+            <a href="series-list.html">전체보기</a>
+        </div>
+        <div id="subscribed-list">
+            <div class="empty-state">로그인하면 구독한 시리즈가 여기 표시됩니다.</div>
+        </div>
+    </aside>
+</div>
+
+<script>
+    // 다크모드는 index.html과 동일한 localStorage 키 공유
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+</script>
+
+<script type="module">
+    import {
+        watchAuth, signInWithGoogle, signOutUser,
+        getRecentVideosAcrossAllSeries, getAllSeries, getSeries,
+        getUserDoc, subscribeToSeries, unsubscribeFromSeries, timeAgo
+    } from './auth.js';
+
+    const loginBtn = document.getElementById('login-btn');
+    const userArea = document.getElementById('user-area');
+    const userPhoto = document.getElementById('user-photo');
+    const userName = document.getElementById('user-name');
+    const logoutBtn = document.getElementById('logout-btn');
+    const videoGrid = document.getElementById('video-grid');
+    const subscribedList = document.getElementById('subscribed-list');
+
+    let currentUser = null;
+    let currentSubs = [];
+    let seriesCache = {};
+
+    loginBtn.addEventListener('click', async () => {
+        try { await signInWithGoogle(); }
+        catch (err) { alert('로그인에 실패했습니다: ' + err.message); }
+    });
+    logoutBtn.addEventListener('click', () => signOutUser());
+
+    async function loadSeriesCache() {
+        const all = await getAllSeries();
+        seriesCache = {};
+        all.forEach(s => seriesCache[s.id] = s);
+        return all;
+    }
+
+    async function renderVideos() {
+        const videos = await getRecentVideosAcrossAllSeries(12);
+        if (videos.length === 0) {
+            videoGrid.innerHTML = '<div class="empty-state">아직 업로드된 영상이 없습니다. admin.html 에서 시리즈를 만들고 영상을 업로드해보세요.</div>';
+            return;
+        }
+        videoGrid.innerHTML = '';
+        videos.forEach(v => {
+            const series = seriesCache[v.seriesId];
+            const isSub = currentSubs.includes(v.seriesId);
+            const card = document.createElement('div');
+            card.innerHTML = `
+                <a class="video-card" href="${v.youtubeUrl}" target="_blank" rel="noopener">
+                    <div class="thumb-wrap"><img src="${v.thumbnailUrl}" alt="${v.title}"></div>
+                    <div class="video-title">${v.title}</div>
+                </a>
+                <div class="video-meta">
+                    <span>${series ? series.name : '알 수 없는 시리즈'}</span>
+                    <span class="sub-pill ${isSub ? 'subscribed' : ''}" data-series="${v.seriesId}">${isSub ? '구독중' : '구독'}</span>
+                </div>
+            `;
+            videoGrid.appendChild(card);
+        });
+
+        videoGrid.querySelectorAll('.sub-pill').forEach(pill => {
+            pill.addEventListener('click', async (e) => {
+                e.preventDefault();
+                if (!currentUser) { alert('구독하려면 먼저 로그인해주세요.'); return; }
+                const seriesId = pill.dataset.series;
+                if (currentSubs.includes(seriesId)) {
+                    await unsubscribeFromSeries(currentUser.uid, seriesId);
+                    currentSubs = currentSubs.filter(id => id !== seriesId);
+                } else {
+                    await subscribeToSeries(currentUser.uid, seriesId);
+                    currentSubs.push(seriesId);
+                }
+                renderVideos();
+                renderSubscribedList();
+            });
+        });
+    }
+
+    async function renderSubscribedList() {
+        if (!currentUser || currentSubs.length === 0) {
+            subscribedList.innerHTML = '<div class="empty-state">아직 구독한 시리즈가 없습니다.</div>';
+            return;
+        }
+        subscribedList.innerHTML = '';
+        for (const seriesId of currentSubs) {
+            const series = seriesCache[seriesId] || await getSeries(seriesId);
+            if (!series) continue;
+            const el = document.createElement('a');
+            el.className = 'sub-series-item';
+            el.href = `series.html?id=${seriesId}`;
+            el.innerHTML = `
+                <div class="avatar">${series.thumbnail ? `<img src="${series.thumbnail}">` : series.name[0]}</div>
+                <div>
+                    <div class="meta-title">${series.name}</div>
+                    <div class="meta-sub">구독중</div>
+                </div>
+            `;
+            subscribedList.appendChild(el);
+        }
+    }
+
+    watchAuth(async (user) => {
+        currentUser = user;
+        if (user) {
+            loginBtn.style.display = 'none';
+            userArea.style.display = 'flex';
+            userPhoto.src = user.photoURL || '';
+            userName.textContent = user.displayName || user.email;
+            const userDoc = await getUserDoc(user.uid);
+            currentSubs = (userDoc && userDoc.subscriptions) || [];
+        } else {
+            loginBtn.style.display = 'inline-block';
+            userArea.style.display = 'none';
+            currentSubs = [];
+        }
+        await loadSeriesCache();
+        await renderVideos();
+        await renderSubscribedList();
+    });
+</script>
+</body>
+</html>

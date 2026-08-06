@@ -50,6 +50,72 @@
             z-index: 1000;
         }
 
+        .top-right-controls {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            font-size: 14px;
+        }
+
+        .video-link {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: bold;
+            opacity: 0.85;
+        }
+        .video-link:hover { opacity: 1; }
+        .video-link .play-icon {
+            background: #ff0000;
+            color: #fff;
+            border-radius: 4px;
+            font-size: 11px;
+            padding: 3px 4px;
+        }
+
+        .login-btn {
+            background-color: var(--link-color);
+            color: #fff;
+            border: none;
+            border-radius: 18px;
+            padding: 8px 18px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .user-area {
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+        .user-area img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+        }
+        .logout-btn {
+            background: var(--btn-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 16px;
+            padding: 6px 14px;
+            font-size: 13px;
+            color: var(--text-color);
+            cursor: pointer;
+        }
+
+        /* 모바일에서는 상단 우측 영역을 조금 줄임 */
+        @media (max-width: 600px) {
+            .top-right-controls { gap: 10px; font-size: 12px; }
+            .login-btn { padding: 6px 12px; }
+        }
+
         .theme-switch {
             display: inline-block;
             width: 55px;
@@ -219,6 +285,16 @@
         </label>
     </div>
 
+    <div class="top-right-controls">
+        <a href="video.html" class="video-link"><span class="play-icon">▶</span> HYUNIL VIDEO</a>
+        <button class="login-btn" id="login-btn">로그인</button>
+        <div class="user-area" id="user-area">
+            <img id="user-photo" src="" alt="프로필">
+            <span id="user-name"></span>
+            <button class="logout-btn" id="logout-btn">로그아웃</button>
+        </div>
+    </div>
+
     <a href="Untitled-2.html" class="live-link">신현일의 라이브 직캠을 지금 보세요!!</a>
 
     <div class="search-container">
@@ -260,6 +336,41 @@
                 window.location.href = 'gravity.html'; 
             } else {
                 alert('오늘 하루도 기분 좋은 하루 되세요! 😍');
+            }
+        });
+    </script>
+
+    <script type="module">
+        import { watchAuth, signInWithGoogle, signOutUser } from './auth.js';
+
+        const loginBtn = document.getElementById('login-btn');
+        const userArea = document.getElementById('user-area');
+        const userPhoto = document.getElementById('user-photo');
+        const userName = document.getElementById('user-name');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        loginBtn.addEventListener('click', async () => {
+            try {
+                await signInWithGoogle();
+            } catch (err) {
+                console.error(err);
+                alert('로그인에 실패했습니다: ' + err.message);
+            }
+        });
+
+        logoutBtn.addEventListener('click', async () => {
+            await signOutUser();
+        });
+
+        watchAuth((user) => {
+            if (user) {
+                loginBtn.style.display = 'none';
+                userArea.style.display = 'flex';
+                userPhoto.src = user.photoURL || '';
+                userName.textContent = user.displayName || user.email;
+            } else {
+                loginBtn.style.display = 'inline-block';
+                userArea.style.display = 'none';
             }
         });
     </script>

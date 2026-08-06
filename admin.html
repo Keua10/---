@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>관리자 - HYUNIL VIDEO</title>
+<style>
+    :root {
+        --bg-color: #ffffff; --panel-bg: #f8f9fa; --text-color: #202124;
+        --sub-text: #606368; --border-color: #e5e5e5; --link-color: #4285F4; --accent: #ff0000;
+    }
+    [data-theme="dark"] {
+        --bg-color: #181818; --panel-bg: #232323; --text-color: #f1f3f4;
+        --sub-text: #aaaaaa; --border-color: #333; --link-color: #8ab4f8; --accent: #ff4d4d;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Malgun Gothic', sans-serif; background: var(--bg-color); color: var(--text-color); }
+    header { display: flex; align-items: center; justify-content: space-between; padding: 14px 28px; border-bottom: 1px solid var(--border-color); }
+    header a.back { text-decoration: none; color: var(--text-color); font-weight: bold; }
+    .content { padding: 24px 28px; max-width: 720px; margin: 0 auto; }
+    section { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+    section h2 { margin-top: 0; font-size: 1.05rem; }
+    label { display: block; font-size: 0.85rem; color: var(--sub-text); margin: 12px 0 4px; }
+    input, textarea, select {
+        width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border-color);
+        background: var(--bg-color); color: var(--text-color); font-size: 0.9rem;
+    }
+    button.action {
+        margin-top: 16px; background: var(--link-color); color: #fff; border: none;
+        border-radius: 8px; padding: 10px 18px; font-size: 0.9rem; font-weight: bold; cursor: pointer;
+    }
+    .msg { font-size: 0.85rem; margin-top: 10px; }
+    .msg.ok { color: #1a7f37; }
+    .msg.err { color: #c0392b; }
+    .gate { text-align: center; padding: 60px 20px; color: var(--sub-text); }
+    .login-btn {
+        background-color: var(--link-color); color: #fff; border: none; border-radius: 18px;
+        padding: 8px 18px; font-size: 14px; font-weight: bold; cursor: pointer;
+    }
+</style>
+</head>
+<body>
+<header>
+    <a href="video.html" class="back">← HYUNIL VIDEO</a>
+    <button class="login-btn" id="login-btn" style="display:none;">로그인</button>
+</header>
+
+<div class="content" id="content">
+    <div class="gate" id="gate">로그인 확인 중...</div>
+</div>
+
+<script>
+    document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'light');
+</script>
+
+<script type="module">
+    import {
+        watchAuth, signInWithGoogle, isSiteOwner,
+        createSeries, addSeriesOwner, getAllSeries, canUploadToSeries, addVideoToSeries
+    } from './auth.js';
+
+    const loginBtn = document.getElementById('login-btn');
+    const content = document.getElementById('content');
+    const gate = document.getElementById('gate');
+
+    loginBtn.addEventListener('click', () => signInWithGoogle().catch(e => alert(e.message)));
+
+    let currentUser = null;
+    let mySeries = []; // 내가 업로드 권한을 가진 시리즈들
+
+    function buildAdminUI() {
+        const owner = isSiteOwner(currentUser.email);
+        content.innerHTML = `
+            ${owner ? `
+            <section>
+                <h2>새 시리즈(채널) 만들기</h2>
+                <label>시리즈 이름</label>
+                <input id="new-series-name" placeholder="예: 나이트 크롤러">
+                <label>설명</label>
+                <textarea id="new-series-desc" rows="2" placeholder="시리즈 소개"></textarea>
+                <label>썸네일(아이콘) 이미지 URL</label>
+                <input id="new-series-thumb" placeholder="https://...">
+                <label>업로드 권한을 줄 계정 이메일 (선택, 쉼표로 구분)</label>
+                <input id="new-series-owners" placeholder="user1@gmail.com, user2@gmail.com">
+                <button class="action" id="create-series-btn">시리즈 만들기</button>
+                <div class="msg" id="create-series-msg"></div>
+            </section>
+            ` : ''}
+
+            <section>
+                <h2>업로드 권한 추가</h2>
+                <p style="font-size:0.82rem; color:var(--sub-text); margin-top:-8px;">내가 권한을 가진 시리즈에 다른 계정을 추가로 초대할 수 있습니다.</p>
+                <label>시리즈 선택</label>
+                <select id="owner-series-select"></select>
+                <label>추가할 계정 이메일</label>
+                <input id="owner-email-input" placeholder="user@gmail.com">
+                <button class="action" id="add-owner-btn">권한 추가</button>
+                <div class="msg" id="add-owner-msg"></div>
+            </section>
+
+            <section>
+                <h2>영상 업로드</h2>
+                <label>시리즈 선택</label>
+                <select id="video-series-select"></select>
+                <label>제목</label>
+                <input id="video-title-input" placeholder="영상 제목">
+                <label>썸네일 이미지 URL</label>
+                <input id="video-thumb-input" placeholder="https://...">
+                <label>유튜브 링크</label>
+                <input id="video-url-input" placeholder="https://youtube.com/watch?v=...">
+                <button class="action" id="upload-video-btn">업로드</button>
+                <div class="msg" id="upload-video-msg"></div>
+            </section>
+        `;
+
+        if (owner) {
+            document.getElementById('create-series-btn').addEventListener('click', onCreateSeries);
+        }
+        document.getElementById('add-owner-btn').addEventListener('click', onAddOwner);
+        document.getElementById('upload-video-btn').addEventListener('click', onUploadVideo);
+
+        populateSeriesSelects();
+    }
+
+    async function populateSeriesSelects() {
+        const all = await getAllSeries();
+        mySeries = all.filter(s => canUploadToSeries(s, currentUser.email) || isSiteOwner(currentUser.email));
+        const ownerSel = document.getElementById('owner-series-select');
+        const videoSel = document.getElementById('video-series-select');
+        if (mySeries.length === 0) {
+            const opt = '<option value="">업로드 권한이 있는 시리즈가 없습니다</option>';
+            if (ownerSel) ownerSel.innerHTML = opt;
+            if (videoSel) videoSel.innerHTML = opt;
+            return;
+        }
+        const options = mySeries.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+        if (ownerSel) ownerSel.innerHTML = options;
+        if (videoSel) videoSel.innerHTML = options;
+    }
+
+    async function onCreateSeries() {
+        const name = document.getElementById('new-series-name').value.trim();
+        const description = document.getElementById('new-series-desc').value.trim();
+        const thumbnail = document.getElementById('new-series-thumb').value.trim();
+        const ownersRaw = document.getElementById('new-series-owners').value.trim();
+        const ownerEmails = ownersRaw ? ownersRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+        const msg = document.getElementById('create-series-msg');
+        if (!name) { msg.textContent = '시리즈 이름을 입력해주세요.'; msg.className = 'msg err'; return; }
+        try {
+            await createSeries({ name, description, thumbnail, ownerEmails, creatorEmail: currentUser.email });
+            msg.textContent = '시리즈가 생성되었습니다!'; msg.className = 'msg ok';
+            document.getElementById('new-series-name').value = '';
+            document.getElementById('new-series-desc').value = '';
+            document.getElementById('new-series-thumb').value = '';
+            document.getElementById('new-series-owners').value = '';
+            populateSeriesSelects();
+        } catch (e) {
+            msg.textContent = '오류: ' + e.message; msg.className = 'msg err';
+        }
+    }
+
+    async function onAddOwner() {
+        const seriesId = document.getElementById('owner-series-select').value;
+        const email = document.getElementById('owner-email-input').value.trim();
+        const msg = document.getElementById('add-owner-msg');
+        if (!seriesId || !email) { msg.textContent = '시리즈와 이메일을 모두 입력해주세요.'; msg.className = 'msg err'; return; }
+        try {
+            await addSeriesOwner(seriesId, email);
+            msg.textContent = `${email} 님에게 업로드 권한을 부여했습니다.`; msg.className = 'msg ok';
+            document.getElementById('owner-email-input').value = '';
+        } catch (e) {
+            msg.textContent = '오류: ' + e.message; msg.className = 'msg err';
+        }
+    }
+
+    async function onUploadVideo() {
+        const seriesId = document.getElementById('video-series-select').value;
+        const title = document.getElementById('video-title-input').value.trim();
+        const thumbnailUrl = document.getElementById('video-thumb-input').value.trim();
+        const youtubeUrl = document.getElementById('video-url-input').value.trim();
+        const msg = document.getElementById('upload-video-msg');
+        if (!seriesId || !title || !thumbnailUrl || !youtubeUrl) {
+            msg.textContent = '모든 항목을 입력해주세요.'; msg.className = 'msg err'; return;
+        }
+        try {
+            await addVideoToSeries(seriesId, { title, thumbnailUrl, youtubeUrl, uploaderEmail: currentUser.email });
+            msg.textContent = '영상이 업로드되었습니다!'; msg.className = 'msg ok';
+            document.getElementById('video-title-input').value = '';
+            document.getElementById('video-thumb-input').value = '';
+            document.getElementById('video-url-input').value = '';
+        } catch (e) {
+            msg.textContent = '오류: ' + e.message + ' (업로드 권한이 없을 수 있습니다)'; msg.className = 'msg err';
+        }
+    }
+
+    watchAuth((user) => {
+        currentUser = user;
+        if (!user) {
+            loginBtn.style.display = 'inline-block';
+            content.innerHTML = '<div class="gate">이 페이지를 사용하려면 먼저 로그인해주세요.</div>';
+            return;
+        }
+        loginBtn.style.display = 'none';
+        buildAdminUI();
+    });
+</script>
+</body>
+</html>

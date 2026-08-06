@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>시리즈 - HYUNIL VIDEO</title>
+<style>
+    :root {
+        --bg-color: #ffffff; --panel-bg: #f8f9fa; --text-color: #202124;
+        --sub-text: #606368; --border-color: #e5e5e5; --accent: #ff0000; --link-color: #4285F4;
+    }
+    [data-theme="dark"] {
+        --bg-color: #181818; --panel-bg: #232323; --text-color: #f1f3f4;
+        --sub-text: #aaaaaa; --border-color: #333; --accent: #ff4d4d; --link-color: #8ab4f8;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Malgun Gothic', sans-serif; background: var(--bg-color); color: var(--text-color); }
+    header { display: flex; align-items: center; gap: 16px; padding: 14px 28px; border-bottom: 1px solid var(--border-color); }
+    header a.back { text-decoration: none; color: var(--text-color); font-weight: bold; }
+    .content { padding: 24px 28px; }
+    .series-header { display: flex; align-items: center; gap: 20px; margin-bottom: 28px; }
+    .avatar {
+        width: 84px; height: 84px; border-radius: 50%; background: var(--panel-bg);
+        display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold;
+        overflow: hidden; flex-shrink: 0;
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .series-name { font-size: 1.4rem; font-weight: bold; margin: 0 0 4px; }
+    .series-desc { color: var(--sub-text); font-size: 0.9rem; margin: 0 0 10px; }
+    .sub-btn {
+        border: none; border-radius: 18px; padding: 8px 20px; font-size: 0.9rem;
+        font-weight: bold; cursor: pointer; background: var(--accent); color: #fff;
+    }
+    .sub-btn.subscribed { background: var(--panel-bg); color: var(--text-color); border: 1px solid var(--border-color); }
+    .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 18px; }
+    .video-card { text-decoration: none; color: var(--text-color); display: block; }
+    .thumb-wrap { width: 100%; aspect-ratio: 16/9; border-radius: 10px; overflow: hidden; background: var(--panel-bg); }
+    .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .video-title { margin: 8px 0 2px; font-size: 0.92rem; font-weight: 600; line-height: 1.3; }
+    .empty-state { color: var(--sub-text); font-size: 0.9rem; padding: 20px 0; }
+</style>
+</head>
+<body>
+
+<header>
+    <a href="video.html" class="back">← HYUNIL VIDEO</a>
+</header>
+
+<div class="content">
+    <div class="series-header" id="series-header">
+        <div class="empty-state">불러오는 중...</div>
+    </div>
+    <div class="video-grid" id="video-grid"></div>
+</div>
+
+<script>
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+</script>
+
+<script type="module">
+    import {
+        watchAuth, signInWithGoogle, getSeries, getVideosForSeries,
+        getUserDoc, subscribeToSeries, unsubscribeFromSeries
+    } from './auth.js';
+
+    const params = new URLSearchParams(location.search);
+    const seriesId = params.get('id');
+    const headerEl = document.getElementById('series-header');
+    const gridEl = document.getElementById('video-grid');
+
+    let currentUser = null;
+    let currentSubs = [];
+    let series = null;
+
+    function renderHeader() {
+        if (!series) return;
+        const isSub = currentSubs.includes(seriesId);
+        headerEl.innerHTML = `
+            <div class="avatar">${series.thumbnail ? `<img src="${series.thumbnail}">` : series.name[0]}</div>
+            <div>
+                <div class="series-name">${series.name}</div>
+                <div class="series-desc">${series.description || ''}</div>
+                <button class="sub-btn ${isSub ? 'subscribed' : ''}" id="sub-btn">${isSub ? '구독중' : '구독'}</button>
+            </div>
+        `;
+        document.getElementById('sub-btn').addEventListener('click', async () => {
+            if (!currentUser) {
+                try { await signInWithGoogle(); } catch (e) { return; }
+            }
+            if (currentSubs.includes(seriesId)) {
+                await unsubscribeFromSeries(currentUser.uid, seriesId);
+                currentSubs = currentSubs.filter(id => id !== seriesId);
+            } else {
+                await subscribeToSeries(currentUser.uid, seriesId);
+                currentSubs.push(seriesId);
+            }
+            renderHeader();
+        });
+    }
+
+    async function renderVideos() {
+        const videos = await getVideosForSeries(seriesId);
+        if (videos.length === 0) {
+            gridEl.innerHTML = '<div class="empty-state">아직 업로드된 영상이 없습니다.</div>';
+            return;
+        }
+        gridEl.innerHTML = videos.map(v => `
+            <a class="video-card" href="${v.youtubeUrl}" target="_blank" rel="noopener">
+                <div class="thumb-wrap"><img src="${v.thumbnailUrl}" alt="${v.title}"></div>
+                <div class="video-title">${v.title}</div>
+            </a>
+        `).join('');
+    }
+
+    async function init() {
+        if (!seriesId) {
+            headerEl.innerHTML = '<div class="empty-state">시리즈 ID가 없습니다.</div>';
+            return;
+        }
+        series = await getSeries(seriesId);
+        if (!series) {
+            headerEl.innerHTML = '<div class="empty-state">존재하지 않는 시리즈입니다.</div>';
+            return;
+        }
+        renderHeader();
+        await renderVideos();
+    }
+
+    watchAuth(async (user) => {
+        currentUser = user;
+        if (user) {
+            const userDoc = await getUserDoc(user.uid);
+            currentSubs = (userDoc && userDoc.subscriptions) || [];
+        } else {
+            currentSubs = [];
+        }
+        renderHeader();
+    });
+
+    init();
+</script>
+</body>
+</html>

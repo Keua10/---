@@ -1,0 +1,172 @@
+// 모든 페이지에서 공통으로 쓰는 Firebase 인증 + Firestore 로직
+import { firebaseConfig, SITE_OWNER_EMAILS } from "./firebase-config.js";
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged,
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  arrayUnion,
+  arrayRemove,
+  serverTimestamp,
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  orderBy,
+  limit,
+  collectionGroup,
+  where,
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
+
+// ---------- 로그인 / 로그아웃 ----------
+export async function signInWithGoogle() {
+  const result = await signInWithPopup(auth, provider);
+  await ensureUserDoc(result.user);
+  return result.user;
+}
+
+export async function signOutUser() {
+  await signOut(auth);
+}
+
+// 로그인 상태가 바뀔 때마다 callback(user | null) 실행
+export function watchAuth(callback) {
+  return onAuthStateChanged(auth, callback);
+}
+
+// users/{uid} 문서가 없으면 새로 만들어줌 (최초 로그인 시)
+export async function ensureUserDoc(user) {
+  const ref = doc(db, "users", user.uid);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) {
+    await setDoc(ref, {
+      name: user.displayName || "",
+      email: user.email || "",
+      photoURL: user.photoURL || "",
+      subscriptions: [],
+      createdAt: serverTimestamp(),
+    });
+  }
+  return ref;
+}
+
+export async function getUserDoc(uid) {
+  const snap = await getDoc(doc(db, "users", uid));
+  return snap.exists() ? snap.data() : null;
+}
+
+export function isSiteOwner(email) {
+  return !!email && SITE_OWNER_EMAILS.includes(email);
+}
+
+// ---------- 구독 ----------
+export async function subscribeToSeries(uid, seriesId) {
+  await updateDoc(doc(db, "users", uid), {
+    subscriptions: arrayUnion(seriesId),
+  });
+}
+
+export async function unsubscribeFromSeries(uid, seriesId) {
+  await updateDoc(doc(db, "users", uid), {
+    subscriptions: arrayRemove(seriesId),
+  });
+}
+
+// ---------- 시리즈(채널) ----------
+export async function createSeries({ name, description, thumbnail, ownerEmails, creatorEmail }) {
+  const ref = await addDoc(collection(db, "series"), {
+    name,
+    description: description || "",
+    thumbnail: thumbnail || "",
+    ownerEmails: Array.from(new Set([...(ownerEmails || []), creatorEmail])),
+    createdAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function addSeriesOwner(seriesId, email) {
+  await updateDoc(doc(db, "series", seriesId), {
+    ownerEmails: arrayUnion(email),
+  });
+}
+
+export async function getSeries(seriesId) {
+  const snap = await getDoc(doc(db, "series", seriesId));
+  return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+}
+
+export async function getAllSeries() {
+  const snap = await getDocs(collection(db, "series"));
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+// 현재 로그인한 사람이 이 시리즈에 업로드 권한이 있는지 확인
+export function canUploadToSeries(series, userEmail) {
+  if (!series || !userEmail) return false;
+  return (series.ownerEmails || []).includes(userEmail);
+}
+
+// ---------- 비디오 ----------
+export async function addVideoToSeries(seriesId, { title, thumbnailUrl, youtubeUrl, uploaderEmail }) {
+  const ref = await addDoc(collection(db, "series", seriesId, "videos"), {
+    title,
+    thumbnailUrl,
+    youtubeUrl,
+    uploaderEmail,
+    createdAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function getVideosForSeries(seriesId) {
+  const q = query(
+    collection(db, "series", seriesId, "videos"),
+    orderBy("createdAt", "desc")
+  );
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+// 홈 화면 "추천 비디오" - 전체 시리즈를 통틀어 최신 업로드 영상들
+export async function getRecentVideosAcrossAllSeries(count = 8) {
+  const q = query(
+    collectionGroup(db, "videos"),
+    orderBy("createdAt", "desc"),
+    limit(count)
+  );
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({
+    id: d.id,
+    seriesId: d.ref.parent.parent.id,
+    ...d.data(),
+  }));
+}
+
+export function timeAgo(timestamp) {
+  if (!timestamp || !timestamp.toDate) return "";
+  const seconds = Math.floor((Date.now() - timestamp.toDate().getTime()) / 1000);
+  if (seconds < 60) return "방금 전";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}분 전`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}시간 전`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days}일 전`;
+  const months = Math.floor(days / 30);
+  return `${months}개월 전`;
+}
