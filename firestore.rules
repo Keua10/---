@@ -2,6 +2,20 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // ⚠️ firebase-config.js 의 SITE_OWNER_EMAILS 와 반드시 동일하게 맞춰주세요.
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email in [
+        "여기에_내_구글_이메일@gmail.com"
+      ];
+    }
+
+    function hasCreateSeriesPermission() {
+      return isAdmin() ||
+        (request.auth != null &&
+         exists(/databases/$(database)/documents/permissions/$(request.auth.token.email)) &&
+         get(/databases/$(database)/documents/permissions/$(request.auth.token.email)).data.canCreateSeries == true);
+    }
+
     // users/{uid} : 본인만 자기 문서를 읽고 쓸 수 있음 (구독 목록 등)
     match /users/{uid} {
       allow read: if request.auth != null && request.auth.uid == uid;
@@ -10,14 +24,21 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // permissions/{email} : "시리즈 생성 권한" 등을 저장. 본인은 읽기만, 관리자만 쓰기 가능
+    match /permissions/{email} {
+      allow read: if request.auth != null && (request.auth.token.email == email || isAdmin());
+      allow write: if isAdmin();
+    }
+
     // series/{seriesId} : 누구나 읽기 가능(로그인 없이도 목록/채널 페이지 열람 가능)
-    // 생성/수정은 로그인한 사용자만, ownerEmails 배열에 자기 이메일이 있는 사람만 수정 가능
+    // 생성은 "시리즈 생성 권한"이 있는 사람만, 수정은 ownerEmails 에 포함된 사람만
     match /series/{seriesId} {
       allow read: if true;
       allow create: if request.auth != null
-                    && request.auth.token.email in request.resource.data.ownerEmails;
+                    && request.auth.token.email in request.resource.data.ownerEmails
+                    && hasCreateSeriesPermission();
       allow update: if request.auth != null
-                    && request.auth.token.email in resource.data.ownerEmails;
+                    && (request.auth.token.email in resource.data.ownerEmails || isAdmin());
       allow delete: if false;
 
       // series/{seriesId}/videos/{videoId} : 누구나 읽기 가능

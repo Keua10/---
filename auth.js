@@ -74,6 +74,24 @@ export function isSiteOwner(email) {
   return !!email && SITE_OWNER_EMAILS.includes(email);
 }
 
+// ---------- 전역 권한 (permissions/{email}) ----------
+// 사이트 관리자(SITE_OWNER_EMAILS)가 다른 계정에게 "시리즈 생성 권한"을 부여할 수 있음
+export async function getPermissions(email) {
+  if (!email) return null;
+  const snap = await getDoc(doc(db, "permissions", email));
+  return snap.exists() ? snap.data() : null;
+}
+
+export async function grantCreateSeriesPermission(email) {
+  await setDoc(doc(db, "permissions", email), { canCreateSeries: true }, { merge: true });
+}
+
+export async function canUserCreateSeries(email) {
+  if (isSiteOwner(email)) return true;
+  const perm = await getPermissions(email);
+  return !!(perm && perm.canCreateSeries);
+}
+
 // ---------- 구독 ----------
 export async function subscribeToSeries(uid, seriesId) {
   await updateDoc(doc(db, "users", uid), {

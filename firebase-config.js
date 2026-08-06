@@ -3,7 +3,7 @@
 // 자세한 방법은 SETUP.md 를 참고하세요.
 
 export const firebaseConfig = {
-  apiKey: "AIzaSyAVBiN1ezZ1B91-cEDnlSMaGoX36mcDltY",
+    apiKey: "AIzaSyAVBiN1ezZ1B91-cEDnlSMaGoX36mcDltY",
   authDomain: "hyunilsearchingengine.firebaseapp.com",
   projectId: "hyunilsearchingengine",
   storageBucket: "hyunilsearchingengine.firebasestorage.app",
