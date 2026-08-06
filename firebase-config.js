@@ -1,9 +1,6 @@
-// ⚠️ 이 파일을 반드시 본인의 Firebase 프로젝트 설정 값으로 채워주세요.
-// Firebase 콘솔 > 프로젝트 설정 > 일반 > "내 앱" 섹션에서 웹 앱을 추가하면 아래 값들을 볼 수 있습니다.
-// 자세한 방법은 SETUP.md 를 참고하세요.
-
+// Firebase 프로젝트(hyunilsearchingengine) 설정
 export const firebaseConfig = {
-    apiKey: "AIzaSyAVBiN1ezZ1B91-cEDnlSMaGoX36mcDltY",
+  apiKey: "AIzaSyAVBiN1ezZ1B91-cEDnlSMaGoX36mcDltY",
   authDomain: "hyunilsearchingengine.firebaseapp.com",
   projectId: "hyunilsearchingengine",
   storageBucket: "hyunilsearchingengine.firebasestorage.app",
@@ -11,9 +8,9 @@ export const firebaseConfig = {
   appId: "1:1009791769621:web:9b1b3d15c1397c028e821c",
 };
 
-// 사이트를 처음 만든 관리자(=시리즈를 새로 만들 수 있는 사람)의 구글 이메일.
-// 로그인에 사용할 본인 구글 계정 이메일로 바꿔주세요.
-// 이 이메일로 로그인한 사람만 admin.html 에서 새 시리즈를 만들 수 있습니다.
+// 사이트 관리자(=시리즈 생성 권한/업로드 권한을 다른 계정에게 부여할 수 있는 사람) 이메일 목록.
+// ⚠️ 이 목록을 바꾸면 firestore.rules 안의 isAdmin() 이메일 목록도 반드시 똑같이 바꿔서
+//    Firebase 콘솔 > Firestore Database > 규칙 탭에 다시 게시해야 합니다.
 export const SITE_OWNER_EMAILS = [
   "ekcjs20100329@gmail.com",
 ];

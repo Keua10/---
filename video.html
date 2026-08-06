@@ -41,18 +41,21 @@
         display: flex;
         align-items: center;
         text-decoration: none;
-        font-weight: bold;
-        font-size: 1.1rem;
         color: var(--text-color);
         white-space: nowrap;
-        line-height: 1.1;
     }
-    .home-link .rainbow span:nth-child(1) { color: #4285F4; }
-    .home-link .rainbow span:nth-child(2) { color: #EA4335; }
-    .home-link .rainbow span:nth-child(3) { color: #FBBC05; }
-    .home-link .rainbow span:nth-child(4) { color: #34A853; }
-    .home-link .stack { display: flex; flex-direction: column; }
-    .home-link .stack small { font-size: 0.65rem; font-weight: normal; color: var(--sub-text); }
+    .home-link .logo-stack {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        line-height: 1.05;
+    }
+    .home-link .logo-top-line { font-size: 0.8rem; font-weight: bold; letter-spacing: -0.5px; }
+    .home-link .logo-top-line span:nth-child(1) { color: #4285F4; }
+    .home-link .logo-top-line span:nth-child(2) { color: #EA4335; }
+    .home-link .logo-top-line span:nth-child(3) { color: #FBBC05; }
+    .home-link .logo-top-line span:nth-child(4) { color: #34A853; }
+    .home-link .logo-bottom-line { font-size: 1.05rem; font-weight: bold; color: var(--text-color); }
     .video-badge-link {
         display: flex;
         align-items: center;
@@ -246,7 +249,10 @@
 
 <header>
     <a href="index.html" class="home-link">
-        <span class="rainbow stack"><span>신현일의</span><small>&nbsp;</small></span>&nbsp;Search
+        <span class="logo-stack">
+            <span class="logo-top-line"><span>신</span><span>현</span><span>일</span><span>의</span></span>
+            <span class="logo-bottom-line">Search</span>
+        </span>
     </a>
     <a href="video.html" class="video-badge-link"><span class="play-icon">▶</span> HYUNIL VIDEO</a>
     <div class="search-bar">🔍 무엇이든 검색해보세요...</div>
