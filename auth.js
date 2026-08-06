@@ -172,6 +172,17 @@ export async function addVideoToSeries(seriesId, { title, thumbnailUrl, youtubeU
   return ref.id;
 }
 
+export async function updateVideo(seriesId, videoId, { title, thumbnailUrl }) {
+  const data = {};
+  if (title !== undefined) data.title = title;
+  if (thumbnailUrl !== undefined) data.thumbnailUrl = thumbnailUrl;
+  await updateDoc(doc(db, "series", seriesId, "videos", videoId), data);
+}
+
+export async function deleteVideoFromSeries(seriesId, videoId) {
+  await deleteDoc(doc(db, "series", seriesId, "videos", videoId));
+}
+
 export async function getVideosForSeries(seriesId) {
   const q = query(
     collection(db, "series", seriesId, "videos"),
@@ -181,19 +192,25 @@ export async function getVideosForSeries(seriesId) {
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
-// 홈 화면 "추천 비디오" - 전체 시리즈를 통틀어 최신 업로드 영상들
-export async function getRecentVideosAcrossAllSeries(count = 8) {
-  const q = query(
-    collectionGroup(db, "videos"),
-    orderBy("createdAt", "desc"),
-    limit(count)
+// 홈 화면 "추천 비디오" - 모든 시리즈의 영상을 모아서 무작위 순서로 섞어 반환
+// (collectionGroup + orderBy 쿼리는 Firestore 콘솔에서 별도 색인을 만들어야 하고,
+//  색인이 없으면 조회가 통째로 실패해서 "불러오는 중..."에 멈춰버리는 문제가 있었음.
+//  그래서 시리즈별로 단순 조회한 뒤 클라이언트에서 합쳐서 섞는 방식으로 바꿈)
+export async function getRandomRecommendedVideos(count = 12) {
+  const allSeries = await getAllSeries();
+  const lists = await Promise.all(
+    allSeries.map(async (s) => {
+      const vids = await getVideosForSeries(s.id);
+      return vids.map((v) => ({ ...v, seriesId: s.id }));
+    })
   );
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({
-    id: d.id,
-    seriesId: d.ref.parent.parent.id,
-    ...d.data(),
-  }));
+  const all = lists.flat();
+  // Fisher-Yates 셔플
+  for (let i = all.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [all[i], all[j]] = [all[j], all[i]];
+  }
+  return all.slice(0, count);
 }
 
 export function timeAgo(timestamp) {
@@ -208,4 +225,12 @@ export function timeAgo(timestamp) {
   if (days < 30) return `${days}일 전`;
   const months = Math.floor(days / 30);
   return `${months}개월 전`;
+}
+
+// 업로드 날짜를 "2026-08-07 14:03" 같은 절대 날짜 형식으로 표시
+export function formatDate(timestamp) {
+  if (!timestamp || !timestamp.toDate) return "";
+  const d = timestamp.toDate();
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
