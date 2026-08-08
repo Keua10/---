@@ -4,34 +4,44 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>전체 시리즈 - HYUNIL VIDEO</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
     :root {
-        --bg-color: #ffffff; --panel-bg: #f8f9fa; --text-color: #202124;
+        --bg-color: #ffffff; --panel-bg: #f8f9fa; --panel-bg-high: #eeeeee; --text-color: #131313;
         --sub-text: #606368; --border-color: #e5e5e5; --link-color: #4285F4;
     }
     [data-theme="dark"] {
-        --bg-color: #181818; --panel-bg: #232323; --text-color: #f1f3f4;
-        --sub-text: #aaaaaa; --border-color: #333; --link-color: #8ab4f8;
+        --bg-color: #131313; --panel-bg: #1c1b1b; --panel-bg-high: #2a2a2a; --text-color: #e5e2e1;
+        --sub-text: #a8a5a4; --border-color: #262626; --link-color: #8ab4f8;
     }
     * { box-sizing: border-box; }
-    body { margin: 0; font-family: 'Malgun Gothic', sans-serif; background: var(--bg-color); color: var(--text-color); }
-    header { display: flex; align-items: center; gap: 16px; padding: 14px 28px; border-bottom: 1px solid var(--border-color); }
-    header a.back { text-decoration: none; color: var(--text-color); font-weight: bold; }
-    .content { padding: 24px 28px; }
-    .series-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
-    .series-card { text-decoration: none; color: var(--text-color); text-align: center; }
-    .avatar {
-        width: 84px; height: 84px; border-radius: 50%; background: var(--panel-bg); margin: 0 auto 10px;
-        display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: bold; overflow: hidden;
+    body { margin: 0; font-family: 'Inter', 'Malgun Gothic', sans-serif; background: var(--bg-color); color: var(--text-color); letter-spacing: -0.01em; }
+    header {
+        display: flex; align-items: center; gap: 16px; padding: 14px 28px; border-bottom: 1px solid var(--border-color);
+        position: sticky; top: 0; z-index: 100; background: var(--bg-color);
     }
+    header a.back { text-decoration: none; color: var(--text-color); font-weight: 700; font-size: 0.92rem; }
+    header a.back:hover { opacity: 0.8; }
+    .content { padding: 28px; max-width: 1600px; margin: 0 auto; }
+    h2.section-title { font-size: 1.15rem; font-weight: 700; margin: 0 0 24px; letter-spacing: -0.01em; }
+    .series-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 28px; }
+    .series-card { text-decoration: none; color: var(--text-color); text-align: center; display: block; }
+    .avatar {
+        width: 88px; height: 88px; border-radius: 50%; background: var(--panel-bg-high); margin: 0 auto 12px;
+        display: flex; align-items: center; justify-content: center; font-size: 1.9rem; font-weight: 700; overflow: hidden;
+        transition: filter 0.15s;
+    }
+    .series-card:hover .avatar { filter: brightness(1.15); }
+    .series-card:hover .series-name { color: var(--link-color); }
     .avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .series-name { font-size: 0.95rem; font-weight: 600; }
+    .series-name { font-size: 0.9rem; font-weight: 600; }
     .empty-state { color: var(--sub-text); font-size: 0.9rem; padding: 20px 0; }
 </style>
 </head>
 <body>
 <header><a href="video.html" class="back">← HYUNIL VIDEO</a></header>
 <div class="content">
+    <h2 class="section-title">전체 시리즈</h2>
     <div class="series-grid" id="series-grid"><div class="empty-state">불러오는 중...</div></div>
 </div>
 <script>
@@ -51,6 +61,9 @@
                 <div class="series-name">${s.name}</div>
             </a>
         `).join('');
+    }).catch(e => {
+        console.error(e);
+        document.getElementById('series-grid').innerHTML = '<div class="empty-state">불러오지 못했습니다.</div>';
     });
 </script>
 </body>

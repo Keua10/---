@@ -4,84 +4,100 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>시리즈 - HYUNIL VIDEO</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
     :root {
-        --bg-color: #ffffff; --panel-bg: #f8f9fa; --text-color: #202124;
+        --bg-color: #ffffff; --panel-bg: #f8f9fa; --panel-bg-high: #eeeeee; --text-color: #131313;
         --sub-text: #606368; --border-color: #e5e5e5; --accent: #ff0000; --link-color: #4285F4;
+        --glass-bg: rgba(255,255,255,0.75);
     }
     [data-theme="dark"] {
-        --bg-color: #181818; --panel-bg: #232323; --text-color: #f1f3f4;
-        --sub-text: #aaaaaa; --border-color: #333; --accent: #ff4d4d; --link-color: #8ab4f8;
+        --bg-color: #131313; --panel-bg: #1c1b1b; --panel-bg-high: #2a2a2a; --text-color: #e5e2e1;
+        --sub-text: #a8a5a4; --border-color: #262626; --accent: #ff4d4d; --link-color: #8ab4f8;
+        --glass-bg: rgba(28,27,27,0.75);
     }
     * { box-sizing: border-box; }
-    body { margin: 0; font-family: 'Malgun Gothic', sans-serif; background: var(--bg-color); color: var(--text-color); }
-    header { display: flex; align-items: center; gap: 16px; padding: 14px 28px; border-bottom: 1px solid var(--border-color); }
-    header a.back { text-decoration: none; color: var(--text-color); font-weight: bold; }
-    .content { padding: 24px 28px; }
-    .series-header { display: flex; align-items: center; gap: 20px; margin-bottom: 28px; }
+    body { margin: 0; font-family: 'Inter', 'Malgun Gothic', sans-serif; background: var(--bg-color); color: var(--text-color); letter-spacing: -0.01em; }
+    header {
+        display: flex; align-items: center; gap: 16px; padding: 14px 28px; border-bottom: 1px solid var(--border-color);
+        position: sticky; top: 0; z-index: 100; background: var(--bg-color);
+    }
+    header a.back { text-decoration: none; color: var(--text-color); font-weight: 700; font-size: 0.92rem; display: flex; align-items: center; gap: 8px; }
+    header a.back:hover { opacity: 0.8; }
+    .content { padding: 28px; max-width: 1600px; margin: 0 auto; }
+    .series-header { display: flex; align-items: center; gap: 24px; margin-bottom: 36px; flex-wrap: wrap; }
     .avatar {
-        width: 84px; height: 84px; border-radius: 50%; background: var(--panel-bg);
-        display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold;
+        width: 92px; height: 92px; border-radius: 50%; background: var(--panel-bg-high);
+        display: flex; align-items: center; justify-content: center; font-size: 2.1rem; font-weight: 700;
         overflow: hidden; flex-shrink: 0;
     }
     .avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .series-name { font-size: 1.4rem; font-weight: bold; margin: 0 0 4px; }
-    .series-desc { color: var(--sub-text); font-size: 0.9rem; margin: 0 0 10px; }
+    .series-name { font-size: 1.5rem; font-weight: 800; margin: 0 0 4px; letter-spacing: -0.02em; }
+    .series-desc { color: var(--sub-text); font-size: 0.88rem; margin: 0 0 14px; max-width: 520px; line-height: 1.4; }
     .sub-btn {
-        border: none; border-radius: 18px; padding: 8px 20px; font-size: 0.9rem;
-        font-weight: bold; cursor: pointer; background: var(--accent); color: #fff;
+        border: none; border-radius: 9999px; padding: 9px 22px; font-size: 0.85rem;
+        font-weight: 700; cursor: pointer; background: var(--accent); color: #fff; transition: opacity 0.15s;
     }
-    .sub-btn.subscribed { background: var(--panel-bg); color: var(--text-color); border: 1px solid var(--border-color); }
+    .sub-btn:hover { opacity: 0.88; }
+    .sub-btn.subscribed { background: var(--panel-bg-high); color: var(--text-color); border: 1px solid var(--border-color); }
     .series-settings-btn {
         background: var(--panel-bg); border: 1px solid var(--border-color); color: var(--text-color);
-        border-radius: 16px; padding: 6px 14px; font-size: 0.82rem; cursor: pointer; margin-left: 8px;
+        border-radius: 9999px; padding: 8px 18px; font-size: 0.82rem; font-weight: 600; cursor: pointer; margin-left: 8px;
+        transition: background 0.15s;
     }
-    .series-settings-btn:hover { border-color: var(--sub-text); }
+    .series-settings-btn:hover { background: var(--panel-bg-high); }
     .modal-box textarea {
-        width: 100%; min-height: 60px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color);
-        background: var(--panel-bg); color: var(--text-color); font-size: 0.85rem; font-family: inherit; resize: vertical;
+        width: 100%; min-height: 70px; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--border-color);
+        background: var(--panel-bg); color: var(--text-color); font-size: 0.85rem; font-family: inherit; resize: vertical; outline: none;
     }
-    .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 18px; }
+    .modal-box textarea:focus { border-color: var(--accent); }
+    h2.section-title { font-size: 1.15rem; font-weight: 700; margin: 0 0 20px; letter-spacing: -0.01em; }
+    .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 24px; }
     .video-card { text-decoration: none; color: var(--text-color); display: block; }
-    .thumb-wrap { width: 100%; aspect-ratio: 16/9; border-radius: 10px; overflow: hidden; background: var(--panel-bg); }
-    .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .video-title { margin: 8px 0 2px; font-size: 0.92rem; font-weight: 600; line-height: 1.3; }
+    .thumb-wrap { width: 100%; aspect-ratio: 16/9; border-radius: 1rem; overflow: hidden; background: var(--panel-bg); margin-bottom: 10px; }
+    .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s; }
+    .video-card:hover .thumb-wrap img { transform: scale(1.05); }
+    .video-title { margin: 0; font-size: 0.9rem; font-weight: 600; line-height: 1.35; }
+    .video-card:hover .video-title { color: var(--accent); }
     .video-title-row { display: flex; align-items: flex-start; gap: 4px; }
     .video-title-row .video-title { flex: 1; }
     .video-menu-btn {
-        background: none; border: none; color: var(--sub-text); font-size: 1rem;
+        background: none; border: none; color: var(--sub-text); font-size: 1.1rem;
         cursor: pointer; padding: 0 4px; line-height: 1; flex-shrink: 0;
     }
     .video-menu-btn:hover { color: var(--text-color); }
     .empty-state { color: var(--sub-text); font-size: 0.9rem; padding: 20px 0; }
 
     .modal-overlay {
-        display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+        display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+        backdrop-filter: blur(3px);
         z-index: 2000; align-items: center; justify-content: center;
     }
     .modal-overlay.open { display: flex; }
     .modal-box {
-        background: var(--bg-color); color: var(--text-color); width: 92%; max-width: 420px;
-        max-height: 85vh; overflow-y: auto; border-radius: 14px; padding: 22px; position: relative;
+        background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--border-color);
+        color: var(--text-color); width: 92%; max-width: 420px;
+        max-height: 85vh; overflow-y: auto; border-radius: 20px; padding: 24px; position: relative;
     }
     .modal-close {
-        position: absolute; top: 14px; right: 16px;
+        position: absolute; top: 16px; right: 18px;
         background: none; border: none; font-size: 18px; cursor: pointer; color: var(--sub-text);
     }
-    .modal-box h3 { font-size: 0.95rem; margin: 0 0 8px; }
-    .modal-box label { display: block; font-size: 0.82rem; color: var(--sub-text); margin: 10px 0 4px; }
+    .modal-box h3 { font-size: 0.95rem; font-weight: 700; margin: 0 0 8px; }
+    .modal-box label { display: block; font-size: 0.8rem; color: var(--sub-text); margin: 10px 0 5px; }
     .modal-box input[type="text"], .modal-box input[type="url"] {
-        width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color);
-        background: var(--panel-bg); color: var(--text-color); font-size: 0.85rem;
+        width: 100%; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--border-color);
+        background: var(--panel-bg); color: var(--text-color); font-size: 0.85rem; outline: none;
     }
+    .modal-box input:focus { border-color: var(--accent); }
     .modal-box button.action {
-        margin-top: 14px; background: var(--link-color); color: #fff; border: none;
-        border-radius: 8px; padding: 9px 16px; font-size: 0.85rem; font-weight: bold; cursor: pointer;
+        margin-top: 16px; background: var(--accent); color: #fff; border: none;
+        border-radius: 10px; padding: 10px 18px; font-size: 0.85rem; font-weight: 700; cursor: pointer;
     }
-    .modal-box button.action.danger { background: #c0392b; }
-    .modal-msg { font-size: 0.8rem; margin-top: 8px; }
-    .modal-msg.ok { color: #1a7f37; }
-    .modal-msg.err { color: #c0392b; }
+    .modal-box button.action.danger { background: transparent; border: 1px solid #c0392b; color: #e57373; }
+    .modal-msg { font-size: 0.8rem; margin-top: 10px; }
+    .modal-msg.ok { color: #4ade80; }
+    .modal-msg.err { color: #e57373; }
 </style>
 </head>
 <body>
@@ -94,6 +110,7 @@
     <div class="series-header" id="series-header">
         <div class="empty-state">불러오는 중...</div>
     </div>
+    <h2 class="section-title">업로드된 영상</h2>
     <div class="video-grid" id="video-grid"></div>
 </div>
 
@@ -223,19 +240,18 @@
         }
         const canManage = currentUser && (isSiteOwner(currentUser.email) || canUploadToSeries(series, currentUser.email));
         gridEl.innerHTML = videos.map(v => `
-            <div>
-                <a class="video-card" href="watch.html?s=${seriesId}&v=${v.id}">
-                    <div class="thumb-wrap"><img src="${v.thumbnailUrl}" alt="${v.title}"></div>
-                </a>
+            <a class="video-card" href="watch.html?s=${seriesId}&v=${v.id}">
+                <div class="thumb-wrap"><img src="${v.thumbnailUrl}" alt="${v.title}"></div>
                 <div class="video-title-row">
                     <div class="video-title">${v.title}</div>
                     ${canManage ? `<button class="video-menu-btn" data-video="${v.id}" data-title="${(v.title || '').replace(/"/g, '&quot;')}" data-thumb="${(v.thumbnailUrl || '').replace(/"/g, '&quot;')}">⋮</button>` : ''}
                 </div>
-            </div>
+            </a>
         `).join('');
 
         gridEl.querySelectorAll('.video-menu-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
                 openEditVideoModal(btn.dataset.video, btn.dataset.title, btn.dataset.thumb);
             });
         });
