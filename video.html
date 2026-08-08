@@ -4,31 +4,39 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HYUNIL VIDEO</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
     :root {
         --bg-color: #ffffff;
         --panel-bg: #f8f9fa;
-        --text-color: #202124;
+        --panel-bg-high: #eeeeee;
+        --text-color: #131313;
         --sub-text: #606368;
         --border-color: #e5e5e5;
         --accent: #ff0000;
         --link-color: #4285F4;
+        --glass-bg: rgba(255,255,255,0.75);
+        --radius-thumb: 1rem;
+        --radius-pill: 9999px;
     }
     [data-theme="dark"] {
-        --bg-color: #181818;
-        --panel-bg: #232323;
-        --text-color: #f1f3f4;
-        --sub-text: #aaaaaa;
-        --border-color: #333;
+        --bg-color: #131313;
+        --panel-bg: #1c1b1b;
+        --panel-bg-high: #2a2a2a;
+        --text-color: #e5e2e1;
+        --sub-text: #a8a5a4;
+        --border-color: #262626;
         --accent: #ff4d4d;
         --link-color: #8ab4f8;
+        --glass-bg: rgba(28,27,27,0.75);
     }
     * { box-sizing: border-box; }
     body {
         margin: 0;
-        font-family: 'Malgun Gothic', sans-serif;
+        font-family: 'Inter', 'Malgun Gothic', sans-serif;
         background: var(--bg-color);
         color: var(--text-color);
+        letter-spacing: -0.01em;
     }
     header {
         display: flex;
@@ -36,6 +44,10 @@
         gap: 20px;
         padding: 14px 28px;
         border-bottom: 1px solid var(--border-color);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: var(--bg-color);
     }
     .home-link {
         display: flex;
@@ -50,93 +62,102 @@
         align-items: center;
         line-height: 1.05;
     }
-    .home-link .logo-top-line { font-size: 0.8rem; font-weight: bold; letter-spacing: -0.5px; }
+    .home-link .logo-top-line { font-size: 0.8rem; font-weight: 700; letter-spacing: -0.5px; }
     .home-link .logo-top-line span:nth-child(1) { color: #4285F4; }
     .home-link .logo-top-line span:nth-child(2) { color: #EA4335; }
     .home-link .logo-top-line span:nth-child(3) { color: #FBBC05; }
     .home-link .logo-top-line span:nth-child(4) { color: #34A853; }
-    .home-link .logo-bottom-line { font-size: 1.05rem; font-weight: bold; color: var(--text-color); }
+    .home-link .logo-bottom-line { font-size: 1.05rem; font-weight: 700; color: var(--text-color); }
+    .header-divider { width: 1px; height: 20px; background: var(--border-color); margin: 0 2px; }
     .video-badge-link {
         display: flex;
-        align-items: center;
-        gap: 6px;
+        align-items: baseline;
+        gap: 5px;
         text-decoration: none;
         color: var(--text-color);
-        font-weight: bold;
-        font-size: 0.85rem;
-        margin-left: 4px;
+        font-weight: 800;
+        font-size: 1.05rem;
+        letter-spacing: -0.02em;
     }
     .video-badge-link .play-icon {
-        background: var(--accent);
-        color: #fff;
-        border-radius: 4px;
-        font-size: 11px;
-        padding: 3px 5px;
+        font-weight: 500;
+        font-size: 0.65rem;
+        color: var(--sub-text);
+        letter-spacing: 0.02em;
     }
     .search-bar {
         flex: 1;
-        max-width: 520px;
+        max-width: 560px;
         display: flex;
         align-items: center;
         border: 1px solid var(--border-color);
-        border-radius: 20px;
-        padding: 8px 16px;
+        border-radius: var(--radius-pill);
+        padding: 9px 18px;
         color: var(--sub-text);
         background: var(--panel-bg);
+        font-size: 0.9rem;
     }
     .header-right {
         margin-left: auto;
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
     }
     .login-btn, .upload-btn {
-        background-color: var(--link-color);
+        background-color: var(--accent);
         color: #fff;
         border: none;
-        border-radius: 18px;
-        padding: 8px 18px;
-        font-size: 14px;
-        font-weight: bold;
+        border-radius: var(--radius-pill);
+        padding: 9px 20px;
+        font-size: 13px;
+        font-weight: 700;
         cursor: pointer;
+        transition: opacity 0.15s;
     }
-    .upload-btn { display: none; background: var(--accent); }
+    .login-btn:hover, .upload-btn:hover { opacity: 0.88; }
+    .upload-btn { display: none; }
     .user-area { display: none; align-items: center; gap: 8px; }
     .user-area .profile-btn {
         display: flex;
         align-items: center;
         gap: 8px;
-        background: none;
+        background: var(--panel-bg-high);
         border: none;
         cursor: pointer;
         color: var(--text-color);
-        font-size: 14px;
-        padding: 4px 6px;
-        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 5px 14px 5px 5px;
+        border-radius: var(--radius-pill);
     }
-    .user-area .profile-btn:hover { background: var(--panel-bg); }
-    .user-area img { width: 30px; height: 30px; border-radius: 50%; }
+    .user-area .profile-btn:hover { background: var(--border-color); }
+    .user-area img { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; background: var(--sub-text); }
     .logout-btn {
         background: var(--panel-bg);
         border: 1px solid var(--border-color);
-        border-radius: 16px;
-        padding: 6px 14px;
+        border-radius: var(--radius-pill);
+        padding: 8px 16px;
         font-size: 13px;
+        font-weight: 600;
         color: var(--text-color);
         cursor: pointer;
+        transition: background 0.15s;
     }
+    .logout-btn:hover { background: var(--panel-bg-high); }
     .layout {
         display: flex;
-        gap: 24px;
-        padding: 24px 28px;
+        gap: 32px;
+        padding: 28px;
+        max-width: 1600px;
+        margin: 0 auto;
         align-items: flex-start;
     }
     main { flex: 1; min-width: 0; }
-    h2.section-title { font-size: 1.1rem; margin: 0 0 16px; }
+    h2.section-title { font-size: 1.15rem; font-weight: 700; margin: 0 0 20px; letter-spacing: -0.01em; }
     .video-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 18px;
+        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+        gap: 24px;
     }
     .video-card {
         text-decoration: none;
@@ -147,128 +168,144 @@
         position: relative;
         width: 100%;
         aspect-ratio: 16/9;
-        border-radius: 10px;
+        border-radius: var(--radius-thumb);
         overflow: hidden;
         background: var(--panel-bg);
+        margin-bottom: 10px;
     }
-    .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .video-title { margin: 8px 0 2px; font-size: 0.92rem; font-weight: 600; line-height: 1.3; }
-    .video-meta { font-size: 0.8rem; color: var(--sub-text); display: flex; align-items: center; gap: 6px; }
-    .video-meta-right { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+    .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s; }
+    .video-card:hover .thumb-wrap img { transform: scale(1.05); }
+    .video-title { margin: 0; font-size: 0.9rem; font-weight: 600; line-height: 1.35; }
+    .video-card:hover .video-title { color: var(--accent); }
+    .video-meta { font-size: 0.78rem; color: var(--sub-text); margin-top: 3px; }
     .video-title-row { display: flex; align-items: flex-start; gap: 4px; }
     .video-title-row .video-title { flex: 1; }
     .video-menu-btn {
-        background: none; border: none; color: var(--sub-text); font-size: 1rem;
-        cursor: pointer; padding: 0 4px; line-height: 1; flex-shrink: 0;
+        background: none; border: none; color: var(--sub-text); font-size: 1.1rem;
+        cursor: pointer; padding: 0 4px; line-height: 1; flex-shrink: 0; border-radius: 50%;
     }
     .video-menu-btn:hover { color: var(--text-color); }
+    .video-pill-row { margin-top: 6px; }
     .sub-pill {
         display: inline-block;
-        font-size: 0.7rem;
+        font-size: 0.68rem;
+        font-weight: 600;
         border: 1px solid var(--border-color);
-        border-radius: 10px;
-        padding: 1px 8px;
+        border-radius: 5px;
+        padding: 2px 8px;
         cursor: pointer;
         background: var(--panel-bg);
         white-space: nowrap;
+        transition: background 0.15s;
     }
-    .sub-pill.subscribed { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .sub-pill.subscribed { background: rgba(255,77,77,0.18); color: var(--accent); border-color: transparent; }
 
     .series-reco-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 16px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 30px;
     }
-    .series-reco-card { text-align: center; }
+    .series-reco-card { text-align: center; width: 96px; }
     .series-reco-thumb {
-        display: block; width: 84px; height: 84px; margin: 0 auto 8px; border-radius: 50%;
-        overflow: hidden; background: var(--panel-bg);
+        display: block; width: 80px; height: 80px; margin: 0 auto 10px; border-radius: 50%;
+        overflow: hidden; background: var(--panel-bg-high); transition: filter 0.15s;
     }
+    .series-reco-card:hover .series-reco-thumb { filter: brightness(1.15); }
     .series-reco-thumb img { width: 100%; height: 100%; object-fit: cover; }
     .series-reco-thumb .avatar-fallback {
         width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
-        font-size: 1.6rem; font-weight: bold; color: var(--sub-text);
+        font-size: 1.6rem; font-weight: 700; color: var(--sub-text);
     }
-    .series-reco-name { font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; }
+    .series-reco-name { font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; }
     .series-reco-name a { color: var(--text-color); text-decoration: none; }
 
-    aside { width: 260px; flex-shrink: 0; }
+    aside { width: 300px; flex-shrink: 0; border-left: 1px solid var(--border-color); padding-left: 24px; }
     .aside-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 12px;
+        margin-bottom: 16px;
         font-size: 0.95rem;
+        font-weight: 700;
     }
-    .aside-header a { color: var(--link-color); font-size: 0.8rem; text-decoration: none; }
+    .aside-header a { color: var(--accent); font-size: 0.78rem; font-weight: 600; text-decoration: none; }
     .sub-series-item {
         display: flex;
         align-items: center;
-        gap: 10px;
-        padding: 8px 0;
+        gap: 12px;
+        padding: 8px;
+        margin: 0 -8px;
+        border-radius: 10px;
         text-decoration: none;
         color: var(--text-color);
+        transition: background 0.15s;
     }
+    .sub-series-item:hover { background: var(--panel-bg); }
     .sub-series-item .avatar {
-        width: 36px; height: 36px; border-radius: 50%; background: var(--panel-bg);
-        display: flex; align-items: center; justify-content: center; font-weight: bold;
+        width: 40px; height: 40px; border-radius: 50%; background: var(--panel-bg-high);
+        display: flex; align-items: center; justify-content: center; font-weight: 700;
         overflow: hidden; flex-shrink: 0;
     }
     .sub-series-item .avatar img { width: 100%; height: 100%; object-fit: cover; }
     .sub-series-item .meta-title { font-size: 0.85rem; font-weight: 600; }
-    .sub-series-item .meta-sub { font-size: 0.75rem; color: var(--sub-text); }
+    .sub-series-item .meta-sub { font-size: 0.74rem; color: var(--sub-text); margin-top: 1px; }
     .empty-state { color: var(--sub-text); font-size: 0.85rem; padding: 20px 0; }
 
     .modal-overlay {
         display: none;
-        position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+        position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+        backdrop-filter: blur(3px);
         z-index: 2000; align-items: center; justify-content: center;
     }
     .modal-overlay.open { display: flex; }
     .modal-box {
-        background: var(--bg-color);
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border-color);
         color: var(--text-color);
         width: 92%;
         max-width: 480px;
         max-height: 85vh;
         overflow-y: auto;
-        border-radius: 14px;
-        padding: 22px;
+        border-radius: 20px;
+        padding: 24px;
         position: relative;
     }
     .modal-close {
-        position: absolute; top: 14px; right: 16px;
+        position: absolute; top: 16px; right: 18px;
         background: none; border: none; font-size: 18px; cursor: pointer; color: var(--sub-text);
     }
     .modal-tabs { display: flex; gap: 8px; margin: 4px 0 18px; border-bottom: 1px solid var(--border-color); }
     .modal-tab {
-        background: none; border: none; padding: 8px 4px; font-size: 0.9rem; cursor: pointer;
+        background: none; border: none; padding: 8px 4px; font-size: 0.88rem; font-weight: 600; cursor: pointer;
         color: var(--sub-text); border-bottom: 2px solid transparent;
     }
-    .modal-tab.active { color: var(--text-color); border-bottom-color: var(--accent); font-weight: bold; }
+    .modal-tab.active { color: var(--text-color); border-bottom-color: var(--accent); }
     .modal-panel { display: none; }
     .modal-panel.active { display: block; }
-    .modal-box h3 { font-size: 0.95rem; margin: 18px 0 8px; }
+    .modal-box h3 { font-size: 0.95rem; font-weight: 700; margin: 18px 0 8px; }
     .modal-box h3:first-child { margin-top: 0; }
-    .modal-box label { display: block; font-size: 0.82rem; color: var(--sub-text); margin: 10px 0 4px; }
+    .modal-box label { display: block; font-size: 0.8rem; color: var(--sub-text); margin: 10px 0 5px; }
     .modal-box input[type="text"], .modal-box input[type="email"], .modal-box input[type="url"],
     .modal-box textarea, .modal-box select {
-        width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color);
-        background: var(--panel-bg); color: var(--text-color); font-size: 0.85rem;
+        width: 100%; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--border-color);
+        background: var(--panel-bg); color: var(--text-color); font-size: 0.85rem; font-family: inherit;
+        outline: none;
     }
+    .modal-box input:focus, .modal-box textarea:focus, .modal-box select:focus { border-color: var(--accent); }
     .modal-box button.action {
-        margin-top: 14px; background: var(--link-color); color: #fff; border: none;
-        border-radius: 8px; padding: 9px 16px; font-size: 0.85rem; font-weight: bold; cursor: pointer;
+        margin-top: 16px; background: var(--accent); color: #fff; border: none;
+        border-radius: 10px; padding: 10px 18px; font-size: 0.85rem; font-weight: 700; cursor: pointer;
     }
-    .modal-box button.action.danger { background: #c0392b; }
-    .modal-msg { font-size: 0.8rem; margin-top: 8px; }
-    .modal-msg.ok { color: #1a7f37; }
-    .modal-msg.err { color: #c0392b; }
-    hr.sep { border: none; border-top: 1px solid var(--border-color); margin: 18px 0; }
+    .modal-box button.action.danger { background: transparent; border: 1px solid #c0392b; color: #e57373; }
+    .modal-msg { font-size: 0.8rem; margin-top: 10px; }
+    .modal-msg.ok { color: #4ade80; }
+    .modal-msg.err { color: #e57373; }
+    hr.sep { border: none; border-top: 1px solid var(--border-color); margin: 20px 0; }
 
     .toggle-row {
         display: flex; align-items: center; justify-content: space-between;
-        padding: 8px 0; font-size: 0.85rem;
+        padding: 9px 0; font-size: 0.85rem;
     }
     .switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
     .switch input { opacity: 0; width: 0; height: 0; }
@@ -284,12 +321,12 @@
     .switch input:checked + .switch-slider:before { transform: translateX(18px); }
     .series-row {
         display: flex; align-items: center; justify-content: space-between;
-        padding: 6px 0; font-size: 0.82rem;
+        padding: 7px 0; font-size: 0.82rem;
     }
 
     @media (max-width: 800px) {
-        .layout { flex-direction: column; }
-        aside { width: 100%; }
+        .layout { flex-direction: column; padding: 20px; }
+        aside { width: 100%; border-left: none; border-top: 1px solid var(--border-color); padding-left: 0; padding-top: 20px; }
         .search-bar { display: none; }
     }
 </style>
@@ -303,7 +340,8 @@
             <span class="logo-bottom-line">Search</span>
         </span>
     </a>
-    <a href="video.html" class="video-badge-link"><span class="play-icon">▶</span> HYUNIL VIDEO</a>
+    <span class="header-divider"></span>
+    <a href="video.html" class="video-badge-link">HYUNIL <span class="play-icon">VIDEO</span></a>
     <div class="search-bar">🔍 무엇이든 검색해보세요...</div>
     <div class="header-right">
         <button class="upload-btn" id="upload-btn">업로드</button>
@@ -514,14 +552,14 @@
             card.innerHTML = `
                 <a class="video-card" href="watch.html?s=${v.seriesId}&v=${v.id}">
                     <div class="thumb-wrap"><img src="${v.thumbnailUrl}" alt="${v.title}"></div>
+                    <div class="video-title-row">
+                        <div class="video-title">${v.title}</div>
+                        ${canManage ? `<button class="video-menu-btn" data-series="${v.seriesId}" data-video="${v.id}" data-title="${(v.title || '').replace(/"/g, '&quot;')}" data-thumb="${(v.thumbnailUrl || '').replace(/"/g, '&quot;')}">⋮</button>` : ''}
+                    </div>
+                    <div class="video-meta">${series ? series.name : '알 수 없는 시리즈'}</div>
                 </a>
-                <div class="video-title-row">
-                    <div class="video-title">${v.title}</div>
-                    ${canManage ? `<button class="video-menu-btn" data-series="${v.seriesId}" data-video="${v.id}" data-title="${(v.title || '').replace(/"/g, '&quot;')}" data-thumb="${(v.thumbnailUrl || '').replace(/"/g, '&quot;')}">⋮</button>` : ''}
-                </div>
-                <div class="video-meta">
-                    <span>${series ? series.name : '알 수 없는 시리즈'}</span>
-                    <span class="video-meta-right"><span class="sub-pill ${isSub ? 'subscribed' : ''}" data-series="${v.seriesId}">${isSub ? '구독중' : '구독'}</span></span>
+                <div class="video-pill-row">
+                    <span class="sub-pill ${isSub ? 'subscribed' : ''}" data-series="${v.seriesId}">${isSub ? '구독중' : '구독'}</span>
                 </div>
             `;
             videoGrid.appendChild(card);

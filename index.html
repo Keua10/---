@@ -63,20 +63,22 @@
 
         .video-link {
             display: flex;
-            align-items: center;
-            gap: 6px;
+            align-items: baseline;
+            gap: 5px;
             color: var(--text-color);
             text-decoration: none;
-            font-weight: bold;
-            opacity: 0.85;
+            font-weight: 800;
+            font-size: 1.05rem;
+            letter-spacing: -0.02em;
+            opacity: 0.92;
         }
         .video-link:hover { opacity: 1; }
         .video-link .play-icon {
-            background: #ff0000;
-            color: #fff;
-            border-radius: 4px;
-            font-size: 11px;
-            padding: 3px 4px;
+            font-weight: 500;
+            font-size: 0.65rem;
+            color: var(--text-color);
+            opacity: 0.55;
+            letter-spacing: 0.02em;
         }
 
         .login-btn {
@@ -286,7 +288,7 @@
     </div>
 
     <div class="top-right-controls">
-        <a href="video.html" class="video-link"><span class="play-icon">▶</span> HYUNIL VIDEO</a>
+        <a href="video.html" class="video-link">HYUNIL <span class="play-icon">VIDEO</span></a>
         <button class="login-btn" id="login-btn">로그인</button>
         <div class="user-area" id="user-area">
             <img id="user-photo" src="" alt="프로필">
