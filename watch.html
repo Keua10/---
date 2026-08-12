@@ -73,16 +73,85 @@
     .watch-layout {
         display: flex;
         flex-direction: column;
-        gap: 32px;
+        gap: 24px;
         padding: 24px 28px;
-        max-width: 1440px;
+        max-width: 1600px;
         margin: 0 auto;
         align-items: flex-start;
     }
     @media (min-width: 1024px) {
-        .watch-layout { flex-direction: row; }
+        .watch-layout { flex-direction: row; gap: 32px; }
     }
-    .watch-main { flex: 1; min-width: 0; width: 100%; max-width: 900px; }
+    .watch-main { flex: 1; min-width: 0; width: 100%; max-width: 760px; order: 1; }
+
+    .reco-row {
+        display: flex;
+        align-items: stretch;
+        gap: 8px;
+        width: 100%;
+        order: 2;
+    }
+    @media (min-width: 1024px) {
+        .reco-row { width: 300px; flex-shrink: 0; order: 0; }
+    }
+    .reco-panel {
+        flex: 1;
+        min-width: 0;
+        background: var(--panel-bg);
+        border-radius: 12px;
+        padding: 14px;
+    }
+    @media (min-width: 1024px) {
+        .reco-panel { width: 100%; padding: 18px; }
+    }
+    .reco-header { font-size: 0.95rem; font-weight: 700; margin: 0 0 12px; }
+    .reco-list { display: flex; flex-direction: row; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
+    @media (min-width: 1024px) {
+        .reco-list { flex-direction: column; gap: 10px; overflow-x: visible; padding-bottom: 0; }
+    }
+    .reco-item {
+        display: flex; flex-direction: column; gap: 6px; width: 150px; flex-shrink: 0;
+        text-decoration: none; color: var(--text-color); border-radius: 10px;
+    }
+    @media (min-width: 1024px) {
+        .reco-item {
+            flex-direction: row; width: auto; padding: 6px; gap: 10px;
+            transition: background 0.15s;
+        }
+        .reco-item:hover { background: var(--panel-bg-high); }
+    }
+    .reco-thumb { width: 100%; aspect-ratio: 16/9; border-radius: 8px; overflow: hidden; background: #000; flex-shrink: 0; }
+    @media (min-width: 1024px) {
+        .reco-thumb { width: 120px; }
+    }
+    .reco-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .reco-info { min-width: 0; }
+    .reco-title {
+        font-size: 0.8rem; font-weight: 600; line-height: 1.3;
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .reco-series { font-size: 0.72rem; color: var(--sub-text); margin-top: 4px; }
+
+    .reco-drawer-toggle {
+        display: flex; align-items: center; justify-content: center;
+        width: 36px; flex-shrink: 0; align-self: stretch;
+        background: var(--panel-bg-high); border: none; border-radius: 10px;
+        color: var(--text-color); font-size: 1.1rem; cursor: pointer;
+    }
+    @media (min-width: 1024px) {
+        .reco-drawer-toggle { display: none; }
+    }
+
+    .drawer-overlay {
+        display: none;
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,0.45);
+        z-index: 1550;
+    }
+    .drawer-overlay.open { display: block; }
+    @media (min-width: 1024px) {
+        .drawer-overlay { display: none !important; }
+    }
 
     .thumb-container {
         position: relative; width: 100%; aspect-ratio: 16/9;
@@ -118,17 +187,17 @@
         border: 1px solid var(--border-color);
     }
     .series-row .mini-avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .series-row .series-row-name { font-size: 0.85rem; color: var(--sub-text); }
+    .series-row .series-row-name { font-size: 0.95rem; color: var(--sub-text); }
 
     .watch-title {
-        font-size: 1.5rem; line-height: 2rem; font-weight: 700;
+        font-size: 1.7rem; line-height: 2.2rem; font-weight: 700;
         margin: 12px 0 16px; color: var(--text-color); letter-spacing: -0.01em;
     }
     @media (min-width: 1024px) {
         .watch-title { font-size: 2rem; line-height: 2.5rem; }
     }
 
-    .watch-stats { display: flex; align-items: center; gap: 20px; font-size: 0.85rem; }
+    .watch-stats { display: flex; align-items: center; gap: 20px; font-size: 0.95rem; }
     .stat-btn {
         background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px;
         color: var(--text-color); padding: 4px; transition: color 0.15s;
@@ -137,9 +206,41 @@
     .stat-btn.liked { color: var(--accent); font-weight: 700; }
     .stat-static { display: flex; align-items: center; gap: 6px; color: var(--text-color); }
 
-    .watch-side { width: 100%; flex-shrink: 0; }
+    .watch-side {
+        position: fixed; top: 0; right: 0; height: 100vh;
+        width: 88vw; max-width: 420px;
+        background: var(--panel-bg);
+        transform: translateX(100%);
+        transition: transform 0.25s ease;
+        z-index: 1600; overflow-y: auto;
+        padding: 56px 20px 20px;
+        box-shadow: -4px 0 24px rgba(0,0,0,0.4);
+        order: 3;
+    }
+    .watch-side.open { transform: translateX(0); }
     @media (min-width: 1024px) {
-        .watch-side { width: 380px; border-left: 1px solid var(--border-color); padding-left: 32px; }
+        .watch-side {
+            position: static; width: 380px; height: auto; transform: none;
+            box-shadow: none; flex-shrink: 0; overflow-y: visible;
+            border-radius: 12px; padding: 20px;
+        }
+    }
+    .drawer-close-btn {
+        position: absolute; top: 16px; right: 16px;
+        background: none; border: none; font-size: 18px; cursor: pointer; color: var(--sub-text);
+    }
+    @media (min-width: 1024px) {
+        .drawer-close-btn { display: none; }
+    }
+    .drawer-handle {
+        display: flex; align-items: center; justify-content: center;
+        position: absolute; left: -32px; top: 50%; transform: translateY(-50%);
+        width: 32px; height: 64px; background: var(--panel-bg);
+        border-radius: 10px 0 0 10px; cursor: pointer; color: var(--text-color);
+        font-size: 1.1rem; box-shadow: -2px 0 8px rgba(0,0,0,0.3); border: none;
+    }
+    @media (min-width: 1024px) {
+        .drawer-handle { display: none; }
     }
     .comments-header { font-size: 1.25rem; font-weight: 600; margin-bottom: 20px; }
     .comments-header span { color: var(--sub-text); font-weight: 400; font-size: 0.85rem; margin-left: 8px; }
@@ -203,12 +304,22 @@
 <div class="watch-main" id="watch-main">
 <div class="empty-state">불러오는 중...</div>
 </div>
-<div class="watch-side">
+<div class="reco-row">
+<div class="reco-panel">
+<h3 class="reco-header">추천영상</h3>
+<div class="reco-list" id="reco-list"></div>
+</div>
+<button class="reco-drawer-toggle" id="reco-drawer-toggle" aria-label="댓글 열기">›</button>
+</div>
+<aside class="watch-side" id="watch-side">
+<button class="drawer-handle" id="drawer-handle" aria-label="댓글 닫기">›</button>
+<button class="drawer-close-btn" id="drawer-close-btn">✕</button>
 <div class="comments-header" id="comments-header">댓글</div>
 <div id="comment-form-wrap"></div>
 <div id="comments-list"><div class="empty-state">불러오는 중...</div></div>
+</aside>
 </div>
-</div>
+<div class="drawer-overlay" id="drawer-overlay"></div>
 <div id="edit-video-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index:2000; align-items:center; justify-content:center;">
 <div style="background: var(--surface-container-low, #1c1b1b); border: 1px solid var(--surface-stroke, #222); color: var(--on-surface, #e5e2e1); width: 92%; max-width: 420px; max-height: 85vh; overflow-y:auto; border-radius:16px; padding:24px; position:relative;">
 <button class="" id="edit-video-close" style="position:absolute; top:16px; right:16px; background:none; border:none; font-size:20px; cursor:pointer; color:var(--tertiary, #c7c6c6);">✕</button>
@@ -232,7 +343,8 @@
         getSeries, getVideo, incrementVideoView, likeVideo, unlikeVideo,
         updateVideo, deleteVideoFromSeries, formatDate,
         getComments, getMyComment, upsertComment, deleteComment, likeComment, unlikeComment,
-        canUploadToSeries, isSiteOwner
+        canUploadToSeries, isSiteOwner,
+        getRandomRecommendedVideos, getAllSeries
     } from './auth.js';
 
     const params = new URLSearchParams(location.search);
@@ -243,6 +355,51 @@
     const commentsHeader = document.getElementById('comments-header');
     const commentFormWrap = document.getElementById('comment-form-wrap');
     const commentsList = document.getElementById('comments-list');
+    const recoList = document.getElementById('reco-list');
+    const watchSide = document.getElementById('watch-side');
+    const drawerOverlay = document.getElementById('drawer-overlay');
+    const drawerCloseBtn = document.getElementById('drawer-close-btn');
+    const drawerHandle = document.getElementById('drawer-handle');
+    const recoDrawerToggle = document.getElementById('reco-drawer-toggle');
+
+    function openCommentsDrawer() { watchSide.classList.add('open'); drawerOverlay.classList.add('open'); }
+    function closeCommentsDrawer() { watchSide.classList.remove('open'); drawerOverlay.classList.remove('open'); }
+    recoDrawerToggle.addEventListener('click', () => {
+        watchSide.classList.contains('open') ? closeCommentsDrawer() : openCommentsDrawer();
+    });
+    drawerHandle.addEventListener('click', closeCommentsDrawer);
+    drawerCloseBtn.addEventListener('click', closeCommentsDrawer);
+    drawerOverlay.addEventListener('click', closeCommentsDrawer);
+
+    async function renderRecommended() {
+        try {
+            const seriesList = await getAllSeries();
+            const seriesCache = {};
+            seriesList.forEach(s => seriesCache[s.id] = s);
+            const vids = (await getRandomRecommendedVideos(16))
+                .filter(v => !(v.seriesId === seriesId && v.id === videoId))
+                .slice(0, 12);
+            if (vids.length === 0) {
+                recoList.innerHTML = '<div class="empty-state">추천할 영상이 없습니다.</div>';
+                return;
+            }
+            recoList.innerHTML = vids.map(v => {
+                const s = seriesCache[v.seriesId];
+                return `
+                    <a class="reco-item" href="watch.html?s=${v.seriesId}&v=${v.id}">
+                        <div class="reco-thumb"><img src="${v.thumbnailUrl}" alt="${v.title}"></div>
+                        <div class="reco-info">
+                            <div class="reco-title">${v.title}</div>
+                            <div class="reco-series">${s ? s.name : '알 수 없는 시리즈'}</div>
+                        </div>
+                    </a>
+                `;
+            }).join('');
+        } catch (e) {
+            console.error(e);
+            recoList.innerHTML = '<div class="empty-state">불러오지 못했습니다.</div>';
+        }
+    }
 
     let currentUser = null;
     let series = null;
@@ -523,6 +680,7 @@
         }
         renderMain();
         renderComments();
+        renderRecommended();
     }
 
     watchAuth(async (user) => {
