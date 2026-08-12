@@ -102,9 +102,15 @@
         padding: 14px;
     }
     @media (min-width: 1024px) {
-        .reco-panel { width: 100%; padding: 18px; }
+        .reco-panel {
+            width: 100%; padding: 18px;
+            overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--panel-bg-high) transparent;
+        }
     }
     .reco-header { font-size: 0.95rem; font-weight: 700; margin: 0 0 12px; }
+    @media (min-width: 1024px) {
+        .reco-header { position: sticky; top: 0; background: var(--panel-bg); padding-bottom: 4px; z-index: 1; }
+    }
     .reco-list { display: flex; flex-direction: row; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
     @media (min-width: 1024px) {
         .reco-list { flex-direction: column; gap: 10px; overflow-x: visible; padding-bottom: 0; }
@@ -221,8 +227,9 @@
     @media (min-width: 1024px) {
         .watch-side {
             position: static; width: 460px; height: auto; transform: none;
-            box-shadow: none; flex-shrink: 0; overflow-y: visible;
+            box-shadow: none; flex-shrink: 0; overflow-y: auto;
             border-radius: 12px; padding: 20px;
+            scrollbar-width: thin; scrollbar-color: var(--panel-bg-high) transparent;
         }
     }
     .drawer-close-btn {
@@ -245,6 +252,9 @@
     }
     .comments-header { font-size: 1.25rem; font-weight: 600; margin-bottom: 20px; }
     .comments-header span { color: var(--sub-text); font-weight: 400; font-size: 0.85rem; margin-left: 8px; }
+    @media (min-width: 1024px) {
+        .comments-header { position: sticky; top: 0; background: var(--panel-bg); padding-bottom: 4px; z-index: 1; }
+    }
 
     .comment-form { margin-bottom: 24px; }
     .comment-form textarea {
@@ -357,6 +367,7 @@
     const commentFormWrap = document.getElementById('comment-form-wrap');
     const commentsList = document.getElementById('comments-list');
     const recoList = document.getElementById('reco-list');
+    const recoPanel = document.querySelector('.reco-panel');
     const watchSide = document.getElementById('watch-side');
     const drawerOverlay = document.getElementById('drawer-overlay');
     const drawerCloseBtn = document.getElementById('drawer-close-btn');
@@ -369,6 +380,27 @@
     drawerHandle.addEventListener('click', closeCommentsDrawer);
     drawerCloseBtn.addEventListener('click', closeCommentsDrawer);
     drawerOverlay.addEventListener('click', closeCommentsDrawer);
+
+    // 데스크톱(≥1024px)에서 추천영상/댓글 패널 높이를 영상 영역(watch-main) 높이에 정확히 맞춘다.
+    // 콘텐츠가 짧으면 배경색이 그만큼 채워져서 "떠 있는" 느낌 없이 영상과 같은 높이로 보이고,
+    // 콘텐츠가 길면(추천영상 12개, 댓글 다수 등) 패널 내부 스크롤로 처리해 페이지 전체가 늘어지지 않는다.
+    function syncPanelHeights() {
+        const isDesktop = window.innerWidth >= 1024;
+        if (!isDesktop) {
+            if (recoPanel) recoPanel.style.height = '';
+            watchSide.style.height = '';
+            return;
+        }
+        const h = watchMain.offsetHeight;
+        if (h > 0) {
+            if (recoPanel) recoPanel.style.height = h + 'px';
+            watchSide.style.height = h + 'px';
+        }
+    }
+    window.addEventListener('resize', syncPanelHeights);
+    if (window.ResizeObserver) {
+        new ResizeObserver(syncPanelHeights).observe(watchMain);
+    }
 
     async function renderRecommended() {
         try {
@@ -461,6 +493,7 @@
         document.getElementById('watch-title-el').textContent = video.title;
         renderThumb();
         renderStats();
+        syncPanelHeights();
     }
 
     let lastThumbPlayingState = null;
