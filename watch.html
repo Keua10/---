@@ -9,8 +9,8 @@
     :root {
         --bg-color: #0f0f0f;
         --bar-bg: #1c1b1b;
-        --panel-bg: #201f1f;
-        --panel-bg-high: #2a2a2a;
+        --panel-bg: #262626;
+        --panel-bg-high: #363636;
         --text-color: #e5e2e1;
         --sub-text: #c7c6c6;
         --sub-text-2: #a8a5a4;
@@ -69,6 +69,54 @@
         flex-shrink: 0;
     }
     .video-badge-link .play-icon { font-weight: 500; font-size: 0.6rem; color: var(--sub-text); }
+
+    .top-bar-right { display: flex; align-items: center; gap: 10px; }
+    .login-btn {
+        background-color: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: var(--radius-pill);
+        padding: 9px 20px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: opacity 0.15s;
+    }
+    .login-btn:hover { opacity: 0.88; }
+    .user-area { display: none; align-items: center; gap: 8px; }
+    .user-area .profile-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--panel-bg-high);
+        border: none;
+        cursor: pointer;
+        color: var(--text-color);
+        font-size: 13px;
+        font-weight: 600;
+        padding: 5px 14px 5px 5px;
+        border-radius: var(--radius-pill);
+    }
+    .user-area .profile-btn:hover { background: var(--border-color); }
+    .user-area img { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; background: var(--sub-text); }
+    .logout-btn {
+        background: var(--panel-bg);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-pill);
+        padding: 8px 16px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-color);
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+    .logout-btn:hover { background: var(--panel-bg-high); }
+    @media (max-width: 800px) {
+        .login-btn { padding: 7px 12px; font-size: 12px; }
+        .user-area .profile-btn { padding: 4px 8px 4px 4px; }
+        .user-area .profile-btn span { display: none; }
+        .logout-btn { padding: 6px 10px; font-size: 12px; }
+    }
 
     .watch-layout {
         display: flex;
@@ -306,6 +354,16 @@
 <span class="header-divider"></span>
 <a class="video-badge-link" href="video.html" title="HYUNIL VIDEO 홈으로 가기">HYUNIL <span class="play-icon">VIDEO</span></a>
 </div>
+<div class="top-bar-right">
+<button class="login-btn" id="login-btn">로그인</button>
+<div class="user-area" id="user-area">
+<button class="profile-btn" id="profile-btn">
+<img id="user-photo" src="" alt="프로필">
+<span id="user-name"></span>
+</button>
+<button class="logout-btn" id="logout-btn">로그아웃</button>
+</div>
+</div>
 </div>
 <div class="watch-layout">
 <div class="watch-main" id="watch-main">
@@ -346,7 +404,7 @@
 </div>
 <script type="module">
     import {
-        watchAuth, signInWithGoogle, getUserDoc,
+        watchAuth, signInWithGoogle, signOutUser, getUserDoc,
         getSeries, getVideo, incrementVideoView, likeVideo, unlikeVideo,
         updateVideo, deleteVideoFromSeries, formatDate,
         getComments, getMyComment, upsertComment, deleteComment, likeComment, unlikeComment,
@@ -365,6 +423,11 @@
     const recoList = document.getElementById('reco-list');
     const recoPanel = document.querySelector('.reco-panel');
     const watchSide = document.getElementById('watch-side');
+    const loginBtn = document.getElementById('login-btn');
+    const userArea = document.getElementById('user-area');
+    const userPhoto = document.getElementById('user-photo');
+    const userName = document.getElementById('user-name');
+    const logoutBtn = document.getElementById('logout-btn');
     const drawerOverlay = document.getElementById('drawer-overlay');
     const drawerCloseBtn = document.getElementById('drawer-close-btn');
     const drawerHandle = document.getElementById('drawer-handle');
@@ -376,6 +439,12 @@
     drawerHandle.addEventListener('click', closeCommentsDrawer);
     drawerCloseBtn.addEventListener('click', closeCommentsDrawer);
     drawerOverlay.addEventListener('click', closeCommentsDrawer);
+
+    loginBtn.addEventListener('click', async () => {
+        try { await signInWithGoogle(); }
+        catch (err) { alert('로그인에 실패했습니다: ' + err.message); }
+    });
+    logoutBtn.addEventListener('click', () => signOutUser());
 
     // 데스크톱(≥1024px)에서 추천영상/댓글 패널 높이를 영상 영역(watch-main) 높이에 정확히 맞춘다.
     // 콘텐츠가 짧으면 배경색이 그만큼 채워져서 "떠 있는" 느낌 없이 영상과 같은 높이로 보이고,
@@ -714,6 +783,15 @@
     watchAuth(async (user) => {
         currentUser = user;
         canManage = !!user && series && (isSiteOwner(user.email) || canUploadToSeries(series, user.email));
+        if (user) {
+            loginBtn.style.display = 'none';
+            userArea.style.display = 'flex';
+            userPhoto.src = user.photoURL || '';
+            userName.textContent = user.displayName || user.email;
+        } else {
+            loginBtn.style.display = 'inline-block';
+            userArea.style.display = 'none';
+        }
         renderMain();
         renderCommentForm();
     });
