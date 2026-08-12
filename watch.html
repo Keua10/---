@@ -105,6 +105,7 @@
         .reco-panel {
             width: 100%; padding: 18px;
             overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--panel-bg-high) transparent;
+            border-radius: 0;
         }
     }
     .reco-header { font-size: 0.95rem; font-weight: 700; margin: 0 0 12px; }
@@ -121,15 +122,12 @@
     }
     @media (min-width: 1024px) {
         .reco-item {
-            flex-direction: row; width: auto; padding: 6px; gap: 10px;
+            width: 100%; padding: 8px; gap: 8px;
             transition: background 0.15s;
         }
         .reco-item:hover { background: var(--panel-bg-high); }
     }
     .reco-thumb { width: 100%; aspect-ratio: 16/9; border-radius: 8px; overflow: hidden; background: #000; flex-shrink: 0; }
-    @media (min-width: 1024px) {
-        .reco-thumb { width: 140px; }
-    }
     .reco-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .reco-info { min-width: 0; }
     .reco-title {
@@ -228,7 +226,7 @@
         .watch-side {
             position: static; width: 460px; height: auto; transform: none;
             box-shadow: none; flex-shrink: 0; overflow-y: auto;
-            border-radius: 12px; padding: 20px;
+            border-radius: 0; padding: 20px;
             scrollbar-width: thin; scrollbar-color: var(--panel-bg-high) transparent;
         }
     }
