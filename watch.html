@@ -1,291 +1,185 @@
-<!DOCTYPE html><html lang="ko" style=""><head>
-<meta charset="utf-8">
-<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>영상 - HYUNIL VIDEO</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script id="tailwind-config">
-  tailwind.config = {
-    darkMode: "class",
-    theme: {
-      extend: {
-        "colors": {
-                "surface-variant": "#353534",
-                "on-secondary-fixed": "#191c1d",
-                "on-tertiary-fixed-variant": "#464747",
-                "secondary-container": "#494c4d",
-                "surface": "#131313",
-                "inverse-surface": "#e5e2e1",
-                "primary-container": "#ff5540",
-                "error": "#ffb4ab",
-                "on-primary": "#690100",
-                "surface-bright": "#3a3939",
-                "on-primary-fixed": "#410000",
-                "secondary": "#c4c7c8",
-                "surface-glass": "rgba(35, 35, 35, 0.7)",
-                "surface-elevated": "#232323",
-                "on-tertiary-container": "#292a2a",
-                "tertiary": "#c7c6c6",
-                "brand-accent-soft": "#FF4D4D",
-                "on-surface": "#e5e2e1",
-                "error-container": "#93000a",
-                "inverse-on-surface": "#313030",
-                "on-error-container": "#ffdad6",
-                "on-tertiary-fixed": "#1a1c1c",
-                "outline-variant": "#603e39",
-                "surface-container-high": "#2a2a2a",
-                "primary": "#ffb4a8",
-                "secondary-fixed": "#e1e3e4",
-                "on-surface-variant": "#ebbbb4",
-                "surface-dim": "#131313",
-                "surface-container-lowest": "#0e0e0e",
-                "surface-tint": "#ffb4a8",
-                "on-primary-fixed-variant": "#930100",
-                "primary-fixed": "#ffdad4",
-                "tertiary-container": "#909191",
-                "surface-stroke": "#222222",
-                "outline": "#b18780",
-                "on-background": "#e5e2e1",
-                "on-primary-container": "#5c0000",
-                "on-tertiary": "#2f3131",
-                "tertiary-fixed-dim": "#c7c6c6",
-                "tertiary-fixed": "#e3e2e2",
-                "primary-fixed-dim": "#ffb4a8",
-                "inverse-primary": "#c00100",
-                "on-error": "#690005",
-                "on-secondary": "#2e3132",
-                "surface-container": "#201f1f",
-                "surface-container-highest": "#353534",
-                "background": "#131313",
-                "surface-container-low": "#1c1b1b",
-                "secondary-fixed-dim": "#c4c7c8",
-                "on-secondary-container": "#babcbd",
-                "on-secondary-fixed-variant": "#444748"
-        },
-        "borderRadius": {
-                "DEFAULT": "0.25rem",
-                "lg": "0.5rem",
-                "xl": "0.75rem",
-                "full": "9999px"
-        },
-        "spacing": {
-                "margin-mobile": "16px",
-                "container-max": "1440px",
-                "margin-desktop": "32px",
-                "stack-md": "16px",
-                "stack-sm": "8px",
-                "stack-lg": "32px",
-                "gutter": "24px"
-        },
-        "fontFamily": {
-                "body-sm": [
-                        "Inter"
-                ],
-                "title-md": [
-                        "Inter"
-                ],
-                "headline-lg-mobile": [
-                        "Inter"
-                ],
-                "label-bold": [
-                        "Inter"
-                ],
-                "body-lg": [
-                        "Inter"
-                ],
-                "display-lg": [
-                        "Inter"
-                ],
-                "headline-lg": [
-                        "Inter"
-                ],
-                "caption": [
-                        "Inter"
-                ]
-        },
-        "fontSize": {
-                "body-sm": [
-                        "14px",
-                        {
-                                "lineHeight": "20px",
-                                "fontWeight": "400"
-                        }
-                ],
-                "title-md": [
-                        "20px",
-                        {
-                                "lineHeight": "28px",
-                                "fontWeight": "600"
-                        }
-                ],
-                "headline-lg-mobile": [
-                        "24px",
-                        {
-                                "lineHeight": "32px",
-                                "fontWeight": "700"
-                        }
-                ],
-                "label-bold": [
-                        "13px",
-                        {
-                                "lineHeight": "16px",
-                                "letterSpacing": "0.05em",
-                                "fontWeight": "700"
-                        }
-                ],
-                "body-lg": [
-                        "16px",
-                        {
-                                "lineHeight": "24px",
-                                "fontWeight": "400"
-                        }
-                ],
-                "display-lg": [
-                        "48px",
-                        {
-                                "lineHeight": "56px",
-                                "letterSpacing": "-0.02em",
-                                "fontWeight": "700"
-                        }
-                ],
-                "headline-lg": [
-                        "32px",
-                        {
-                                "lineHeight": "40px",
-                                "letterSpacing": "-0.01em",
-                                "fontWeight": "700"
-                        }
-                ],
-                "caption": [
-                        "12px",
-                        {
-                                "lineHeight": "16px",
-                                "fontWeight": "400"
-                        }
-                ]
-        }
-},
-    },
-  }
-</script>
-<style type="text/tailwindcss">
-    @layer components {
-        body {
-            @apply bg-[#0f0f0f] text-on-surface font-['Inter',sans-serif] m-0 min-h-screen;
-        }
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --bg-color: #0f0f0f;
+        --bar-bg: #1c1b1b;
+        --panel-bg: #201f1f;
+        --panel-bg-high: #2a2a2a;
+        --text-color: #e5e2e1;
+        --sub-text: #c7c6c6;
+        --sub-text-2: #a8a5a4;
+        --border-color: #222222;
+        --accent: #ff4d4d;
+        --danger-bg: rgba(147,0,10,0.2);
+        --danger-bg-hover: rgba(147,0,10,0.4);
+        --danger-text: #ffb4ab;
+        --radius-pill: 9999px;
+    }
+    * { box-sizing: border-box; }
+    html, body { overflow-x: hidden; max-width: 100%; }
+    body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: 'Inter', 'Malgun Gothic', sans-serif;
+        background: var(--bg-color);
+        color: var(--text-color);
+        letter-spacing: -0.01em;
+    }
 
-        .top-bar {
-            @apply px-7 py-4 border-b border-surface-stroke flex items-center justify-between bg-surface-container-low sticky top-0 z-50;
-        }
-        .top-bar-left {
-            @apply flex items-center gap-6;
-        }
-        .back-btn {
-            @apply bg-transparent border-none cursor-pointer text-xl text-on-surface p-2 rounded-full transition-colors hover:bg-surface-container flex items-center justify-center;
-        }
-        .header-logo {
-            @apply cursor-pointer object-contain transition-transform hover:scale-105;
-        }
+    .top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 28px;
+        border-bottom: 1px solid var(--border-color);
+        background: var(--bar-bg);
+        position: sticky;
+        top: 0;
+        z-index: 50;
+    }
+    .top-bar-left { display: flex; align-items: center; gap: 20px; }
+    .back-btn {
+        background: none; border: none; cursor: pointer;
+        font-size: 1.1rem; color: var(--text-color);
+        padding: 8px; border-radius: var(--radius-pill);
+        display: flex; align-items: center; justify-content: center;
+        transition: background 0.15s;
+    }
+    .back-btn:hover { background: var(--panel-bg-high); }
 
-        .watch-layout {
-            @apply flex flex-col lg:flex-row gap-8 px-7 py-6 items-start max-w-container-max mx-auto;
-        }
-        .watch-main {
-            @apply flex-1 min-w-0 w-full max-w-[900px];
-        }
+    .home-link { display: flex; align-items: center; text-decoration: none; color: var(--text-color); flex-shrink: 0; }
+    .home-link .logo-stack { display: flex; flex-direction: column; align-items: center; line-height: 1.05; }
+    .home-link .logo-top-line { font-size: 0.6rem; font-weight: 700; letter-spacing: -0.8px; }
+    .home-link .logo-top-line span:nth-child(1) { color: #4285F4; }
+    .home-link .logo-top-line span:nth-child(2) { color: #EA4335; }
+    .home-link .logo-top-line span:nth-child(3) { color: #FBBC05; }
+    .home-link .logo-top-line span:nth-child(4) { color: #34A853; }
+    .home-link .logo-bottom-line { font-size: 0.6rem; font-weight: 700; color: var(--text-color); }
+    .header-divider { width: 1px; height: 16px; background: var(--border-color); margin: 0 2px; flex-shrink: 0; }
+    .video-badge-link {
+        display: flex; align-items: baseline; gap: 4px;
+        text-decoration: none; color: var(--text-color);
+        font-weight: 800; font-size: 1rem; letter-spacing: -0.02em;
+        flex-shrink: 0;
+    }
+    .video-badge-link .play-icon { font-weight: 500; font-size: 0.6rem; color: var(--sub-text); }
 
-        .thumb-container {
-            @apply relative w-full aspect-video rounded-xl overflow-hidden bg-black cursor-pointer border border-surface-stroke;
-        }
-        .thumb-container img {
-            @apply w-full h-full object-cover block opacity-90;
-        }
-        .watch-btn {
-            @apply absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-surface-glass backdrop-blur-md border border-white/10 text-white text-body-lg font-bold px-8 py-3 rounded-full pointer-events-none tracking-wide;
-        }
-        .thumb-menu-btn {
-            @apply absolute bottom-4 right-4 bg-surface-glass backdrop-blur-sm border-none text-white text-xl w-10 h-10 rounded-full cursor-pointer leading-none flex items-center justify-center hover:bg-black/60 transition-colors;
-        }
+    .watch-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+        padding: 24px 28px;
+        max-width: 1440px;
+        margin: 0 auto;
+        align-items: flex-start;
+    }
+    @media (min-width: 1024px) {
+        .watch-layout { flex-direction: row; }
+    }
+    .watch-main { flex: 1; min-width: 0; width: 100%; max-width: 900px; }
 
-        .series-row {
-            @apply flex items-center gap-2.5 mt-5 no-underline text-on-surface w-fit;
-        }
-        .series-row .mini-avatar {
-            @apply w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-xs font-bold overflow-hidden shrink-0 border border-surface-stroke;
-        }
-        .series-row .mini-avatar img {
-            @apply w-full h-full object-cover;
-        }
-        .series-row .series-row-name {
-            @apply text-body-sm text-tertiary;
-        }
+    .thumb-container {
+        position: relative; width: 100%; aspect-ratio: 16/9;
+        border-radius: 12px; overflow: hidden; background: #000;
+        cursor: pointer; border: 1px solid var(--border-color);
+    }
+    .thumb-container img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0.9; }
+    .watch-btn {
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        background: rgba(35,35,35,0.7); backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,0.1); color: #fff;
+        font-size: 1rem; font-weight: 700; padding: 12px 32px;
+        border-radius: var(--radius-pill); pointer-events: none; letter-spacing: 0.02em;
+    }
+    .thumb-menu-btn {
+        position: absolute; bottom: 16px; right: 16px;
+        background: rgba(35,35,35,0.7); backdrop-filter: blur(4px);
+        border: none; color: #fff; font-size: 1.25rem;
+        width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
+        line-height: 1; display: flex; align-items: center; justify-content: center;
+        transition: background 0.15s;
+    }
+    .thumb-menu-btn:hover { background: rgba(0,0,0,0.6); }
 
-        .watch-title {
-            @apply text-headline-lg-mobile lg:text-headline-lg mt-3 mb-4 text-on-surface tracking-tight;
-        }
+    .series-row {
+        display: flex; align-items: center; gap: 10px; margin-top: 20px;
+        text-decoration: none; color: var(--text-color); width: fit-content;
+    }
+    .series-row .mini-avatar {
+        width: 32px; height: 32px; border-radius: 50%; background: var(--panel-bg);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.75rem; font-weight: 700; overflow: hidden; flex-shrink: 0;
+        border: 1px solid var(--border-color);
+    }
+    .series-row .mini-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .series-row .series-row-name { font-size: 0.85rem; color: var(--sub-text); }
 
-        .watch-stats {
-            @apply flex items-center gap-5 text-body-sm;
-        }
-        .stat-btn {
-            @apply bg-transparent border-none cursor-pointer flex items-center gap-1.5 text-on-surface px-1 py-1 hover:text-primary transition-colors;
-        }
-        .stat-btn.liked {
-            @apply text-primary font-bold;
-        }
-        .stat-static {
-            @apply flex items-center gap-1.5 text-on-surface;
-        }
+    .watch-title {
+        font-size: 1.5rem; line-height: 2rem; font-weight: 700;
+        margin: 12px 0 16px; color: var(--text-color); letter-spacing: -0.01em;
+    }
+    @media (min-width: 1024px) {
+        .watch-title { font-size: 2rem; line-height: 2.5rem; }
+    }
 
-        .watch-side {
-            @apply w-full lg:w-[380px] shrink-0 lg:border-l lg:border-surface-stroke lg:pl-8;
-        }
-        .comments-header {
-            @apply text-title-md mb-5;
-        }
-        .comments-header span {
-            @apply text-tertiary font-normal text-body-sm ml-2;
-        }
+    .watch-stats { display: flex; align-items: center; gap: 20px; font-size: 0.85rem; }
+    .stat-btn {
+        background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px;
+        color: var(--text-color); padding: 4px; transition: color 0.15s;
+    }
+    .stat-btn:hover { color: var(--accent); }
+    .stat-btn.liked { color: var(--accent); font-weight: 700; }
+    .stat-static { display: flex; align-items: center; gap: 6px; color: var(--text-color); }
 
-        .comment-form {
-            @apply mb-6;
-        }
-        .comment-form textarea {
-            @apply w-full min-h-[80px] rounded-lg border border-surface-stroke bg-surface-container-lowest text-on-surface px-4 py-3 text-body-sm resize-y font-inherit focus:ring-1 focus:ring-primary focus:border-primary transition-all outline-none;
-        }
-        .comment-form-actions {
-            @apply flex gap-2 mt-3 justify-end;
-        }
-        .comment-form button {
-            @apply border-none rounded-lg px-4 py-2 text-label-bold cursor-pointer transition-colors;
-        }
-        .comment-form .save-btn {
-            @apply bg-inverse-on-surface hover:bg-surface-variant text-white;
-        }
-        .comment-form .delete-btn {
-            @apply bg-error-container/20 text-error hover:bg-error-container/40;
-        }
-        .comment-hint {
-            @apply text-body-sm text-tertiary mb-5;
-        }
+    .watch-side { width: 100%; flex-shrink: 0; }
+    @media (min-width: 1024px) {
+        .watch-side { width: 380px; border-left: 1px solid var(--border-color); padding-left: 32px; }
+    }
+    .comments-header { font-size: 1.25rem; font-weight: 600; margin-bottom: 20px; }
+    .comments-header span { color: var(--sub-text); font-weight: 400; font-size: 0.85rem; margin-left: 8px; }
 
-        .comment-item {
-            @apply py-4 border-b border-surface-stroke last:border-none;
-        }
-        .comment-nickname {
-            @apply font-semibold text-body-sm text-on-surface;
-        }
-        .comment-text {
-            @apply text-body-sm mt-1.5 mb-2 leading-relaxed text-secondary whitespace-pre-wrap;
-        }
-        .comment-like-btn {
-            @apply bg-transparent border-none cursor-pointer text-caption text-tertiary inline-flex items-center gap-1 px-0 py-1 hover:text-primary transition-colors;
-        }
-        .comment-like-btn.liked {
-            @apply text-primary font-bold;
-        }
-        .empty-state {
-            @apply text-tertiary text-body-sm py-4;
-        }
+    .comment-form { margin-bottom: 24px; }
+    .comment-form textarea {
+        width: 100%; min-height: 80px; border-radius: 10px; border: 1px solid var(--border-color);
+        background: #0e0e0e; color: var(--text-color); padding: 12px 16px; font-size: 0.85rem;
+        resize: vertical; font-family: inherit; outline: none; transition: border-color 0.15s;
+    }
+    .comment-form textarea:focus { border-color: var(--accent); }
+    .comment-form-actions { display: flex; gap: 8px; margin-top: 12px; justify-content: flex-end; }
+    .comment-form button {
+        border: none; border-radius: 8px; padding: 8px 16px; font-size: 0.8rem;
+        font-weight: 700; cursor: pointer; transition: background 0.15s;
+    }
+    .comment-form .save-btn { background: var(--panel-bg-high); color: #fff; }
+    .comment-form .save-btn:hover { background: #3a3939; }
+    .comment-form .delete-btn { background: var(--danger-bg); color: var(--danger-text); }
+    .comment-form .delete-btn:hover { background: var(--danger-bg-hover); }
+    .comment-hint { font-size: 0.85rem; color: var(--sub-text); margin-bottom: 20px; }
+
+    .comment-item { padding: 16px 0; border-bottom: 1px solid var(--border-color); }
+    .comment-item:last-child { border-bottom: none; }
+    .comment-nickname { font-weight: 600; font-size: 0.85rem; color: var(--text-color); }
+    .comment-text { font-size: 0.85rem; margin: 6px 0 8px; line-height: 1.5; color: var(--sub-text); white-space: pre-wrap; }
+    .comment-like-btn {
+        background: none; border: none; cursor: pointer; font-size: 0.75rem; color: var(--sub-text);
+        display: inline-flex; align-items: center; gap: 4px; padding: 4px 0; transition: color 0.15s;
+    }
+    .comment-like-btn:hover { color: var(--accent); }
+    .comment-like-btn.liked { color: var(--accent); font-weight: 700; }
+    .empty-state { color: var(--sub-text); font-size: 0.85rem; padding: 16px 0; }
+
+    @media (max-width: 800px) {
+        .top-bar { padding: 10px 14px; }
+        .top-bar-left { gap: 10px; }
+        .header-divider { display: none; }
+        .video-badge-link { font-size: 0.85rem; }
+        .watch-layout { padding: 14px; gap: 24px; }
     }
 </style>
 </head>
@@ -293,19 +187,16 @@
 <div class="top-bar">
 <div class="top-bar-left">
 <button class="back-btn" id="back-btn" title="뒤로가기">
-<svg fill="none" height="24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="24"><path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path></svg>
+<svg fill="none" height="22" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="22"><path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path></svg>
 </button>
-<a class="flex items-center no-underline pl-2" href="index.html" title="신현일의 Search로 이동">
-<span class="flex flex-col items-center leading-none">
-<span class="text-[10px] font-bold tracking-tight"><span class="text-[#4285F4]">신</span><span class="text-[#EA4335]">현</span><span class="text-[#FBBC05]">일</span><span class="text-[#34A853]">의</span></span>
-<span class="text-[10px] font-bold text-on-surface">Search</span>
+<a class="home-link" href="index.html" title="신현일의 Search로 이동">
+<span class="logo-stack">
+<span class="logo-top-line"><span>신</span><span>현</span><span>일</span><span>의</span></span>
+<span class="logo-bottom-line">Search</span>
 </span>
 </a>
-<span class="h-4 w-px bg-outline-variant mx-1"></span>
-<a class="flex items-center gap-1 no-underline" href="video.html" title="HYUNIL VIDEO 홈으로 가기">
-<span class="text-on-surface font-extrabold text-base tracking-tight">HYUNIL</span>
-<span class="text-tertiary font-medium text-[10px] mt-0.5">VIDEO</span>
-</a>
+<span class="header-divider"></span>
+<a class="video-badge-link" href="video.html" title="HYUNIL VIDEO 홈으로 가기">HYUNIL <span class="play-icon">VIDEO</span></a>
 </div>
 </div>
 <div class="watch-layout">
