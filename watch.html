@@ -74,15 +74,15 @@
         display: flex;
         flex-direction: column;
         gap: 24px;
-        padding: 24px 28px;
-        max-width: 1600px;
+        padding: 24px 32px;
+        max-width: 2400px;
         margin: 0 auto;
         align-items: flex-start;
     }
     @media (min-width: 1024px) {
-        .watch-layout { flex-direction: row; gap: 32px; }
+        .watch-layout { flex-direction: row; gap: 40px; }
     }
-    .watch-main { flex: 1; min-width: 0; width: 100%; max-width: 760px; order: 1; }
+    .watch-main { flex: 1; min-width: 0; width: 100%; max-width: 1500px; order: 1; }
 
     .reco-row {
         display: flex;
@@ -92,7 +92,7 @@
         order: 2;
     }
     @media (min-width: 1024px) {
-        .reco-row { width: 300px; flex-shrink: 0; order: 0; }
+        .reco-row { width: 360px; flex-shrink: 0; order: 0; }
     }
     .reco-panel {
         flex: 1;
@@ -122,7 +122,7 @@
     }
     .reco-thumb { width: 100%; aspect-ratio: 16/9; border-radius: 8px; overflow: hidden; background: #000; flex-shrink: 0; }
     @media (min-width: 1024px) {
-        .reco-thumb { width: 120px; }
+        .reco-thumb { width: 140px; }
     }
     .reco-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .reco-info { min-width: 0; }
@@ -220,7 +220,7 @@
     .watch-side.open { transform: translateX(0); }
     @media (min-width: 1024px) {
         .watch-side {
-            position: static; width: 380px; height: auto; transform: none;
+            position: static; width: 460px; height: auto; transform: none;
             box-shadow: none; flex-shrink: 0; overflow-y: visible;
             border-radius: 12px; padding: 20px;
         }
@@ -233,14 +233,15 @@
         .drawer-close-btn { display: none; }
     }
     .drawer-handle {
-        display: flex; align-items: center; justify-content: center;
+        display: none; align-items: center; justify-content: center;
         position: absolute; left: -32px; top: 50%; transform: translateY(-50%);
         width: 32px; height: 64px; background: var(--panel-bg);
         border-radius: 10px 0 0 10px; cursor: pointer; color: var(--text-color);
         font-size: 1.1rem; box-shadow: -2px 0 8px rgba(0,0,0,0.3); border: none;
     }
+    .watch-side.open .drawer-handle { display: flex; }
     @media (min-width: 1024px) {
-        .drawer-handle { display: none; }
+        .drawer-handle, .watch-side.open .drawer-handle { display: none; }
     }
     .comments-header { font-size: 1.25rem; font-weight: 600; margin-bottom: 20px; }
     .comments-header span { color: var(--sub-text); font-weight: 400; font-size: 0.85rem; margin-left: 8px; }
@@ -312,7 +313,7 @@
 <button class="reco-drawer-toggle" id="reco-drawer-toggle" aria-label="댓글 열기">›</button>
 </div>
 <aside class="watch-side" id="watch-side">
-<button class="drawer-handle" id="drawer-handle" aria-label="댓글 닫기">›</button>
+<button class="drawer-handle" id="drawer-handle" aria-label="댓글 닫기">‹</button>
 <button class="drawer-close-btn" id="drawer-close-btn">✕</button>
 <div class="comments-header" id="comments-header">댓글</div>
 <div id="comment-form-wrap"></div>
@@ -364,9 +365,7 @@
 
     function openCommentsDrawer() { watchSide.classList.add('open'); drawerOverlay.classList.add('open'); }
     function closeCommentsDrawer() { watchSide.classList.remove('open'); drawerOverlay.classList.remove('open'); }
-    recoDrawerToggle.addEventListener('click', () => {
-        watchSide.classList.contains('open') ? closeCommentsDrawer() : openCommentsDrawer();
-    });
+    recoDrawerToggle.addEventListener('click', openCommentsDrawer);
     drawerHandle.addEventListener('click', closeCommentsDrawer);
     drawerCloseBtn.addEventListener('click', closeCommentsDrawer);
     drawerOverlay.addEventListener('click', closeCommentsDrawer);
