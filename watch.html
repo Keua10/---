@@ -9,8 +9,8 @@
     :root {
         --bg-color: #0f0f0f;
         --bar-bg: #1c1b1b;
-        --panel-bg: #262626;
-        --panel-bg-high: #363636;
+        --panel-bg: #201f1f;
+        --panel-bg-high: #2a2a2a;
         --text-color: #e5e2e1;
         --sub-text: #c7c6c6;
         --sub-text-2: #a8a5a4;
@@ -26,6 +26,8 @@
     body {
         margin: 0;
         min-height: 100vh;
+        display: flex;
+        flex-direction: column;
         font-family: 'Inter', 'Malgun Gothic', sans-serif;
         background: var(--bg-color);
         color: var(--text-color);
@@ -36,12 +38,13 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 16px 28px;
+        padding: 10px 28px;
         border-bottom: 1px solid var(--border-color);
         background: var(--bar-bg);
         position: sticky;
         top: 0;
         z-index: 50;
+        flex-shrink: 0;
     }
     .top-bar-left { display: flex; align-items: center; gap: 20px; }
     .back-btn {
@@ -55,20 +58,20 @@
 
     .home-link { display: flex; align-items: center; text-decoration: none; color: var(--text-color); flex-shrink: 0; }
     .home-link .logo-stack { display: flex; flex-direction: column; align-items: center; line-height: 1.05; }
-    .home-link .logo-top-line { font-size: 0.6rem; font-weight: 700; letter-spacing: -0.8px; }
+    .home-link .logo-top-line { font-size: 0.9rem; font-weight: 700; letter-spacing: -0.8px; }
     .home-link .logo-top-line span:nth-child(1) { color: #4285F4; }
     .home-link .logo-top-line span:nth-child(2) { color: #EA4335; }
     .home-link .logo-top-line span:nth-child(3) { color: #FBBC05; }
     .home-link .logo-top-line span:nth-child(4) { color: #34A853; }
-    .home-link .logo-bottom-line { font-size: 0.6rem; font-weight: 700; color: var(--text-color); }
-    .header-divider { width: 1px; height: 16px; background: var(--border-color); margin: 0 2px; flex-shrink: 0; }
+    .home-link .logo-bottom-line { font-size: 1rem; font-weight: 700; color: var(--text-color); }
+    .header-divider { width: 1px; height: 20px; background: var(--border-color); margin: 0 2px; flex-shrink: 0; }
     .video-badge-link {
-        display: flex; align-items: baseline; gap: 4px;
+        display: flex; align-items: baseline; gap: 5px;
         text-decoration: none; color: var(--text-color);
-        font-weight: 800; font-size: 1rem; letter-spacing: -0.02em;
+        font-weight: 800; font-size: 1.5rem; letter-spacing: -0.02em;
         flex-shrink: 0;
     }
-    .video-badge-link .play-icon { font-weight: 500; font-size: 0.6rem; color: var(--sub-text); }
+    .video-badge-link .play-icon { font-weight: 500; font-size: 0.9rem; color: var(--sub-text); }
 
     .top-bar-right { display: flex; align-items: center; gap: 10px; }
     .login-btn {
@@ -121,14 +124,18 @@
     .watch-layout {
         display: flex;
         flex-direction: column;
+        flex: 1;
         gap: 24px;
         padding: 24px 32px;
         align-items: flex-start;
     }
     @media (min-width: 1024px) {
-        .watch-layout { flex-direction: row; gap: 40px; }
+        .watch-layout { flex-direction: row; gap: 40px; padding: 0; align-items: stretch; }
     }
     .watch-main { flex: 1; min-width: 0; width: 100%; order: 1; }
+    @media (min-width: 1024px) {
+        .watch-main { padding: 24px 0; }
+    }
 
     .reco-row {
         display: flex;
@@ -150,14 +157,10 @@
     @media (min-width: 1024px) {
         .reco-panel {
             width: 100%; padding: 18px;
-            overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--panel-bg-high) transparent;
             border-radius: 0;
         }
     }
     .reco-header { font-size: 0.95rem; font-weight: 700; margin: 0 0 12px; }
-    @media (min-width: 1024px) {
-        .reco-header { position: sticky; top: 0; background: var(--panel-bg); padding-bottom: 4px; z-index: 1; }
-    }
     .reco-list { display: flex; flex-direction: row; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
     @media (min-width: 1024px) {
         .reco-list { flex-direction: column; gap: 10px; overflow-x: visible; padding-bottom: 0; }
@@ -271,9 +274,8 @@
     @media (min-width: 1024px) {
         .watch-side {
             position: static; width: 460px; height: auto; transform: none;
-            box-shadow: none; flex-shrink: 0; overflow-y: auto;
+            box-shadow: none; flex-shrink: 0;
             border-radius: 0; padding: 20px;
-            scrollbar-width: thin; scrollbar-color: var(--panel-bg-high) transparent;
         }
     }
     .drawer-close-btn {
@@ -296,9 +298,6 @@
     }
     .comments-header { font-size: 1.25rem; font-weight: 600; margin-bottom: 20px; }
     .comments-header span { color: var(--sub-text); font-weight: 400; font-size: 0.85rem; margin-left: 8px; }
-    @media (min-width: 1024px) {
-        .comments-header { position: sticky; top: 0; background: var(--panel-bg); padding-bottom: 4px; z-index: 1; }
-    }
 
     .comment-form { margin-bottom: 24px; }
     .comment-form textarea {
@@ -331,10 +330,13 @@
     .empty-state { color: var(--sub-text); font-size: 0.85rem; padding: 16px 0; }
 
     @media (max-width: 800px) {
-        .top-bar { padding: 10px 14px; }
+        .top-bar { padding: 8px 14px; }
         .top-bar-left { gap: 10px; }
         .header-divider { display: none; }
-        .video-badge-link { font-size: 0.85rem; }
+        .home-link .logo-top-line { font-size: 0.68rem; }
+        .home-link .logo-bottom-line { font-size: 0.76rem; }
+        .video-badge-link { font-size: 1.15rem; }
+        .video-badge-link .play-icon { font-size: 0.7rem; }
         .watch-layout { padding: 14px; gap: 24px; }
     }
 </style>
@@ -421,7 +423,6 @@
     const commentFormWrap = document.getElementById('comment-form-wrap');
     const commentsList = document.getElementById('comments-list');
     const recoList = document.getElementById('reco-list');
-    const recoPanel = document.querySelector('.reco-panel');
     const watchSide = document.getElementById('watch-side');
     const loginBtn = document.getElementById('login-btn');
     const userArea = document.getElementById('user-area');
@@ -445,27 +446,6 @@
         catch (err) { alert('로그인에 실패했습니다: ' + err.message); }
     });
     logoutBtn.addEventListener('click', () => signOutUser());
-
-    // 데스크톱(≥1024px)에서 추천영상/댓글 패널 높이를 영상 영역(watch-main) 높이에 정확히 맞춘다.
-    // 콘텐츠가 짧으면 배경색이 그만큼 채워져서 "떠 있는" 느낌 없이 영상과 같은 높이로 보이고,
-    // 콘텐츠가 길면(추천영상 12개, 댓글 다수 등) 패널 내부 스크롤로 처리해 페이지 전체가 늘어지지 않는다.
-    function syncPanelHeights() {
-        const isDesktop = window.innerWidth >= 1024;
-        if (!isDesktop) {
-            if (recoPanel) recoPanel.style.height = '';
-            watchSide.style.height = '';
-            return;
-        }
-        const h = watchMain.offsetHeight;
-        if (h > 0) {
-            if (recoPanel) recoPanel.style.height = h + 'px';
-            watchSide.style.height = h + 'px';
-        }
-    }
-    window.addEventListener('resize', syncPanelHeights);
-    if (window.ResizeObserver) {
-        new ResizeObserver(syncPanelHeights).observe(watchMain);
-    }
 
     async function renderRecommended() {
         try {
@@ -558,7 +538,6 @@
         document.getElementById('watch-title-el').textContent = video.title;
         renderThumb();
         renderStats();
-        syncPanelHeights();
     }
 
     let lastThumbPlayingState = null;
