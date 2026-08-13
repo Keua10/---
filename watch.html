@@ -5,341 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>영상 - HYUNIL VIDEO</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-    :root {
-        --bg-color: #0f0f0f;
-        --bar-bg: #1c1b1b;
-        --panel-bg: #201f1f;
-        --panel-bg-high: #2a2a2a;
-        --text-color: #e5e2e1;
-        --sub-text: #c7c6c6;
-        --sub-text-2: #a8a5a4;
-        --border-color: #222222;
-        --accent: #ff4d4d;
-        --danger-bg: rgba(147,0,10,0.2);
-        --danger-bg-hover: rgba(147,0,10,0.4);
-        --danger-text: #ffb4ab;
-        --radius-pill: 9999px;
-    }
-    * { box-sizing: border-box; }
-    html, body { overflow-x: hidden; max-width: 100%; }
-    body {
-        margin: 0;
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        font-family: 'Inter', 'Malgun Gothic', sans-serif;
-        background: var(--bg-color);
-        color: var(--text-color);
-        letter-spacing: -0.01em;
-    }
-
-    .top-bar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 10px 28px;
-        border-bottom: 1px solid var(--border-color);
-        background: var(--bar-bg);
-        position: sticky;
-        top: 0;
-        z-index: 50;
-        flex-shrink: 0;
-    }
-    .top-bar-left { display: flex; align-items: center; gap: 20px; }
-    .back-btn {
-        background: none; border: none; cursor: pointer;
-        font-size: 1.1rem; color: var(--text-color);
-        padding: 8px; border-radius: var(--radius-pill);
-        display: flex; align-items: center; justify-content: center;
-        transition: background 0.15s;
-    }
-    .back-btn:hover { background: var(--panel-bg-high); }
-
-    .home-link { display: flex; align-items: center; text-decoration: none; color: var(--text-color); flex-shrink: 0; }
-    .home-link .logo-stack { display: flex; flex-direction: column; align-items: center; line-height: 1.05; }
-    .home-link .logo-top-line { font-size: 0.9rem; font-weight: 700; letter-spacing: -0.8px; }
-    .home-link .logo-top-line span:nth-child(1) { color: #4285F4; }
-    .home-link .logo-top-line span:nth-child(2) { color: #EA4335; }
-    .home-link .logo-top-line span:nth-child(3) { color: #FBBC05; }
-    .home-link .logo-top-line span:nth-child(4) { color: #34A853; }
-    .home-link .logo-bottom-line { font-size: 1rem; font-weight: 700; color: var(--text-color); }
-    .header-divider { width: 1px; height: 20px; background: var(--border-color); margin: 0 2px; flex-shrink: 0; }
-    .video-badge-link {
-        display: flex; align-items: baseline; gap: 5px;
-        text-decoration: none; color: var(--text-color);
-        font-weight: 800; font-size: 1.5rem; letter-spacing: -0.02em;
-        flex-shrink: 0;
-    }
-    .video-badge-link .play-icon { font-weight: 500; font-size: 0.9rem; color: var(--sub-text); }
-
-    .top-bar-right { display: flex; align-items: center; gap: 10px; }
-    .login-btn {
-        background-color: var(--accent);
-        color: #fff;
-        border: none;
-        border-radius: var(--radius-pill);
-        padding: 9px 20px;
-        font-size: 13px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: opacity 0.15s;
-    }
-    .login-btn:hover { opacity: 0.88; }
-    .user-area { display: none; align-items: center; gap: 8px; }
-    .user-area .profile-btn {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        background: var(--panel-bg-high);
-        border: none;
-        cursor: pointer;
-        color: var(--text-color);
-        font-size: 13px;
-        font-weight: 600;
-        padding: 5px 14px 5px 5px;
-        border-radius: var(--radius-pill);
-    }
-    .user-area .profile-btn:hover { background: var(--border-color); }
-    .user-area img { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; background: var(--sub-text); }
-    .logout-btn {
-        background: var(--panel-bg);
-        border: 1px solid var(--border-color);
-        border-radius: var(--radius-pill);
-        padding: 8px 16px;
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--text-color);
-        cursor: pointer;
-        transition: background 0.15s;
-    }
-    .logout-btn:hover { background: var(--panel-bg-high); }
-    @media (max-width: 800px) {
-        .login-btn { padding: 7px 12px; font-size: 12px; }
-        .user-area .profile-btn { padding: 4px 8px 4px 4px; }
-        .user-area .profile-btn span { display: none; }
-        .logout-btn { padding: 6px 10px; font-size: 12px; }
-    }
-
-    .watch-layout {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-        gap: 24px;
-        padding: 24px 32px;
-        align-items: flex-start;
-    }
-    @media (min-width: 1024px) {
-        .watch-layout { flex-direction: row; gap: 40px; padding: 0; align-items: stretch; }
-    }
-    .watch-main { flex: 1; min-width: 0; width: 100%; order: 1; }
-    @media (min-width: 1024px) {
-        .watch-main { padding: 24px 0; }
-    }
-
-    .reco-row {
-        display: flex;
-        align-items: stretch;
-        gap: 8px;
-        width: 100%;
-        order: 2;
-    }
-    @media (min-width: 1024px) {
-        .reco-row { width: 360px; flex-shrink: 0; order: 0; }
-    }
-    .reco-panel {
-        flex: 1;
-        min-width: 0;
-        background: var(--panel-bg);
-        border-radius: 12px;
-        padding: 14px;
-    }
-    @media (min-width: 1024px) {
-        .reco-panel {
-            width: 100%; padding: 18px;
-            border-radius: 0;
-        }
-    }
-    .reco-header { font-size: 0.95rem; font-weight: 700; margin: 0 0 12px; }
-    .reco-list { display: flex; flex-direction: row; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
-    @media (min-width: 1024px) {
-        .reco-list { flex-direction: column; gap: 10px; overflow-x: visible; padding-bottom: 0; }
-    }
-    .reco-item {
-        display: flex; flex-direction: column; gap: 6px; width: 150px; flex-shrink: 0;
-        text-decoration: none; color: var(--text-color); border-radius: 10px;
-    }
-    @media (min-width: 1024px) {
-        .reco-item {
-            width: 100%; padding: 8px; gap: 8px;
-            transition: background 0.15s;
-        }
-        .reco-item:hover { background: var(--panel-bg-high); }
-    }
-    .reco-thumb { width: 100%; aspect-ratio: 16/9; border-radius: 8px; overflow: hidden; background: #000; flex-shrink: 0; }
-    .reco-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .reco-info { min-width: 0; }
-    .reco-title {
-        font-size: 0.8rem; font-weight: 600; line-height: 1.3;
-        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-    }
-    .reco-series { font-size: 0.72rem; color: var(--sub-text); margin-top: 4px; }
-
-    .reco-drawer-toggle {
-        display: flex; align-items: center; justify-content: center;
-        width: 36px; flex-shrink: 0; align-self: stretch;
-        background: var(--panel-bg-high); border: none; border-radius: 10px;
-        color: var(--text-color); font-size: 1.1rem; cursor: pointer;
-    }
-    @media (min-width: 1024px) {
-        .reco-drawer-toggle { display: none; }
-    }
-
-    .drawer-overlay {
-        display: none;
-        position: fixed; inset: 0;
-        background: rgba(0,0,0,0.45);
-        z-index: 1550;
-    }
-    .drawer-overlay.open { display: block; }
-    @media (min-width: 1024px) {
-        .drawer-overlay { display: none !important; }
-    }
-
-    .thumb-container {
-        position: relative; width: 100%; aspect-ratio: 16/9;
-        border-radius: 12px; overflow: hidden; background: #000;
-        cursor: pointer; border: 1px solid var(--border-color);
-    }
-    .thumb-container img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0.9; }
-    .watch-btn {
-        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-        background: rgba(35,35,35,0.7); backdrop-filter: blur(8px);
-        border: 1px solid rgba(255,255,255,0.1); color: #fff;
-        font-size: 1rem; font-weight: 700; padding: 12px 32px;
-        border-radius: var(--radius-pill); pointer-events: none; letter-spacing: 0.02em;
-    }
-    .thumb-menu-btn {
-        position: absolute; bottom: 16px; right: 16px;
-        background: rgba(35,35,35,0.7); backdrop-filter: blur(4px);
-        border: none; color: #fff; font-size: 1.25rem;
-        width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
-        line-height: 1; display: flex; align-items: center; justify-content: center;
-        transition: background 0.15s;
-    }
-    .thumb-menu-btn:hover { background: rgba(0,0,0,0.6); }
-
-    .series-row {
-        display: flex; align-items: center; gap: 10px; margin-top: 20px;
-        text-decoration: none; color: var(--text-color); width: fit-content;
-    }
-    .series-row .mini-avatar {
-        width: 32px; height: 32px; border-radius: 50%; background: var(--panel-bg);
-        display: flex; align-items: center; justify-content: center;
-        font-size: 0.75rem; font-weight: 700; overflow: hidden; flex-shrink: 0;
-        border: 1px solid var(--border-color);
-    }
-    .series-row .mini-avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .series-row .series-row-name { font-size: 0.95rem; color: var(--sub-text); }
-
-    .watch-title {
-        font-size: 1.7rem; line-height: 2.2rem; font-weight: 700;
-        margin: 12px 0 16px; color: var(--text-color); letter-spacing: -0.01em;
-    }
-    @media (min-width: 1024px) {
-        .watch-title { font-size: 2rem; line-height: 2.5rem; }
-    }
-
-    .watch-stats { display: flex; align-items: center; gap: 20px; font-size: 0.95rem; }
-    .stat-btn {
-        background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px;
-        color: var(--text-color); padding: 4px; transition: color 0.15s;
-    }
-    .stat-btn:hover { color: var(--accent); }
-    .stat-btn.liked { color: var(--accent); font-weight: 700; }
-    .stat-static { display: flex; align-items: center; gap: 6px; color: var(--text-color); }
-
-    .watch-side {
-        position: fixed; top: 0; right: 0; height: 100vh;
-        width: 88vw; max-width: 420px;
-        background: var(--panel-bg);
-        transform: translateX(100%);
-        transition: transform 0.25s ease;
-        z-index: 1600; overflow-y: auto;
-        padding: 56px 20px 20px;
-        box-shadow: -4px 0 24px rgba(0,0,0,0.4);
-        order: 3;
-    }
-    .watch-side.open { transform: translateX(0); }
-    @media (min-width: 1024px) {
-        .watch-side {
-            position: static; width: 460px; height: auto; transform: none;
-            box-shadow: none; flex-shrink: 0;
-            border-radius: 0; padding: 20px;
-        }
-    }
-    .drawer-close-btn {
-        position: absolute; top: 16px; right: 16px;
-        background: none; border: none; font-size: 18px; cursor: pointer; color: var(--sub-text);
-    }
-    @media (min-width: 1024px) {
-        .drawer-close-btn { display: none; }
-    }
-    .drawer-handle {
-        display: none; align-items: center; justify-content: center;
-        position: absolute; left: -32px; top: 50%; transform: translateY(-50%);
-        width: 32px; height: 64px; background: var(--panel-bg);
-        border-radius: 10px 0 0 10px; cursor: pointer; color: var(--text-color);
-        font-size: 1.1rem; box-shadow: -2px 0 8px rgba(0,0,0,0.3); border: none;
-    }
-    .watch-side.open .drawer-handle { display: flex; }
-    @media (min-width: 1024px) {
-        .drawer-handle, .watch-side.open .drawer-handle { display: none; }
-    }
-    .comments-header { font-size: 1.25rem; font-weight: 600; margin-bottom: 20px; }
-    .comments-header span { color: var(--sub-text); font-weight: 400; font-size: 0.85rem; margin-left: 8px; }
-
-    .comment-form { margin-bottom: 24px; }
-    .comment-form textarea {
-        width: 100%; min-height: 80px; border-radius: 10px; border: 1px solid var(--border-color);
-        background: #0e0e0e; color: var(--text-color); padding: 12px 16px; font-size: 0.85rem;
-        resize: vertical; font-family: inherit; outline: none; transition: border-color 0.15s;
-    }
-    .comment-form textarea:focus { border-color: var(--accent); }
-    .comment-form-actions { display: flex; gap: 8px; margin-top: 12px; justify-content: flex-end; }
-    .comment-form button {
-        border: none; border-radius: 8px; padding: 8px 16px; font-size: 0.8rem;
-        font-weight: 700; cursor: pointer; transition: background 0.15s;
-    }
-    .comment-form .save-btn { background: var(--panel-bg-high); color: #fff; }
-    .comment-form .save-btn:hover { background: #3a3939; }
-    .comment-form .delete-btn { background: var(--danger-bg); color: var(--danger-text); }
-    .comment-form .delete-btn:hover { background: var(--danger-bg-hover); }
-    .comment-hint { font-size: 0.85rem; color: var(--sub-text); margin-bottom: 20px; }
-
-    .comment-item { padding: 16px 0; border-bottom: 1px solid var(--border-color); }
-    .comment-item:last-child { border-bottom: none; }
-    .comment-nickname { font-weight: 600; font-size: 0.85rem; color: var(--text-color); }
-    .comment-text { font-size: 0.85rem; margin: 6px 0 8px; line-height: 1.5; color: var(--sub-text); white-space: pre-wrap; }
-    .comment-like-btn {
-        background: none; border: none; cursor: pointer; font-size: 0.75rem; color: var(--sub-text);
-        display: inline-flex; align-items: center; gap: 4px; padding: 4px 0; transition: color 0.15s;
-    }
-    .comment-like-btn:hover { color: var(--accent); }
-    .comment-like-btn.liked { color: var(--accent); font-weight: 700; }
-    .empty-state { color: var(--sub-text); font-size: 0.85rem; padding: 16px 0; }
-
-    @media (max-width: 800px) {
-        .top-bar { padding: 8px 14px; }
-        .top-bar-left { gap: 10px; }
-        .header-divider { display: none; }
-        .home-link .logo-top-line { font-size: 0.68rem; }
-        .home-link .logo-bottom-line { font-size: 0.76rem; }
-        .video-badge-link { font-size: 1.15rem; }
-        .video-badge-link .play-icon { font-size: 0.7rem; }
-        .watch-layout { padding: 14px; gap: 24px; }
-    }
-</style>
+<link rel="stylesheet" href="watch.css">
 </head>
 <body>
 <div class="top-bar">
@@ -405,6 +71,12 @@
 </div>
 </div>
 <script type="module">
+    // ============================================================
+    // watch.html 스크립트
+    // URL의 ?s=시리즈ID&v=영상ID 를 읽어서 해당 영상 정보를 불러오고,
+    // 재생/좋아요/댓글/추천영상/로그인 처리를 담당한다.
+    // 스타일은 watch.css 에 분리되어 있음.
+    // ============================================================
     import {
         watchAuth, signInWithGoogle, signOutUser, getUserDoc,
         getSeries, getVideo, incrementVideoView, likeVideo, unlikeVideo,
@@ -414,16 +86,19 @@
         getRandomRecommendedVideos, getAllSeries
     } from './auth.js';
 
+    // 현재 페이지가 어떤 시리즈의 어떤 영상인지는 URL 쿼리스트링으로 전달됨
+    // 예: watch.html?s=시리즈ID&v=영상ID
     const params = new URLSearchParams(location.search);
     const seriesId = params.get('s');
     const videoId = params.get('v');
 
+    // ----- 자주 쓰는 DOM 요소 미리 찾아두기 -----
     const watchMain = document.getElementById('watch-main');
     const commentsHeader = document.getElementById('comments-header');
     const commentFormWrap = document.getElementById('comment-form-wrap');
     const commentsList = document.getElementById('comments-list');
     const recoList = document.getElementById('reco-list');
-    const watchSide = document.getElementById('watch-side');
+    const watchSide = document.getElementById('watch-side'); // 댓글 패널(데스크톱) / 댓글 드로어(모바일)
     const loginBtn = document.getElementById('login-btn');
     const userArea = document.getElementById('user-area');
     const userPhoto = document.getElementById('user-photo');
@@ -434,31 +109,37 @@
     const drawerHandle = document.getElementById('drawer-handle');
     const recoDrawerToggle = document.getElementById('reco-drawer-toggle');
 
+    // ----- 모바일 전용: 댓글 드로어 열기/닫기 -----
+    // (데스크톱에서는 .watch-side가 position:static 고정 패널이라 이 함수들이 사실상 아무 영향 없음)
     function openCommentsDrawer() { watchSide.classList.add('open'); drawerOverlay.classList.add('open'); }
     function closeCommentsDrawer() { watchSide.classList.remove('open'); drawerOverlay.classList.remove('open'); }
-    recoDrawerToggle.addEventListener('click', openCommentsDrawer);
-    drawerHandle.addEventListener('click', closeCommentsDrawer);
-    drawerCloseBtn.addEventListener('click', closeCommentsDrawer);
-    drawerOverlay.addEventListener('click', closeCommentsDrawer);
+    recoDrawerToggle.addEventListener('click', openCommentsDrawer); // 추천영상 옆 ">" 버튼
+    drawerHandle.addEventListener('click', closeCommentsDrawer);    // 드로어 옆구리 손잡이
+    drawerCloseBtn.addEventListener('click', closeCommentsDrawer);  // 드로어 안 "✕" 버튼
+    drawerOverlay.addEventListener('click', closeCommentsDrawer);   // 뒤쪽 어두운 배경 클릭 시에도 닫힘
 
+    // ----- 로그인 / 로그아웃 버튼 -----
     loginBtn.addEventListener('click', async () => {
         try { await signInWithGoogle(); }
         catch (err) { alert('로그인에 실패했습니다: ' + err.message); }
     });
     logoutBtn.addEventListener('click', () => signOutUser());
 
+    // 추천영상 목록을 불러와서 왼쪽 패널에 렌더링.
+    // 전체 영상 중 무작위로 16개를 뽑은 뒤, 지금 보고 있는 영상 자신은 제외하고 최대 12개만 사용.
     async function renderRecommended() {
         try {
             const seriesList = await getAllSeries();
-            const seriesCache = {};
+            const seriesCache = {}; // 시리즈 id -> 시리즈 정보 (썸네일 카드에 시리즈명 표시용)
             seriesList.forEach(s => seriesCache[s.id] = s);
             const vids = (await getRandomRecommendedVideos(16))
-                .filter(v => !(v.seriesId === seriesId && v.id === videoId))
+                .filter(v => !(v.seriesId === seriesId && v.id === videoId)) // 지금 보고 있는 영상은 추천에서 제외
                 .slice(0, 12);
             if (vids.length === 0) {
                 recoList.innerHTML = '<div class="empty-state">추천할 영상이 없습니다.</div>';
                 return;
             }
+            // 썸네일이 위, 제목/시리즈명이 아래에 오는 카드 형태로 렌더링
             recoList.innerHTML = vids.map(v => {
                 const s = seriesCache[v.seriesId];
                 return `
@@ -479,17 +160,20 @@
 
     let currentUser = null;
     let series = null;
-    let video = null;
-    let comments = [];
-    let canManage = false;
+    // ----- 페이지 전역 상태 -----
+    let video = null;      // 현재 보고 있는 영상 문서
+    let comments = [];     // 이 영상의 댓글 목록
+    let canManage = false; // 로그인한 사용자가 이 영상을 수정/삭제할 권한이 있는지
 
     document.getElementById('back-btn').addEventListener('click', () => {
         if (document.referrer) history.back();
         else location.href = 'video.html';
     });
 
-    let isPlaying = false;
+    let isPlaying = false; // true면 썸네일 대신 유튜브 iframe이 재생 중인 상태
 
+    // 유튜브 URL의 다양한 형식(youtu.be, /embed/, /shorts/, ?v=)에서
+    // 영상 ID만 뽑아내서 자동재생 embed URL로 변환한다. 파싱 실패 시 null 반환.
     function getYoutubeEmbedUrl(url) {
         if (!url) return null;
         try {
@@ -511,13 +195,15 @@
         }
     }
 
+    // 썸네일을 클릭했을 때 실제 재생으로 전환
     function playVideo() {
         isPlaying = true;
-        incrementVideoView(seriesId, videoId).catch(() => {});
-        if (video) video.views = (video.views || 0) + 1;
+        incrementVideoView(seriesId, videoId).catch(() => {}); // 조회수 +1 (실패해도 재생은 계속)
+        if (video) video.views = (video.views || 0) + 1; // 서버 응답을 기다리지 않고 화면 숫자를 바로 올려줌
         renderMain();
     }
 
+    // 영상 정보 영역(썸네일/제목/시리즈/통계) 전체를 그린다.
     function renderMain() {
         if (!video) {
             watchMain.innerHTML = '<div class="empty-state">영상을 찾을 수 없습니다.</div>';
@@ -542,6 +228,7 @@
 
     let lastThumbPlayingState = null;
 
+    // 썸네일 이미지 <-> 유튜브 iframe 을 전환해서 그린다.
     function renderThumb() {
         // 재생 상태가 바뀔 때만 썸네일/영상 영역을 다시 그린다 (재생 중엔 다시 그리면 영상이 처음부터 재시작되므로 건드리지 않음)
         if (lastThumbPlayingState === isPlaying) return;
@@ -558,8 +245,9 @@
         thumbContainer.innerHTML = `${thumbInner}<button class="thumb-menu-btn" id="thumb-menu-btn">⋮</button>`;
 
         if (!isPlaying) {
+            // 재생 전(썸네일 상태)에는 영역 전체를 눌러도 재생되도록
             thumbContainer.addEventListener('click', (e) => {
-                if (e.target.id === 'thumb-menu-btn') return;
+                if (e.target.id === 'thumb-menu-btn') return; // ⋮ 메뉴 버튼 클릭은 재생과 별개로 처리
                 if (!embedUrl) {
                     // 임베드 주소를 못 만들면(지원하지 않는 링크 형식 등) 예전처럼 유튜브 새 탭으로 이동
                     if (video.youtubeUrl) window.open(video.youtubeUrl, '_blank', 'noopener');
@@ -570,6 +258,7 @@
             });
         }
 
+        // 썸네일 우하단 ⋮ 버튼: 관리 권한자만 영상 수정 모달을 열 수 있음
         document.getElementById('thumb-menu-btn').addEventListener('click', (e) => {
             e.stopPropagation();
             if (canManage) openEditVideoModal();
@@ -577,6 +266,7 @@
         });
     }
 
+    // 조회수 + 좋아요 버튼 영역을 그린다.
     function renderStats() {
         const isLiked = currentUser && (video.likes || []).includes(currentUser.uid);
         const statsWrap = document.getElementById('watch-stats-wrap');
@@ -588,7 +278,7 @@
             </button>
         `;
         document.getElementById('like-btn').addEventListener('click', async () => {
-            if (!currentUser) { try { await signInWithGoogle(); } catch (e) { return; } }
+            if (!currentUser) { try { await signInWithGoogle(); } catch (e) { return; } } // 비로그인이면 먼저 로그인 유도
             const liked = (video.likes || []).includes(currentUser.uid);
             try {
                 if (liked) {
@@ -598,13 +288,14 @@
                     await likeVideo(seriesId, videoId, currentUser.uid);
                     video.likes = [...(video.likes || []), currentUser.uid];
                 }
-                renderStats();
+                renderStats(); // 서버 응답 반영해서 다시 그림
             } catch (e) {
                 alert('오류: ' + e.message);
             }
         });
     }
 
+    // 댓글 목록 + 개수를 그린다. (댓글은 계정당 1개만 작성 가능한 구조)
     async function renderComments() {
         commentsHeader.innerHTML = `댓글 <span>${comments.length}</span>`;
         if (comments.length === 0) {
@@ -648,12 +339,15 @@
         renderCommentForm();
     }
 
+    // 사용자가 입력한 댓글 텍스트를 안전하게 화면에 표시하기 위한 escape
+    // (innerHTML로 그대로 넣으면 <script> 등이 실행될 수 있으므로 textContent를 거쳐 변환)
     function escapeHtml(str) {
         const div = document.createElement('div');
         div.textContent = str || '';
         return div.innerHTML;
     }
 
+    // 댓글 작성/수정 폼을 그린다. (비로그인 시 안내문구만, 로그인 시 본인 댓글 유무에 따라 "작성"/"수정" 버튼)
     async function renderCommentForm() {
         if (!currentUser) {
             commentFormWrap.innerHTML = '<div class="comment-hint">로그인하면 댓글을 작성할 수 있습니다.</div>';
@@ -674,12 +368,13 @@
             const text = document.getElementById('comment-text-input').value.trim();
             if (!text) { alert('댓글 내용을 입력해주세요.'); return; }
             try {
+                // upsert: 이미 내 댓글이 있으면 수정, 없으면 새로 작성 (계정당 1개 제한)
                 await upsertComment(seriesId, videoId, currentUser.uid, {
                     authorName: currentUser.displayName || currentUser.email,
                     authorPhoto: currentUser.photoURL || '',
                     text,
                 });
-                comments = await getComments(seriesId, videoId);
+                comments = await getComments(seriesId, videoId); // 최신 목록 다시 불러오기
                 renderComments();
             } catch (e) {
                 alert('오류: ' + e.message);
@@ -700,6 +395,7 @@
         }
     }
 
+    // ----- 영상 수정 모달 (canManage === true 인 사용자만 열 수 있음) -----
     function openEditVideoModal() {
         document.getElementById('edit-video-title').value = video.title || '';
         document.getElementById('edit-video-thumb').value = video.thumbnailUrl || '';
@@ -741,6 +437,7 @@
         }
     });
 
+    // 초기 데이터 로딩: 시리즈 + 영상 정보 + 댓글을 병렬로 가져온 뒤 화면을 그린다.
     async function init() {
         if (!seriesId || !videoId) {
             watchMain.innerHTML = '<div class="empty-state">잘못된 접근입니다.</div>';
@@ -759,6 +456,9 @@
         renderRecommended();
     }
 
+    // 로그인 상태가 바뀔 때마다(최초 진입 포함) 호출됨.
+    // 로그인 여부에 따라 상단바의 로그인 버튼 <-> 사용자 정보 영역을 토글하고,
+    // 관리 권한(canManage) 계산 + 좋아요/댓글 버튼 상태를 다시 그린다.
     watchAuth(async (user) => {
         currentUser = user;
         canManage = !!user && series && (isSiteOwner(user.email) || canUploadToSeries(series, user.email));
@@ -775,6 +475,6 @@
         renderCommentForm();
     });
 
-    init();
+    init(); // 페이지 로드 시 즉시 실행
 </script>
 </body></html>

@@ -1,0 +1,474 @@
+/* ============================================================
+   video.css — HYUNIL VIDEO 홈(video.html) 전용 스타일
+   원래 video.html의 <style> 태그 안에 있던 내용을 그대로 옮긴 것으로,
+   디자인/동작은 이전과 완전히 동일합니다. 수정 편의를 위해 섹션별로
+   주석만 추가했습니다.
+   ============================================================ */
+
+/* ----- 색상 변수 -----
+   기본은 라이트 테마. [data-theme="dark"]가 <html>에 붙으면 다크 팔레트로 덮어씀
+   (다크모드 on/off는 video.html 하단의 작은 <script>가 localStorage 값을 읽어 처리) */
+:root {
+    --bg-color: #ffffff;
+    --panel-bg: #f8f9fa;
+    --panel-bg-high: #eeeeee;
+    --text-color: #131313;
+    --sub-text: #606368;
+    --border-color: #e5e5e5;
+    --accent: #ff0000;
+    --link-color: #4285F4;
+    --glass-bg: rgba(255,255,255,0.75);
+    --radius-thumb: 1rem;
+    --radius-pill: 9999px;
+}
+[data-theme="dark"] {
+    --bg-color: #131313;
+    --panel-bg: #1c1b1b;
+    --panel-bg-high: #2a2a2a;
+    --text-color: #e5e2e1;
+    --sub-text: #a8a5a4;
+    --border-color: #262626;
+    --accent: #ff4d4d;
+    --link-color: #8ab4f8;
+    --glass-bg: rgba(28,27,27,0.75);
+}
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    font-family: 'Inter', 'Malgun Gothic', sans-serif;
+    background: var(--bg-color);
+    color: var(--text-color);
+    letter-spacing: -0.01em;
+}
+
+/* ============================================================
+   상단 헤더 (로고 + 검색창 + 로그인/업로드/사용자 영역)
+   ============================================================ */
+header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 28px;
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg-color);
+}
+/* --- 로고 ("신현일의 Search") --- */
+.home-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: var(--text-color);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.home-link .logo-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.05;
+}
+.home-link .logo-top-line { font-size: 0.62rem; font-weight: 700; letter-spacing: -0.8px; }
+/* 구글 로고 스타일로 글자마다 다른 색 */
+.home-link .logo-top-line span:nth-child(1) { color: #4285F4; }
+.home-link .logo-top-line span:nth-child(2) { color: #EA4335; }
+.home-link .logo-top-line span:nth-child(3) { color: #FBBC05; }
+.home-link .logo-top-line span:nth-child(4) { color: #34A853; }
+.home-link .logo-bottom-line { font-size: 0.82rem; font-weight: 700; color: var(--text-color); }
+.header-divider { width: 1px; height: 18px; background: var(--border-color); margin: 0; flex-shrink: 0; }
+/* --- "HYUNIL VIDEO" 뱃지 --- */
+.video-badge-link {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    text-decoration: none;
+    color: var(--text-color);
+    font-weight: 800;
+    font-size: 1.05rem;
+    letter-spacing: -0.02em;
+    flex-shrink: 0;
+}
+.video-badge-link .play-icon {
+    font-weight: 500;
+    font-size: 0.65rem;
+    color: var(--sub-text);
+    letter-spacing: 0.02em;
+}
+/* 검색창 (가운데, 남는 너비를 채움) */
+.search-bar {
+    flex: 1;
+    min-width: 60px;
+    max-width: 560px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-pill);
+    padding: 9px 18px;
+    color: var(--sub-text);
+    background: var(--panel-bg);
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+/* 헤더 오른쪽: 로그인/업로드 버튼, 로그인 후 사용자 영역 */
+.header-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.login-btn, .upload-btn {
+    background-color: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 9px 20px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+.login-btn:hover, .upload-btn:hover { opacity: 0.88; }
+.upload-btn { display: none; } /* 업로드 권한이 있는 사용자에게만 JS가 표시함 */
+.user-area { display: none; align-items: center; gap: 8px; } /* 로그인 후 JS가 flex로 전환 */
+.user-area .profile-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--panel-bg-high);
+    border: none;
+    cursor: pointer;
+    color: var(--text-color);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 5px 14px 5px 5px;
+    border-radius: var(--radius-pill);
+}
+.user-area .profile-btn:hover { background: var(--border-color); }
+.user-area img { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; background: var(--sub-text); }
+.logout-btn {
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-pill);
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.logout-btn:hover { background: var(--panel-bg-high); }
+
+/* ============================================================
+   전체 레이아웃: 메인 영상 그리드(왼쪽) + 구독 시리즈 사이드바(오른쪽)
+   ============================================================ */
+.layout {
+    display: flex;
+    gap: 32px;
+    padding: 28px;
+    max-width: 2200px;
+    margin: 0 auto;
+    align-items: flex-start;
+}
+main { flex: 1; min-width: 0; }
+h2.section-title { font-size: 1.15rem; font-weight: 700; margin: 0 0 20px; letter-spacing: -0.01em; }
+
+/* --- 영상 카드 그리드 --- */
+.video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 32px 28px;
+    max-width: 1500px;
+}
+.video-card {
+    color: var(--text-color);
+    display: block;
+}
+.video-thumb-link, .video-title-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+.thumb-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    border-radius: var(--radius-thumb);
+    overflow: hidden;
+    background: var(--panel-bg);
+    margin-bottom: 12px;
+}
+.thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s; }
+.video-card:hover .thumb-wrap img { transform: scale(1.05); } /* 카드 hover 시 썸네일 살짝 확대 */
+.video-title { margin: 0; font-size: 1.0rem; font-weight: 600; line-height: 1.35; }
+.video-card:hover .video-title { color: var(--accent); }
+.video-meta { font-size: 0.92rem; color: var(--sub-text); display: inline-block; margin-top: 6px; }
+.channel-link .video-meta { margin-top: 0; }
+.video-title-row { display: flex; align-items: flex-start; gap: 4px; }
+.video-title-row .video-title { flex: 1; }
+.video-menu-btn {
+    background: none; border: none; color: var(--sub-text); font-size: 1.2rem;
+    cursor: pointer; padding: 0 4px; line-height: 1; flex-shrink: 0; border-radius: 50%;
+}
+.video-menu-btn:hover { color: var(--text-color); }
+/* 카드 하단의 "시리즈 채널" 링크(아바타 + 이름) */
+.channel-link {
+    display: inline-flex;
+    align-items: center;
+    flex-direction: row-reverse; /* 아바타가 오른쪽, 텍스트가 왼쪽에 오도록 */
+    gap: 7px;
+    text-decoration: none;
+    color: inherit;
+    margin-top: 6px;
+}
+.channel-link:hover .video-meta { color: var(--text-color); }
+.channel-avatar {
+    width: 1.6em; height: 1.6em; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+    background: var(--panel-bg-high); display: flex; align-items: center; justify-content: center;
+    font-weight: 700; color: var(--sub-text); font-size: 0.78em;
+}
+.channel-avatar img { width: 100%; height: 100%; object-fit: cover; }
+/* 구독중 표시 알약 뱃지 */
+.sub-pill {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 600;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    padding: 2px 8px;
+    cursor: pointer;
+    background: var(--panel-bg);
+    white-space: nowrap;
+    transition: background 0.15s;
+}
+.sub-pill.subscribed { background: rgba(255,77,77,0.18); color: var(--accent); border-color: transparent; }
+
+/* --- 시리즈 추천 (원형 아바타 그리드) --- */
+.series-reco-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+}
+.series-reco-card { text-align: center; width: 96px; }
+.series-reco-thumb {
+    display: block; width: 80px; height: 80px; margin: 0 auto 10px; border-radius: 50%;
+    overflow: hidden; background: var(--panel-bg-high); transition: filter 0.15s;
+}
+.series-reco-card:hover .series-reco-thumb { filter: brightness(1.15); }
+.series-reco-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.series-reco-thumb .avatar-fallback {
+    width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; font-weight: 700; color: var(--sub-text);
+}
+.series-reco-name { font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; }
+.series-reco-name a { color: var(--text-color); text-decoration: none; }
+
+/* 모바일에서 사이드바를 드로어로 열고 닫는 버튼 (데스크톱에서는 숨김, 사이드바가 항상 보임) */
+.hamburger-btn {
+    display: none;
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-pill);
+    width: 38px; height: 38px;
+    align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--text-color);
+    font-size: 1.05rem;
+    flex-shrink: 0;
+}
+.hamburger-btn:hover { background: var(--panel-bg); }
+
+/* 모바일 드로어 뒤 어두운 오버레이 */
+.drawer-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 1550;
+}
+.drawer-overlay.open { display: block; }
+
+/* ============================================================
+   오른쪽 사이드바: 구독중인 시리즈 목록
+   데스크톱에서는 static(항상 보임), 모바일에서는 아래 미디어쿼리로 드로어로 전환
+   ============================================================ */
+aside.side-drawer {
+    width: 300px;
+    flex-shrink: 0;
+    border-left: 1px solid var(--border-color);
+    padding-left: 24px;
+    position: static;
+    height: auto;
+    background: transparent;
+    overflow: visible;
+    transform: none;
+    z-index: auto;
+}
+.drawer-close-btn { display: none; } /* 데스크톱에서는 드로어가 아니므로 닫기 버튼 숨김 */
+.aside-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 6px 0 16px;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+.aside-header a { color: var(--accent); font-size: 0.78rem; font-weight: 600; text-decoration: none; }
+.sub-series-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px;
+    margin: 0 -8px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: var(--text-color);
+    transition: background 0.15s;
+}
+.sub-series-item:hover { background: var(--panel-bg); }
+.sub-series-item .avatar {
+    width: 40px; height: 40px; border-radius: 50%; background: var(--panel-bg-high);
+    display: flex; align-items: center; justify-content: center; font-weight: 700;
+    overflow: hidden; flex-shrink: 0;
+}
+.sub-series-item .avatar img { width: 100%; height: 100%; object-fit: cover; }
+.sub-series-item .meta-title { font-size: 0.85rem; font-weight: 600; }
+.sub-series-item .meta-sub { font-size: 0.74rem; color: var(--sub-text); margin-top: 1px; }
+.empty-state { color: var(--sub-text); font-size: 0.85rem; padding: 20px 0; }
+
+/* ============================================================
+   모달 (로그인/회원가입, 설정 등 팝업창 공통 스타일)
+   ============================================================ */
+.modal-overlay {
+    display: none;
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(3px);
+    z-index: 2000; align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    width: 92%;
+    max-width: 480px;
+    max-height: 85vh;
+    overflow-y: auto;
+    border-radius: 20px;
+    padding: 24px;
+    position: relative;
+}
+.modal-close {
+    position: absolute; top: 16px; right: 18px;
+    background: none; border: none; font-size: 18px; cursor: pointer; color: var(--sub-text);
+}
+.modal-tabs { display: flex; gap: 8px; margin: 4px 0 18px; border-bottom: 1px solid var(--border-color); }
+.modal-tab {
+    background: none; border: none; padding: 8px 4px; font-size: 0.88rem; font-weight: 600; cursor: pointer;
+    color: var(--sub-text); border-bottom: 2px solid transparent;
+}
+.modal-tab.active { color: var(--text-color); border-bottom-color: var(--accent); }
+.modal-panel { display: none; }
+.modal-panel.active { display: block; }
+.modal-box h3 { font-size: 0.95rem; font-weight: 700; margin: 18px 0 8px; }
+.modal-box h3:first-child { margin-top: 0; }
+.modal-box label { display: block; font-size: 0.8rem; color: var(--sub-text); margin: 10px 0 5px; }
+.modal-box input[type="text"], .modal-box input[type="email"], .modal-box input[type="url"],
+.modal-box textarea, .modal-box select {
+    width: 100%; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--border-color);
+    background: var(--panel-bg); color: var(--text-color); font-size: 0.85rem; font-family: inherit;
+    outline: none;
+}
+.modal-box input:focus, .modal-box textarea:focus, .modal-box select:focus { border-color: var(--accent); }
+.modal-box button.action {
+    margin-top: 16px; background: var(--accent); color: #fff; border: none;
+    border-radius: 10px; padding: 10px 18px; font-size: 0.85rem; font-weight: 700; cursor: pointer;
+}
+.modal-box button.action.danger { background: transparent; border: 1px solid #c0392b; color: #e57373; }
+.modal-msg { font-size: 0.8rem; margin-top: 10px; }
+.modal-msg.ok { color: #4ade80; }
+.modal-msg.err { color: #e57373; }
+hr.sep { border: none; border-top: 1px solid var(--border-color); margin: 20px 0; }
+
+/* 설정 모달 등에서 쓰는 토글 스위치 / 목록 행 */
+.toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 0; font-size: 0.85rem;
+}
+.switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.switch-slider {
+    position: absolute; cursor: pointer; inset: 0; background: var(--border-color);
+    border-radius: 22px; transition: 0.2s;
+}
+.switch-slider:before {
+    content: ""; position: absolute; height: 16px; width: 16px; left: 3px; bottom: 3px;
+    background: #fff; border-radius: 50%; transition: 0.2s;
+}
+.switch input:checked + .switch-slider { background: var(--accent); }
+.switch input:checked + .switch-slider:before { transform: translateX(18px); }
+.series-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 7px 0; font-size: 0.82rem;
+}
+
+html, body { overflow-x: hidden; max-width: 100%; }
+
+/* ============================================================
+   모바일(≤800px) 전용 조정 — 헤더 축소, 그리드 2열, 사이드바를 드로어로 전환
+   ============================================================ */
+@media (max-width: 800px) {
+    header { padding: 8px 12px; gap: 8px; }
+    .home-link .logo-top-line { font-size: 0.58rem; }
+    .home-link .logo-bottom-line { font-size: 0.74rem; }
+    .header-divider { display: none; }
+    .video-badge-link { font-size: 0.85rem; }
+    .video-badge-link .play-icon { font-size: 0.58rem; }
+    .search-bar { padding: 7px 12px; font-size: 0.8rem; }
+    .header-right { gap: 6px; }
+    .login-btn, .upload-btn { padding: 7px 12px; font-size: 12px; }
+    .user-area .profile-btn { padding: 4px 8px 4px 4px; }
+    .user-area .profile-btn span { display: none; }
+    .logout-btn { padding: 6px 10px; font-size: 12px; }
+
+    .layout { padding: 14px; gap: 0; }
+    .video-grid { grid-template-columns: repeat(2, 1fr); gap: 16px 12px; }
+
+    /* 모바일에서만 햄버거 버튼을 보여주고, 사이드바를 오른쪽에서 슬라이드 되는 드로어로 전환 */
+    .hamburger-btn {
+        display: flex;
+        position: fixed;
+        top: 62px;
+        right: 14px;
+        z-index: 1601;
+        background: var(--bg-color);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.35);
+    }
+    aside.side-drawer {
+        position: fixed;
+        top: 0; right: 0;
+        width: 280px;
+        max-width: 85vw;
+        height: 100vh;
+        background: var(--bg-color);
+        border-left: 1px solid var(--border-color);
+        padding: 24px;
+        padding-left: 24px;
+        overflow-y: auto;
+        transform: translateX(100%);
+        transition: transform 0.25s ease;
+        z-index: 1600;
+    }
+    aside.side-drawer.open { transform: translateX(0); }
+    .drawer-close-btn {
+        display: block;
+        position: absolute; top: 16px; right: 18px;
+        background: none; border: none; font-size: 18px; cursor: pointer; color: var(--sub-text);
+    }
+}
+
+@media (max-width: 560px) {
+    .search-bar { display: none; } /* 화면이 아주 좁으면 검색창은 숨김 */
+}

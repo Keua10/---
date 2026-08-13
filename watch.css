@@ -1,0 +1,399 @@
+/* ============================================================
+   watch.css — 영상 시청 페이지(watch.html) 전용 스타일
+   원래 watch.html의 <style> 태그 안에 있던 내용을 그대로 옮긴 것으로,
+   디자인/동작은 이전과 완전히 동일합니다. 수정 편의를 위해 섹션별로
+   주석만 추가했습니다.
+   ============================================================ */
+
+/* ----- 색상 변수 (다크 테마 팔레트) -----
+   페이지 전체에서 var(--이름) 형태로 재사용되는 색상값입니다.
+   여기 값만 바꾸면 전체 톤을 한 번에 바꿀 수 있습니다. */
+:root {
+    --bg-color: #0f0f0f;          /* 페이지 기본 배경 (가장 어두운 색) */
+    --bar-bg: #1c1b1b;            /* 상단바 배경 */
+    --panel-bg: #201f1f;          /* 추천영상/댓글 패널 배경 (페이지보다 살짝 밝음) */
+    --panel-bg-high: #2a2a2a;     /* 패널 위에서 hover 등으로 한 단계 더 밝게 강조할 때 */
+    --text-color: #e5e2e1;        /* 기본 글자색 */
+    --sub-text: #c7c6c6;          /* 보조 글자색 (설명, 메타 정보 등) */
+    --sub-text-2: #a8a5a4;
+    --border-color: #222222;      /* 구분선/테두리 */
+    --accent: #ff4d4d;            /* 강조색 (좋아요, 로그인 버튼 등) */
+    --danger-bg: rgba(147,0,10,0.2);
+    --danger-bg-hover: rgba(147,0,10,0.4);
+    --danger-text: #ffb4ab;
+    --radius-pill: 9999px;        /* 완전히 둥근 버튼용 radius */
+}
+
+/* ----- 공통 리셋 ----- */
+* { box-sizing: border-box; }
+html, body { overflow-x: hidden; max-width: 100%; }
+body {
+    margin: 0;
+    min-height: 100vh;
+    /* body를 세로 flex 컨테이너로 만들어서, 아래 .watch-layout이
+       "상단바를 제외한 나머지 화면 전체 높이"를 항상 차지하도록 함.
+       (추천영상/댓글 패널의 배경색이 화면 맨 아래까지 이어지게 하는 핵심 장치) */
+    display: flex;
+    flex-direction: column;
+    font-family: 'Inter', 'Malgun Gothic', sans-serif;
+    background: var(--bg-color);
+    color: var(--text-color);
+    letter-spacing: -0.01em;
+}
+
+/* ============================================================
+   상단바 (뒤로가기 + 로고 + HYUNIL VIDEO 뱃지 + 로그인/로그아웃)
+   ============================================================ */
+.top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* 왼쪽 로고 묶음 / 오른쪽 로그인 영역 양끝 정렬 */
+    padding: 10px 28px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bar-bg);
+    position: sticky; /* 스크롤해도 상단에 고정 */
+    top: 0;
+    z-index: 50;
+    flex-shrink: 0; /* body flex 안에서 눌려 찌그러지지 않도록 */
+}
+.top-bar-left { display: flex; align-items: center; gap: 20px; }
+.back-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: 1.1rem; color: var(--text-color);
+    padding: 8px; border-radius: var(--radius-pill);
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+}
+.back-btn:hover { background: var(--panel-bg-high); }
+
+/* --- 로고 ("신현일의 Search") --- */
+.home-link { display: flex; align-items: center; text-decoration: none; color: var(--text-color); flex-shrink: 0; }
+.home-link .logo-stack { display: flex; flex-direction: column; align-items: center; line-height: 1.05; }
+.home-link .logo-top-line { font-size: 0.9rem; font-weight: 700; letter-spacing: -0.8px; }
+/* 구글 로고 스타일로 글자마다 다른 색 */
+.home-link .logo-top-line span:nth-child(1) { color: #4285F4; }
+.home-link .logo-top-line span:nth-child(2) { color: #EA4335; }
+.home-link .logo-top-line span:nth-child(3) { color: #FBBC05; }
+.home-link .logo-top-line span:nth-child(4) { color: #34A853; }
+.home-link .logo-bottom-line { font-size: 1rem; font-weight: 700; color: var(--text-color); }
+.header-divider { width: 1px; height: 20px; background: var(--border-color); margin: 0 2px; flex-shrink: 0; }
+
+/* --- "HYUNIL VIDEO" 뱃지 (video.html로 이동하는 링크) --- */
+.video-badge-link {
+    display: flex; align-items: baseline; gap: 5px;
+    text-decoration: none; color: var(--text-color);
+    font-weight: 800; font-size: 1.5rem; letter-spacing: -0.02em;
+    flex-shrink: 0;
+}
+.video-badge-link .play-icon { font-weight: 500; font-size: 0.9rem; color: var(--sub-text); }
+
+/* ============================================================
+   상단바 오른쪽: 로그인 버튼 / 로그인 후 사용자 영역
+   ============================================================ */
+.top-bar-right { display: flex; align-items: center; gap: 10px; }
+.login-btn {
+    background-color: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 9px 20px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+.login-btn:hover { opacity: 0.88; }
+/* 로그인 전에는 display:none, 로그인 후 JS가 flex로 바꿔서 보여줌 (watch.html의 watchAuth 콜백 참고) */
+.user-area { display: none; align-items: center; gap: 8px; }
+.user-area .profile-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--panel-bg-high);
+    border: none;
+    cursor: pointer;
+    color: var(--text-color);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 5px 14px 5px 5px;
+    border-radius: var(--radius-pill);
+}
+.user-area .profile-btn:hover { background: var(--border-color); }
+.user-area img { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; background: var(--sub-text); }
+.logout-btn {
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-pill);
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.logout-btn:hover { background: var(--panel-bg-high); }
+@media (max-width: 800px) {
+    .login-btn { padding: 7px 12px; font-size: 12px; }
+    .user-area .profile-btn { padding: 4px 8px 4px 4px; }
+    .user-area .profile-btn span { display: none; } /* 모바일에서는 이름 숨기고 사진만 */
+    .logout-btn { padding: 6px 10px; font-size: 12px; }
+}
+
+/* ============================================================
+   전체 레이아웃: 추천영상(좌) / 영상+정보(중앙) / 댓글(우) 3단 구성
+   - 모바일(<1024px): 세로로 쌓임 (column)
+   - 데스크톱(>=1024px): 가로 3단 (row), 좌우 패널이 화면 끝까지
+     색이 꽉 차 보이도록 padding 0 + align-items: stretch 사용
+   ============================================================ */
+.watch-layout {
+    display: flex;
+    flex-direction: column;
+    flex: 1; /* body flex-column 안에서 상단바를 제외한 나머지 높이를 전부 차지 */
+    gap: 24px;
+    padding: 24px 32px;
+    align-items: flex-start;
+}
+@media (min-width: 1024px) {
+    .watch-layout {
+        flex-direction: row;
+        gap: 40px;
+        padding: 0;             /* 좌우/상하 여백을 없애서 패널이 화면 가장자리까지 닿게 함 */
+        align-items: stretch;   /* 세 컬럼의 높이를 서로 맞춰서(가장 긴 컬럼 기준) 배경색이 끊기지 않게 함 */
+    }
+}
+.watch-main { flex: 1; min-width: 0; width: 100%; order: 1; }
+@media (min-width: 1024px) {
+    /* watch-layout 자체 padding은 0이므로, 영상 영역만 따로 위아래 숨쉴 공간을 줌
+       (추천영상/댓글 패널은 자기 자신의 padding(.reco-panel, .watch-side)으로 안쪽 여백을 처리) */
+    .watch-main { padding: 24px 0; }
+}
+
+/* ----- 추천영상 (왼쪽) ----- */
+.reco-row {
+    display: flex;
+    align-items: stretch; /* 안의 .reco-panel이 이 줄 높이만큼 꽉 차게 */
+    gap: 8px;
+    width: 100%;
+    order: 2; /* 모바일에서는 영상 다음 순서 */
+}
+@media (min-width: 1024px) {
+    .reco-row { width: 360px; flex-shrink: 0; order: 0; } /* 데스크톱에서는 맨 왼쪽 */
+}
+.reco-panel {
+    flex: 1;
+    min-width: 0;
+    background: var(--panel-bg);
+    border-radius: 12px;
+    padding: 14px;
+}
+@media (min-width: 1024px) {
+    .reco-panel {
+        width: 100%; padding: 18px;
+        border-radius: 0; /* 데스크톱에서는 각진 사각형으로 — 배경이 "섹션"처럼 보이도록 */
+    }
+}
+.reco-header { font-size: 0.95rem; font-weight: 700; margin: 0 0 12px; }
+/* 모바일: 썸네일 카드들을 가로로 스크롤하는 리스트 */
+.reco-list { display: flex; flex-direction: row; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
+@media (min-width: 1024px) {
+    /* 데스크톱: 세로로 쌓인 리스트 */
+    .reco-list { flex-direction: column; gap: 10px; overflow-x: visible; padding-bottom: 0; }
+}
+.reco-item {
+    display: flex; flex-direction: column; gap: 6px; width: 150px; flex-shrink: 0;
+    text-decoration: none; color: var(--text-color); border-radius: 10px;
+}
+@media (min-width: 1024px) {
+    /* 데스크톱에서도 (가로형이 아니라) 썸네일이 위, 제목/시리즈명이 아래인 세로형 카드를 그대로 사용 */
+    .reco-item {
+        width: 100%; padding: 8px; gap: 8px;
+        transition: background 0.15s;
+    }
+    .reco-item:hover { background: var(--panel-bg-high); }
+}
+.reco-thumb { width: 100%; aspect-ratio: 16/9; border-radius: 8px; overflow: hidden; background: #000; flex-shrink: 0; }
+.reco-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.reco-info { min-width: 0; }
+.reco-title {
+    font-size: 0.8rem; font-weight: 600; line-height: 1.3;
+    /* 제목이 길면 2줄까지만 보여주고 말줄임표 처리 */
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.reco-series { font-size: 0.72rem; color: var(--sub-text); margin-top: 4px; }
+
+/* 모바일 전용: 추천영상 리스트 옆에 붙어서 누르면 댓글 드로어를 여는 버튼 (데스크톱에서는 숨김) */
+.reco-drawer-toggle {
+    display: flex; align-items: center; justify-content: center;
+    width: 36px; flex-shrink: 0; align-self: stretch;
+    background: var(--panel-bg-high); border: none; border-radius: 10px;
+    color: var(--text-color); font-size: 1.1rem; cursor: pointer;
+}
+@media (min-width: 1024px) {
+    .reco-drawer-toggle { display: none; }
+}
+
+/* 모바일 댓글 드로어가 열렸을 때 뒤를 어둡게 덮는 오버레이 */
+.drawer-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 1550;
+}
+.drawer-overlay.open { display: block; }
+@media (min-width: 1024px) {
+    .drawer-overlay { display: none !important; } /* 데스크톱에서는 드로어 자체가 없으므로 항상 숨김 */
+}
+
+/* ============================================================
+   영상 재생 영역 (썸네일 → 클릭하면 유튜브 iframe으로 교체)
+   ============================================================ */
+.thumb-container {
+    position: relative; width: 100%; aspect-ratio: 16/9;
+    border-radius: 12px; overflow: hidden; background: #000;
+    cursor: pointer; border: 1px solid var(--border-color);
+}
+.thumb-container img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0.9; }
+.watch-btn {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: rgba(35,35,35,0.7); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.1); color: #fff;
+    font-size: 1rem; font-weight: 700; padding: 12px 32px;
+    border-radius: var(--radius-pill); pointer-events: none; letter-spacing: 0.02em;
+}
+/* 썸네일 우하단의 "⋮" 메뉴 버튼 — 관리 권한이 있는 사용자만 실제로 동작(영상 수정 모달 오픈) */
+.thumb-menu-btn {
+    position: absolute; bottom: 16px; right: 16px;
+    background: rgba(35,35,35,0.7); backdrop-filter: blur(4px);
+    border: none; color: #fff; font-size: 1.25rem;
+    width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
+    line-height: 1; display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+}
+.thumb-menu-btn:hover { background: rgba(0,0,0,0.6); }
+
+/* 영상 아래: 시리즈 링크(아바타+이름) */
+.series-row {
+    display: flex; align-items: center; gap: 10px; margin-top: 20px;
+    text-decoration: none; color: var(--text-color); width: fit-content;
+}
+.series-row .mini-avatar {
+    width: 32px; height: 32px; border-radius: 50%; background: var(--panel-bg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 700; overflow: hidden; flex-shrink: 0;
+    border: 1px solid var(--border-color);
+}
+.series-row .mini-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.series-row .series-row-name { font-size: 0.95rem; color: var(--sub-text); }
+
+/* 영상 제목 */
+.watch-title {
+    font-size: 1.7rem; line-height: 2.2rem; font-weight: 700;
+    margin: 12px 0 16px; color: var(--text-color); letter-spacing: -0.01em;
+}
+@media (min-width: 1024px) {
+    .watch-title { font-size: 2rem; line-height: 2.5rem; }
+}
+
+/* 조회수 / 좋아요 버튼 줄 */
+.watch-stats { display: flex; align-items: center; gap: 20px; font-size: 0.95rem; }
+.stat-btn {
+    background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px;
+    color: var(--text-color); padding: 4px; transition: color 0.15s;
+}
+.stat-btn:hover { color: var(--accent); }
+.stat-btn.liked { color: var(--accent); font-weight: 700; }
+.stat-static { display: flex; align-items: center; gap: 6px; color: var(--text-color); }
+
+/* ============================================================
+   댓글 영역 (오른쪽 패널 / 모바일에서는 오른쪽에서 슬라이드 되는 드로어)
+   ============================================================ */
+.watch-side {
+    /* 모바일 기본값: 화면 오른쪽에서 슬라이드 인/아웃 되는 고정 드로어 */
+    position: fixed; top: 0; right: 0; height: 100vh;
+    width: 88vw; max-width: 420px;
+    background: var(--panel-bg);
+    transform: translateX(100%); /* 평소엔 화면 밖으로 밀어둠 */
+    transition: transform 0.25s ease;
+    z-index: 1600; overflow-y: auto;
+    padding: 56px 20px 20px;
+    box-shadow: -4px 0 24px rgba(0,0,0,0.4);
+    order: 3;
+}
+.watch-side.open { transform: translateX(0); } /* JS가 이 클래스를 토글해서 열고 닫음 */
+@media (min-width: 1024px) {
+    /* 데스크톱: 드로어가 아니라 항상 보이는 고정 우측 패널로 전환 */
+    .watch-side {
+        position: static; width: 460px; height: auto; transform: none;
+        box-shadow: none; flex-shrink: 0;
+        border-radius: 0; padding: 20px;
+    }
+}
+.drawer-close-btn {
+    position: absolute; top: 16px; right: 16px;
+    background: none; border: none; font-size: 18px; cursor: pointer; color: var(--sub-text);
+}
+@media (min-width: 1024px) {
+    .drawer-close-btn { display: none; } /* 데스크톱엔 드로어가 없으니 닫기 버튼도 불필요 */
+}
+/* 드로어가 열렸을 때 왼쪽 옆구리에 붙는 손잡이(누르면 닫힘) */
+.drawer-handle {
+    display: none; align-items: center; justify-content: center;
+    position: absolute; left: -32px; top: 50%; transform: translateY(-50%);
+    width: 32px; height: 64px; background: var(--panel-bg);
+    border-radius: 10px 0 0 10px; cursor: pointer; color: var(--text-color);
+    font-size: 1.1rem; box-shadow: -2px 0 8px rgba(0,0,0,0.3); border: none;
+}
+.watch-side.open .drawer-handle { display: flex; }
+@media (min-width: 1024px) {
+    .drawer-handle, .watch-side.open .drawer-handle { display: none; }
+}
+.comments-header { font-size: 1.25rem; font-weight: 600; margin-bottom: 20px; }
+.comments-header span { color: var(--sub-text); font-weight: 400; font-size: 0.85rem; margin-left: 8px; }
+
+/* --- 댓글 작성/수정 폼 --- */
+.comment-form { margin-bottom: 24px; }
+.comment-form textarea {
+    width: 100%; min-height: 80px; border-radius: 10px; border: 1px solid var(--border-color);
+    background: #0e0e0e; color: var(--text-color); padding: 12px 16px; font-size: 0.85rem;
+    resize: vertical; font-family: inherit; outline: none; transition: border-color 0.15s;
+}
+.comment-form textarea:focus { border-color: var(--accent); }
+.comment-form-actions { display: flex; gap: 8px; margin-top: 12px; justify-content: flex-end; }
+.comment-form button {
+    border: none; border-radius: 8px; padding: 8px 16px; font-size: 0.8rem;
+    font-weight: 700; cursor: pointer; transition: background 0.15s;
+}
+.comment-form .save-btn { background: var(--panel-bg-high); color: #fff; }
+.comment-form .save-btn:hover { background: #3a3939; }
+.comment-form .delete-btn { background: var(--danger-bg); color: var(--danger-text); }
+.comment-form .delete-btn:hover { background: var(--danger-bg-hover); }
+.comment-hint { font-size: 0.85rem; color: var(--sub-text); margin-bottom: 20px; } /* 비로그인 시 안내문구 */
+
+/* --- 댓글 목록 (계정당 1개만 작성 가능) --- */
+.comment-item { padding: 16px 0; border-bottom: 1px solid var(--border-color); }
+.comment-item:last-child { border-bottom: none; }
+.comment-nickname { font-weight: 600; font-size: 0.85rem; color: var(--text-color); }
+.comment-text { font-size: 0.85rem; margin: 6px 0 8px; line-height: 1.5; color: var(--sub-text); white-space: pre-wrap; }
+.comment-like-btn {
+    background: none; border: none; cursor: pointer; font-size: 0.75rem; color: var(--sub-text);
+    display: inline-flex; align-items: center; gap: 4px; padding: 4px 0; transition: color 0.15s;
+}
+.comment-like-btn:hover { color: var(--accent); }
+.comment-like-btn.liked { color: var(--accent); font-weight: 700; }
+
+/* 로딩중/데이터 없음 등 공용 빈 상태 문구 */
+.empty-state { color: var(--sub-text); font-size: 0.85rem; padding: 16px 0; }
+
+/* ============================================================
+   모바일(≤800px) 전용 조정
+   ============================================================ */
+@media (max-width: 800px) {
+    .top-bar { padding: 8px 14px; }
+    .top-bar-left { gap: 10px; }
+    .header-divider { display: none; }
+    .home-link .logo-top-line { font-size: 0.68rem; }
+    .home-link .logo-bottom-line { font-size: 0.76rem; }
+    .video-badge-link { font-size: 1.15rem; }
+    .video-badge-link .play-icon { font-size: 0.7rem; }
+    .watch-layout { padding: 14px; gap: 24px; }
+}
