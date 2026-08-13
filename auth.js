@@ -286,6 +286,76 @@ export async function unlikeComment(seriesId, videoId, commentUid, likerUid) {
   });
 }
 
+// ---------- 더미 데이터 (관리자 테스트용) ----------
+// 더미 시리즈/영상/댓글: 실제 내용(썸네일, 유튜브 링크, 댓글 내용 등) 없이
+// 제목 등 형식만 채워서 만드는 테스트용 데이터. 문서에 isDummy:true를 남겨서
+// 일반 데이터와 구분하고, 몇 번째 더미인지 세는 데도 사용한다.
+
+// 전체 시리즈 중 더미 시리즈만 골라 반환
+export async function getDummySeries() {
+  const all = await getAllSeries();
+  return all.filter((s) => s.isDummy);
+}
+
+// 더미 시리즈가 하나도 없으면 새로 만들고, 있으면 그중 첫 번째를 반환한다.
+// ("더미 시리즈는 최소 1개 존재" 조건을 보장 + 더미 영상이 기본으로 담길 시리즈를 정해줌)
+export async function ensureDummySeries(creatorEmail) {
+  const dummySeries = await getDummySeries();
+  if (dummySeries.length > 0) return dummySeries[0];
+  return createDummySeries(creatorEmail);
+}
+
+// 더미 시리즈 새로 생성. 이름: 더미 시리즈 -> 더미 시리즈1 -> 더미 시리즈2 ...
+export async function createDummySeries(creatorEmail) {
+  const dummyCount = (await getDummySeries()).length;
+  const name = dummyCount === 0 ? "더미 시리즈" : `더미 시리즈${dummyCount}`;
+  const ownerEmails = creatorEmail ? [creatorEmail] : [];
+  const ref = await addDoc(collection(db, "series"), {
+    name,
+    description: "",
+    thumbnail: "",
+    ownerEmails,
+    isDummy: true,
+    createdAt: serverTimestamp(),
+  });
+  return { id: ref.id, name, description: "", thumbnail: "", ownerEmails, isDummy: true };
+}
+
+// 더미 영상 생성 (지정한 시리즈에 담김, 보통 ensureDummySeries로 구한 더미 시리즈).
+// 제목: 더미제목 -> 더미제목1 -> 더미제목2 ... (같은 시리즈 안 더미 영상 개수 기준)
+export async function createDummyVideo(seriesId, uploaderEmail) {
+  const existing = await getVideosForSeries(seriesId);
+  const dummyCount = existing.filter((v) => v.isDummy).length;
+  const title = dummyCount === 0 ? "더미제목" : `더미제목${dummyCount}`;
+  const ref = await addDoc(collection(db, "series", seriesId, "videos"), {
+    title,
+    thumbnailUrl: "",
+    youtubeUrl: "",
+    uploaderEmail: uploaderEmail || "",
+    isDummy: true,
+    createdAt: serverTimestamp(),
+  });
+  return { id: ref.id, title, thumbnailUrl: "", youtubeUrl: "", isDummy: true };
+}
+
+// 더미 댓글 생성. 일반 댓글과 달리 문서 ID가 uid가 아니라 자동 생성 ID라서
+// "계정당 1개" 제한과 무관하게 여러 개 계속 추가될 수 있다.
+// 텍스트: 더미 댓글 -> 더미 댓글1 -> 더미 댓글2 ...
+export async function createDummyComment(seriesId, videoId) {
+  const existing = await getComments(seriesId, videoId);
+  const dummyCount = existing.filter((c) => c.isDummy).length;
+  const text = dummyCount === 0 ? "더미 댓글" : `더미 댓글${dummyCount}`;
+  const ref = await addDoc(collection(db, "series", seriesId, "videos", videoId, "comments"), {
+    authorName: "더미 계정",
+    authorPhoto: "",
+    text,
+    likes: [],
+    isDummy: true,
+    createdAt: serverTimestamp(),
+  });
+  return { id: ref.id, text, authorName: "더미 계정", isDummy: true };
+}
+
 export function timeAgo(timestamp) {
   if (!timestamp || !timestamp.toDate) return "";
   const seconds = Math.floor((Date.now() - timestamp.toDate().getTime()) / 1000);
