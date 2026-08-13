@@ -70,14 +70,14 @@ header {
     align-items: center;
     line-height: 1.05;
 }
-.home-link .logo-top-line { font-size: 0.62rem; font-weight: 700; letter-spacing: -0.8px; }
+.home-link .logo-top-line { font-size: 0.9rem; font-weight: 700; letter-spacing: -0.8px; }
 /* 구글 로고 스타일로 글자마다 다른 색 */
 .home-link .logo-top-line span:nth-child(1) { color: #4285F4; }
 .home-link .logo-top-line span:nth-child(2) { color: #EA4335; }
 .home-link .logo-top-line span:nth-child(3) { color: #FBBC05; }
 .home-link .logo-top-line span:nth-child(4) { color: #34A853; }
-.home-link .logo-bottom-line { font-size: 0.82rem; font-weight: 700; color: var(--text-color); }
-.header-divider { width: 1px; height: 18px; background: var(--border-color); margin: 0; flex-shrink: 0; }
+.home-link .logo-bottom-line { font-size: 1rem; font-weight: 700; color: var(--text-color); }
+.header-divider { width: 1px; height: 20px; background: var(--border-color); margin: 0 2px; flex-shrink: 0; }
 /* --- "HYUNIL VIDEO" 뱃지 --- */
 .video-badge-link {
     display: flex;
@@ -86,13 +86,13 @@ header {
     text-decoration: none;
     color: var(--text-color);
     font-weight: 800;
-    font-size: 1.05rem;
+    font-size: 1.5rem;
     letter-spacing: -0.02em;
     flex-shrink: 0;
 }
 .video-badge-link .play-icon {
     font-weight: 500;
-    font-size: 0.65rem;
+    font-size: 0.9rem;
     color: var(--sub-text);
     letter-spacing: 0.02em;
 }
@@ -175,8 +175,19 @@ header {
 
 /* 관리자보드 모달 내부 */
 .admin-board-desc { font-size: 0.8rem; color: var(--sub-text); margin: 0 0 4px; line-height: 1.4; }
-.admin-board-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; }
+.admin-board-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px; }
 .admin-board-row .action { margin-top: 0; flex-shrink: 0; }
+
+/* 더미 영상/댓글 "선택 삭제" 체크박스 패널 (관리자보드, watch.html 댓글창 공통 톤) */
+.admin-select-wrap { border-top: 1px solid var(--border-color); padding-top: 12px; }
+.admin-select-all-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.admin-select-all-label { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+.admin-select-actions { display: flex; gap: 8px; }
+.admin-select-actions .action { margin-top: 0; }
+.admin-checklist { max-height: 220px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 10px; padding: 6px 12px; }
+.admin-check-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; font-size: 0.85rem; border-bottom: 1px solid var(--border-color); cursor: pointer; }
+.admin-check-row:last-child { border-bottom: none; }
+.admin-check-sub { color: var(--sub-text); font-size: 0.78rem; }
 
 /* ============================================================
    전체 레이아웃: 메인 영상 그리드(왼쪽) + 구독 시리즈 사이드바(오른쪽)
@@ -438,11 +449,11 @@ html, body { overflow-x: hidden; max-width: 100%; }
    ============================================================ */
 @media (max-width: 800px) {
     header { padding: 8px 12px; gap: 8px; }
-    .home-link .logo-top-line { font-size: 0.58rem; }
-    .home-link .logo-bottom-line { font-size: 0.74rem; }
+    .home-link .logo-top-line { font-size: 0.68rem; }
+    .home-link .logo-bottom-line { font-size: 0.76rem; }
     .header-divider { display: none; }
-    .video-badge-link { font-size: 0.85rem; }
-    .video-badge-link .play-icon { font-size: 0.58rem; }
+    .video-badge-link { font-size: 1.15rem; }
+    .video-badge-link .play-icon { font-size: 0.7rem; }
     .search-bar { padding: 7px 12px; font-size: 0.8rem; }
     .header-right { gap: 6px; }
     .login-btn, .upload-btn { padding: 7px 12px; font-size: 12px; }

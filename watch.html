@@ -13,13 +13,6 @@
 <button class="back-btn" id="back-btn" title="뒤로가기">
 <svg fill="none" height="22" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="22"><path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path></svg>
 </button>
-<a class="home-link" href="index.html" title="신현일의 Search로 이동">
-<span class="logo-stack">
-<span class="logo-top-line"><span>신</span><span>현</span><span>일</span><span>의</span></span>
-<span class="logo-bottom-line">Search</span>
-</span>
-</a>
-<span class="header-divider"></span>
 <a class="video-badge-link" href="video.html" title="HYUNIL VIDEO 홈으로 가기">HYUNIL <span class="play-icon">VIDEO</span></a>
 </div>
 <div class="top-bar-right">
@@ -355,7 +348,7 @@
         }
         let mine = null;
         try { mine = await getMyComment(seriesId, videoId, currentUser.uid); } catch (e) { console.error(e); }
-        const isAdminUser = isSiteOwner(currentUser.email); // 관리자만 "더미 댓글 추가" 버튼을 볼 수 있음
+        const isAdminUser = isSiteOwner(currentUser.email); // 관리자만 "더미 댓글 추가/삭제" 버튼을 볼 수 있음
         commentFormWrap.innerHTML = `
             <div class="comment-form">
                 <textarea id="comment-text-input" placeholder="댓글은 계정당 1개만 남길 수 있어요.">${mine ? mine.text : ''}</textarea>
@@ -363,7 +356,22 @@
                     ${mine ? '<button class="delete-btn" id="comment-delete-btn">삭제</button>' : ''}
                     <button class="save-btn" id="comment-save-btn">${mine ? '수정' : '작성'}</button>
                     ${isAdminUser ? '<button class="save-btn" id="admin-add-dummy-comment-btn" type="button">더미 댓글 추가</button>' : ''}
+                    ${isAdminUser ? '<button class="delete-btn" id="admin-delete-dummy-comment-btn" type="button">더미 댓글 삭제</button>' : ''}
                 </div>
+                ${isAdminUser ? `
+                <div id="admin-dummy-comment-select-wrap" class="admin-select-wrap" style="display:none;">
+                    <div class="admin-select-all-row">
+                        <label class="admin-select-all-label">
+                            <input type="checkbox" id="admin-dummy-comment-select-all">
+                            <span>전체 선택</span>
+                        </label>
+                        <div class="admin-select-actions">
+                            <button class="delete-btn" id="admin-dummy-comment-delete-selected-btn" type="button">선택 삭제</button>
+                            <button class="save-btn" id="admin-dummy-comment-select-cancel-btn" type="button">취소</button>
+                        </div>
+                    </div>
+                    <div id="admin-dummy-comment-checklist" class="admin-checklist"></div>
+                </div>` : ''}
             </div>
         `;
         document.getElementById('comment-save-btn').addEventListener('click', async () => {
@@ -390,6 +398,60 @@
                     await createDummyComment(seriesId, videoId);
                     comments = await getComments(seriesId, videoId);
                     renderComments(); // 목록 갱신 + renderCommentForm() 재호출까지 함께 처리됨
+                } catch (e) {
+                    alert('오류: ' + e.message);
+                }
+            });
+        }
+        // 관리자 전용: "더미 댓글 삭제" - 누르면 이 영상의 더미 댓글을 체크박스로 선택해서 지울 수 있는 패널이 열림
+        const dummyDeleteToggleBtn = document.getElementById('admin-delete-dummy-comment-btn');
+        const dummyCommentSelectWrap = document.getElementById('admin-dummy-comment-select-wrap');
+        if (dummyDeleteToggleBtn) {
+            dummyDeleteToggleBtn.addEventListener('click', () => {
+                const isOpen = dummyCommentSelectWrap.style.display !== 'none';
+                if (isOpen) { dummyCommentSelectWrap.style.display = 'none'; return; }
+                dummyCommentSelectWrap.style.display = 'block';
+                renderDummyCommentChecklist();
+            });
+        }
+        function renderDummyCommentChecklist() {
+            const listEl = document.getElementById('admin-dummy-comment-checklist');
+            const selectAllCb = document.getElementById('admin-dummy-comment-select-all');
+            selectAllCb.checked = false;
+            const dummyComments = comments.filter(c => c.isDummy);
+            if (dummyComments.length === 0) {
+                listEl.innerHTML = '<div class="empty-state">더미 댓글이 없습니다.</div>';
+                return;
+            }
+            listEl.innerHTML = dummyComments.map(c => `
+                <label class="admin-check-row">
+                    <input type="checkbox" class="admin-dummy-comment-check" data-comment="${c.id}">
+                    <span>${escapeHtml(c.text)}</span>
+                </label>
+            `).join('');
+        }
+        const selectAllCommentCb = document.getElementById('admin-dummy-comment-select-all');
+        if (selectAllCommentCb) {
+            selectAllCommentCb.addEventListener('change', (e) => {
+                document.querySelectorAll('.admin-dummy-comment-check').forEach(cb => cb.checked = e.target.checked);
+            });
+        }
+        const cancelCommentSelectBtn = document.getElementById('admin-dummy-comment-select-cancel-btn');
+        if (cancelCommentSelectBtn) {
+            cancelCommentSelectBtn.addEventListener('click', () => {
+                dummyCommentSelectWrap.style.display = 'none';
+            });
+        }
+        const deleteSelectedCommentBtn = document.getElementById('admin-dummy-comment-delete-selected-btn');
+        if (deleteSelectedCommentBtn) {
+            deleteSelectedCommentBtn.addEventListener('click', async () => {
+                const checked = Array.from(document.querySelectorAll('.admin-dummy-comment-check:checked'));
+                if (checked.length === 0) { alert('삭제할 더미 댓글을 선택해주세요.'); return; }
+                if (!confirm(`선택한 더미 댓글 ${checked.length}개를 삭제할까요?`)) return;
+                try {
+                    await Promise.all(checked.map(cb => deleteComment(seriesId, videoId, cb.dataset.comment)));
+                    comments = await getComments(seriesId, videoId);
+                    renderComments(); // 목록 갱신 + renderCommentForm() 재호출까지 함께 처리됨 (패널은 다시 접힘)
                 } catch (e) {
                     alert('오류: ' + e.message);
                 }

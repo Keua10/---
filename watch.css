@@ -40,6 +40,12 @@ body {
     color: var(--text-color);
     letter-spacing: -0.01em;
 }
+/* 데스크톱에서는 body 자체가 스크롤되지 않고 뷰포트 높이에 고정됨.
+   대신 아래 .watch-main / .reco-list / #comments-list 각자가 자기 영역 안에서만
+   독립적으로 스크롤된다 (마우스를 올린 패널만 스크롤되는 효과) */
+@media (min-width: 1024px) {
+    body { height: 100vh; overflow: hidden; }
+}
 
 /* ============================================================
    상단바 (뒤로가기 + 로고 + HYUNIL VIDEO 뱃지 + 로그인/로그아웃)
@@ -48,7 +54,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between; /* 왼쪽 로고 묶음 / 오른쪽 로그인 영역 양끝 정렬 */
-    padding: 10px 28px;
+    padding: 10px 28px 10px 14px; /* 왼쪽(뒤로가기+HYUNIL VIDEO)이 더 왼쪽에 붙도록 좌측만 줄임 */
     border-bottom: 1px solid var(--border-color);
     background: var(--bar-bg);
     position: sticky; /* 스크롤해도 상단에 고정 */
@@ -159,13 +165,16 @@ body {
         gap: 40px;
         padding: 0;             /* 좌우/상하 여백을 없애서 패널이 화면 가장자리까지 닿게 함 */
         align-items: stretch;   /* 세 컬럼의 높이를 서로 맞춰서(가장 긴 컬럼 기준) 배경색이 끊기지 않게 함 */
+        min-height: 0;          /* flex 자식이 내용물 크기만큼 커지지 않고 부모(뷰포트) 높이에 맞춰 잘리도록 */
     }
 }
 .watch-main { flex: 1; min-width: 0; width: 100%; order: 1; }
 @media (min-width: 1024px) {
     /* watch-layout 자체 padding은 0이므로, 영상 영역만 따로 위아래 숨쉴 공간을 줌
        (추천영상/댓글 패널은 자기 자신의 padding(.reco-panel, .watch-side)으로 안쪽 여백을 처리) */
-    .watch-main { padding: 24px 0; }
+    /* 영상 영역은 스크롤해도 화면에 그대로 고정됨: 페이지 자체가 스크롤되지 않고(위 body 참고),
+       내용이 넘칠 때만 이 영역 안에서 마우스를 올린 채로 스크롤해야 자체적으로 스크롤됨 */
+    .watch-main { padding: 24px 0; min-height: 0; overflow-y: auto; }
 }
 
 /* ----- 추천영상 (왼쪽) ----- */
@@ -177,7 +186,7 @@ body {
     order: 2; /* 모바일에서는 영상 다음 순서 */
 }
 @media (min-width: 1024px) {
-    .reco-row { width: 360px; flex-shrink: 0; order: 0; } /* 데스크톱에서는 맨 왼쪽 */
+    .reco-row { width: 360px; flex-shrink: 0; order: 0; min-height: 0; } /* 데스크톱에서는 맨 왼쪽 */
 }
 .reco-panel {
     flex: 1;
@@ -190,14 +199,22 @@ body {
     .reco-panel {
         width: 100%; padding: 18px;
         border-radius: 0; /* 데스크톱에서는 각진 사각형으로 — 배경이 "섹션"처럼 보이도록 */
+        /* "추천영상" 제목은 고정하고, 목록만 이 패널 안에서 독립적으로 스크롤되게 함
+           (마우스를 이 패널 위에 올리고 스크롤해야 목록이 움직이고, 영상/댓글은 그대로 있음) */
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
     }
 }
 .reco-header { font-size: 0.95rem; font-weight: 700; margin: 0 0 12px; }
+@media (min-width: 1024px) {
+    .reco-header { flex-shrink: 0; }
+}
 /* 모바일: 썸네일 카드들을 가로로 스크롤하는 리스트 */
 .reco-list { display: flex; flex-direction: row; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
 @media (min-width: 1024px) {
-    /* 데스크톱: 세로로 쌓인 리스트 */
-    .reco-list { flex-direction: column; gap: 10px; overflow-x: visible; padding-bottom: 0; }
+    /* 데스크톱: 세로로 쌓인 리스트 + 패널 높이를 넘으면 이 목록만 스크롤 */
+    .reco-list { flex-direction: column; gap: 10px; overflow-x: visible; padding-bottom: 0; flex: 1; min-height: 0; overflow-y: auto; }
 }
 .reco-item {
     display: flex; flex-direction: column; gap: 6px; width: 150px; flex-shrink: 0;
@@ -321,12 +338,17 @@ body {
 }
 .watch-side.open { transform: translateX(0); } /* JS가 이 클래스를 토글해서 열고 닫음 */
 @media (min-width: 1024px) {
-    /* 데스크톱: 드로어가 아니라 항상 보이는 고정 우측 패널로 전환 */
+    /* 데스크톱: 드로어가 아니라 항상 보이는 고정 우측 패널로 전환.
+       "댓글" 제목 + 작성창은 고정하고, 아래 댓글 목록(#comments-list)만 이 패널 안에서
+       독립적으로 스크롤되게 함 (마우스를 이 패널 위에 올리고 스크롤해야 목록이 움직임) */
     .watch-side {
         position: static; width: 460px; height: auto; transform: none;
         box-shadow: none; flex-shrink: 0;
         border-radius: 0; padding: 20px;
+        display: flex; flex-direction: column; min-height: 0; overflow-y: visible;
     }
+    .comments-header, #comment-form-wrap { flex-shrink: 0; }
+    #comments-list { flex: 1; min-height: 0; overflow-y: auto; }
 }
 .drawer-close-btn {
     position: absolute; top: 16px; right: 16px;
@@ -375,6 +397,15 @@ body {
 .comment-form .delete-btn:hover { background: var(--danger-bg-hover); }
 .comment-hint { font-size: 0.85rem; color: var(--sub-text); margin-bottom: 20px; } /* 비로그인 시 안내문구 */
 
+/* 관리자 전용 "더미 댓글 삭제" 선택 패널 (video.html 관리자보드와 같은 톤으로 통일) */
+.admin-select-wrap { border-top: 1px solid var(--border-color); margin-top: 14px; padding-top: 12px; }
+.admin-select-all-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.admin-select-all-label { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+.admin-select-actions { display: flex; gap: 8px; }
+.admin-checklist { max-height: 220px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 10px; padding: 6px 12px; }
+.admin-check-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; font-size: 0.85rem; border-bottom: 1px solid var(--border-color); cursor: pointer; }
+.admin-check-row:last-child { border-bottom: none; }
+
 /* --- 댓글 목록 (계정당 1개만 작성 가능) --- */
 .comment-item { padding: 16px 0; border-bottom: 1px solid var(--border-color); }
 .comment-item:last-child { border-bottom: none; }
@@ -394,7 +425,7 @@ body {
    모바일(≤800px) 전용 조정
    ============================================================ */
 @media (max-width: 800px) {
-    .top-bar { padding: 8px 14px; }
+    .top-bar { padding: 8px 14px 8px 8px; }
     .top-bar-left { gap: 10px; }
     .header-divider { display: none; }
     .home-link .logo-top-line { font-size: 0.68rem; }

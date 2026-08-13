@@ -356,6 +356,21 @@ export async function createDummyComment(seriesId, videoId) {
   return { id: ref.id, text, authorName: "더미 계정", isDummy: true };
 }
 
+// 전체 시리즈를 뒤져서 isDummy:true 인 영상을 전부 모아 반환 (일괄/선택 삭제용).
+// 각 항목에 seriesId/seriesName을 함께 담아줘서 삭제 시 바로 쓸 수 있게 한다.
+export async function getAllDummyVideos() {
+  const allSeries = await getAllSeries();
+  const lists = await Promise.all(
+    allSeries.map(async (s) => {
+      const vids = await getVideosForSeries(s.id);
+      return vids
+        .filter((v) => v.isDummy)
+        .map((v) => ({ ...v, seriesId: s.id, seriesName: s.name }));
+    })
+  );
+  return lists.flat();
+}
+
 export function timeAgo(timestamp) {
   if (!timestamp || !timestamp.toDate) return "";
   const seconds = Math.floor((Date.now() - timestamp.toDate().getTime()) / 1000);
