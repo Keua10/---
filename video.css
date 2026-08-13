@@ -160,6 +160,23 @@ header {
     transition: background 0.15s;
 }
 .logout-btn:hover { background: var(--panel-bg-high); }
+.admin-tool-btn {
+    background: transparent;
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-pill);
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.admin-tool-btn:hover { background: var(--accent); color: #fff; }
+
+/* 관리자보드 모달 내부 */
+.admin-board-desc { font-size: 0.8rem; color: var(--sub-text); margin: 0 0 4px; line-height: 1.4; }
+.admin-board-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; }
+.admin-board-row .action { margin-top: 0; flex-shrink: 0; }
 
 /* ============================================================
    전체 레이아웃: 메인 영상 그리드(왼쪽) + 구독 시리즈 사이드바(오른쪽)
@@ -432,6 +449,7 @@ html, body { overflow-x: hidden; max-width: 100%; }
     .user-area .profile-btn { padding: 4px 8px 4px 4px; }
     .user-area .profile-btn span { display: none; }
     .logout-btn { padding: 6px 10px; font-size: 12px; }
+    .admin-tool-btn { padding: 6px 10px; font-size: 11px; }
 
     .layout { padding: 14px; gap: 0; }
     .video-grid { grid-template-columns: repeat(2, 1fr); gap: 16px 12px; }

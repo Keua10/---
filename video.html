@@ -28,6 +28,7 @@
                 <img id="user-photo" src="" alt="프로필">
                 <span id="user-name"></span>
             </button>
+            <button class="admin-tool-btn" id="admin-tool-btn" style="display:none;">관리자도구</button>
             <button class="logout-btn" id="logout-btn">로그아웃</button>
         </div>
     </div>
@@ -90,6 +91,28 @@
         <button class="action" id="edit-video-save">저장</button>
         <button class="action danger" id="edit-video-delete" style="margin-left: 8px;">영상 삭제</button>
         <div class="modal-msg" id="edit-video-msg"></div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="admin-board-modal">
+    <div class="modal-box">
+        <button class="modal-close" data-close="admin-board-modal">✕</button>
+        <h3>관리자보드</h3>
+        <p class="admin-board-desc">테스트용 더미 데이터를 만듭니다. 더미 항목은 실제 내용(썸네일·링크·댓글 내용) 없이 제목 등 형식만 채워져서 생성됩니다.</p>
+
+        <h3>더미 시리즈</h3>
+        <div class="admin-board-row">
+            <span id="admin-dummy-series-count" class="admin-board-desc">불러오는 중...</span>
+            <button class="action" id="admin-add-dummy-series-btn">더미 시리즈 추가</button>
+        </div>
+        <div class="modal-msg" id="admin-dummy-series-msg"></div>
+
+        <hr class="sep">
+
+        <h3>더미 영상</h3>
+        <p class="admin-board-desc">새로 만든 더미 영상은 더미 시리즈에 자동으로 담깁니다.</p>
+        <button class="action" id="admin-add-dummy-video-btn">더미 영상 추가</button>
+        <div class="modal-msg" id="admin-dummy-video-msg"></div>
     </div>
 </div>
 
@@ -172,7 +195,8 @@
         getUserDoc, subscribeToSeries, unsubscribeFromSeries,
         canUploadToSeries, addVideoToSeries, updateVideo, deleteVideoFromSeries, formatDate,
         isSiteOwner, canUserCreateSeries, canUserDeleteSeries, createSeries, deleteSeries,
-        getPermissions, setPermission, addSeriesOwner, removeSeriesOwner
+        getPermissions, setPermission, addSeriesOwner, removeSeriesOwner,
+        getDummySeries, ensureDummySeries, createDummySeries, createDummyVideo
     } from './auth.js';
 
     // ----- 자주 쓰는 DOM 요소 미리 찾아두기 -----
@@ -183,6 +207,7 @@
     const userName = document.getElementById('user-name');
     const logoutBtn = document.getElementById('logout-btn');
     const profileBtn = document.getElementById('profile-btn');
+    const adminToolBtn = document.getElementById('admin-tool-btn'); // 관리자만 보이는 "관리자도구" 버튼
     const videoGrid = document.getElementById('video-grid');
     const subscribedList = document.getElementById('subscribed-list');
     const hamburgerBtn = document.getElementById('hamburger-btn');
@@ -588,6 +613,69 @@
         catch (err) { alert('오류: ' + err.message); e.target.checked = !e.target.checked; }
     });
 
+    // ----- 관리자보드 (관리자만: 더미 시리즈/더미 영상 생성) -----
+    adminToolBtn.addEventListener('click', async () => {
+        document.getElementById('admin-dummy-series-msg').textContent = '';
+        document.getElementById('admin-dummy-video-msg').textContent = '';
+        document.getElementById('admin-board-modal').classList.add('open');
+        try {
+            await ensureDummySeries(currentUser.email); // 더미 시리즈가 하나도 없으면 이 시점에 자동 생성
+        } catch (e) {
+            console.error(e);
+        }
+        refreshAdminBoard();
+    });
+
+    // 현재 더미 시리즈 개수를 관리자보드에 표시
+    async function refreshAdminBoard() {
+        const countEl = document.getElementById('admin-dummy-series-count');
+        try {
+            const dummy = await getDummySeries();
+            countEl.textContent = `현재 더미 시리즈 ${dummy.length}개`;
+        } catch (e) {
+            countEl.textContent = '불러오지 못했습니다.';
+        }
+    }
+
+    document.getElementById('admin-add-dummy-series-btn').addEventListener('click', async () => {
+        const msg = document.getElementById('admin-dummy-series-msg');
+        msg.textContent = ''; msg.className = 'modal-msg';
+        let series;
+        try {
+            series = await createDummySeries(currentUser.email);
+        } catch (e) {
+            msg.textContent = '오류: ' + e.message; msg.className = 'modal-msg err';
+            return;
+        }
+        msg.textContent = `"${series.name}" 더미 시리즈가 생성되었습니다.`; msg.className = 'modal-msg ok';
+        try {
+            await refreshAdminBoard();
+            await refreshUserState(); // 추천 시리즈 등 홈 화면에도 반영
+        } catch (e) {
+            console.error('새로고침 중 오류(생성 자체는 성공):', e);
+        }
+    });
+
+    document.getElementById('admin-add-dummy-video-btn').addEventListener('click', async () => {
+        const msg = document.getElementById('admin-dummy-video-msg');
+        msg.textContent = ''; msg.className = 'modal-msg';
+        let dummySeries, video;
+        try {
+            dummySeries = await ensureDummySeries(currentUser.email); // 없으면 자동 생성, 있으면 재사용
+            video = await createDummyVideo(dummySeries.id, currentUser.email);
+        } catch (e) {
+            msg.textContent = '오류: ' + e.message; msg.className = 'modal-msg err';
+            return;
+        }
+        msg.textContent = `"${video.title}" 더미 영상이 "${dummySeries.name}" 시리즈에 추가되었습니다.`; msg.className = 'modal-msg ok';
+        try {
+            await refreshAdminBoard();
+            await refreshUserState(); // 홈 화면 영상 그리드에도 반영
+        } catch (e) {
+            console.error('새로고침 중 오류(생성 자체는 성공):', e);
+        }
+    });
+
     // 로그인 상태/시리즈 데이터가 바뀔 때마다 호출: 시리즈 캐시를 새로고침하고
     // 내 권한(업로드 가능 시리즈, 시리즈 생성/삭제 권한, 관리자 여부)을 다시 계산한 뒤
     // 영상 그리드/추천 시리즈/구독 목록을 전부 다시 그린다.
@@ -599,12 +687,14 @@
             iCanCreateSeries = await canUserCreateSeries(currentUser.email);
             iCanDeleteSeries = await canUserDeleteSeries(currentUser.email);
             iAmAdmin = isSiteOwner(currentUser.email);
+            adminToolBtn.style.display = iAmAdmin ? 'inline-block' : 'none';
         } else {
             mySeries = [];
             uploadBtn.style.display = 'none';
             iCanCreateSeries = false;
             iCanDeleteSeries = false;
             iAmAdmin = false;
+            adminToolBtn.style.display = 'none';
         }
         try { await renderVideos(); } catch (e) { console.error(e); }
         try { await renderRecommendedSeries(); } catch (e) { console.error(e); }

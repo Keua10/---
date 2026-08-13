@@ -358,7 +358,13 @@ body {
     resize: vertical; font-family: inherit; outline: none; transition: border-color 0.15s;
 }
 .comment-form textarea:focus { border-color: var(--accent); }
-.comment-form-actions { display: flex; gap: 8px; margin-top: 12px; justify-content: flex-end; }
+.comment-form-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; justify-content: flex-end; }
+.comment-form #admin-add-dummy-comment-btn {
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+}
+.comment-form #admin-add-dummy-comment-btn:hover { background: var(--accent); color: #fff; }
 .comment-form button {
     border: none; border-radius: 8px; padding: 8px 16px; font-size: 0.8rem;
     font-weight: 700; cursor: pointer; transition: background 0.15s;
