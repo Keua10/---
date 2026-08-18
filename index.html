@@ -61,26 +61,6 @@
             font-size: 14px;
         }
 
-        .video-link {
-            display: flex;
-            align-items: baseline;
-            gap: 5px;
-            color: var(--text-color);
-            text-decoration: none;
-            font-weight: 800;
-            font-size: 1.05rem;
-            letter-spacing: -0.02em;
-            opacity: 0.92;
-        }
-        .video-link:hover { opacity: 1; }
-        .video-link .play-icon {
-            font-weight: 500;
-            font-size: 0.65rem;
-            color: var(--text-color);
-            opacity: 0.55;
-            letter-spacing: 0.02em;
-        }
-
         .login-btn {
             background-color: var(--link-color);
             color: #fff;
@@ -270,6 +250,172 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
 
+        /* ===== 프로필 상세창 (계정 정보 + 앱 런처) ===== */
+        :root {
+            --popup-bg: #ffffff;
+            --popup-border: #dfe1e5;
+            --popup-inner-bg: #eef0f2;
+            --popup-shadow: rgba(32,33,36,0.28);
+            --dot-color: #b5b9bd;
+            --sub-text: #5f6368;
+            --cell-hover: rgba(0,0,0,0.06);
+        }
+        [data-theme="dark"] {
+            --popup-bg: #282828;
+            --popup-border: #3c4043;
+            --popup-inner-bg: #0f0f0f;
+            --popup-shadow: rgba(0,0,0,0.65);
+            --dot-color: #ffffff;
+            --sub-text: #9aa0a6;
+            --cell-hover: rgba(255,255,255,0.08);
+        }
+
+        .user-area { position: relative; }
+
+        .profile-trigger {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            background: transparent;
+            border: none;
+            padding: 4px 10px 4px 4px;
+            border-radius: 20px;
+            cursor: pointer;
+            color: var(--text-color);
+            font-family: inherit;
+            font-size: 14px;
+            transition: background 0.18s;
+        }
+        .profile-trigger:hover { background: var(--btn-bg); }
+        .profile-trigger img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: var(--btn-bg);
+        }
+
+        .profile-popup {
+            position: absolute;
+            top: calc(100% + 12px);
+            right: 0;
+            width: 300px;
+            max-width: calc(100vw - 32px);
+            box-sizing: border-box;
+            padding: 16px;
+            background: var(--popup-bg);
+            border: 1px solid var(--popup-border);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px var(--popup-shadow);
+            text-align: left;
+            z-index: 1200;
+            display: none;
+        }
+        .profile-popup.open { display: block; animation: popIn 0.16s ease-out; }
+        @keyframes popIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: none; }
+        }
+
+        .popup-head { display: flex; align-items: center; gap: 12px; }
+        .popup-head img {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: var(--btn-bg);
+            flex-shrink: 0;
+        }
+        .popup-id { min-width: 0; }
+        .popup-name { font-size: 15px; font-weight: 700; line-height: 1.25; }
+        .popup-email {
+            font-size: 12px;
+            color: var(--sub-text);
+            margin-top: 3px;
+            word-break: break-all;
+        }
+
+        .popup-account-btn {
+            display: block;
+            width: 100%;
+            margin-top: 14px;
+            padding: 9px 0;
+            background: transparent;
+            color: var(--text-color);
+            border: 1px solid var(--popup-border);
+            border-radius: 20px;
+            font-family: inherit;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.18s, border-color 0.18s, transform 0.08s;
+        }
+        .popup-account-btn:hover { background: var(--btn-bg); border-color: var(--icon-color); }
+        .popup-account-btn:active { transform: scale(0.98); }
+
+        /* 앱 런처 영역 — 팝업 배경보다 어둡게 해서 공간 구분 */
+        .app-grid-wrap {
+            margin-top: 14px;
+            padding: 10px;
+            background: var(--popup-inner-bg);
+            border-radius: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+        }
+        .app-cell {
+            aspect-ratio: 1 / 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: var(--text-color);
+            transition: background 0.15s;
+        }
+        a.app-cell:hover { background: var(--cell-hover); }
+        .app-cell.empty { pointer-events: none; }
+        .app-label {
+            font-size: 10.5px;
+            line-height: 1.2;
+            text-align: center;
+            opacity: 0.82;
+            padding: 0 2px;
+        }
+        .app-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--dot-color);
+            opacity: 0.5;
+        }
+        .app-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .app-icon-video {
+            background: linear-gradient(145deg, #ff453a, #c1121f);
+            padding-left: 2px;
+            box-shadow: 0 3px 8px rgba(193,18,31,0.35);
+        }
+
+        @media (max-width: 600px) {
+            .profile-trigger { font-size: 12px; padding: 3px 8px 3px 3px; }
+            .profile-trigger img { width: 28px; height: 28px; }
+            .profile-popup { width: 270px; padding: 14px; }
+            .app-grid-wrap { max-height: 260px; }
+        }
         /* 모바일 반응형 미세 스케일 조정 */
         @media (max-width: 600px) {
             body { padding-top: 15vh; }
@@ -288,12 +434,30 @@
     </div>
 
     <div class="top-right-controls">
-        <a href="video.html" class="video-link">HYUNIL <span class="play-icon">VIDEO</span></a>
         <button class="login-btn" id="login-btn">로그인</button>
         <div class="user-area" id="user-area">
-            <img id="user-photo" src="" alt="프로필">
-            <span id="user-name"></span>
+            <button class="profile-trigger" id="profile-trigger" aria-haspopup="true" aria-expanded="false">
+                <img id="user-photo" src="" alt="프로필">
+                <span id="user-name"></span>
+            </button>
             <button class="logout-btn" id="logout-btn">로그아웃</button>
+
+            <!-- 프로필 상세창 -->
+            <div class="profile-popup" id="profile-popup">
+                <div class="popup-head">
+                    <img id="popup-photo" src="" alt="프로필">
+                    <div class="popup-id">
+                        <div class="popup-name" id="popup-name"></div>
+                        <div class="popup-email" id="popup-email"></div>
+                    </div>
+                </div>
+
+                <button class="popup-account-btn" id="popup-account-btn" type="button">계정 설정</button>
+
+                <div class="app-grid-wrap">
+                    <div class="app-grid" id="app-grid"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -345,11 +509,71 @@
     <script type="module">
         import { watchAuth, signInWithGoogle, signOutUser } from './auth.js';
 
+        /* =========================================================
+           신현일의 Search 하위 앱 목록
+           앱이 추가되면 아래 APPS 배열에 순서대로 넣기만 하면 됨.
+           빈 자리는 자동으로 흰 점으로 채워짐.
+           ========================================================= */
+        const GRID_COLS = 3;   // 열 개수
+        const GRID_ROWS = 3;   // 행 개수 (총 칸 = COLS * ROWS)
+
+        const APPS = [
+            {
+                name: 'HYUNIL VIDEO',
+                url: 'video.html',
+                icon: '<span class="app-icon app-icon-video">&#9654;</span>'
+            }
+        ];
+
         const loginBtn = document.getElementById('login-btn');
         const userArea = document.getElementById('user-area');
         const userPhoto = document.getElementById('user-photo');
         const userName = document.getElementById('user-name');
         const logoutBtn = document.getElementById('logout-btn');
+        const profileTrigger = document.getElementById('profile-trigger');
+        const profilePopup = document.getElementById('profile-popup');
+        const popupPhoto = document.getElementById('popup-photo');
+        const popupName = document.getElementById('popup-name');
+        const popupEmail = document.getElementById('popup-email');
+        const popupAccountBtn = document.getElementById('popup-account-btn');
+        const appGrid = document.getElementById('app-grid');
+
+        function renderAppGrid() {
+            appGrid.style.gridTemplateColumns = `repeat(${GRID_COLS}, 1fr)`;
+            const total = GRID_COLS * GRID_ROWS;
+            let html = '';
+            for (let i = 0; i < total; i++) {
+                const app = APPS[i];
+                if (app) {
+                    html += `<a class="app-cell" href="${app.url}">${app.icon}<span class="app-label">${app.name}</span></a>`;
+                } else {
+                    html += '<span class="app-cell empty"><span class="app-dot"></span></span>';
+                }
+            }
+            appGrid.innerHTML = html;
+        }
+        renderAppGrid();
+
+        function closePopup() {
+            profilePopup.classList.remove('open');
+            profileTrigger.setAttribute('aria-expanded', 'false');
+        }
+
+        profileTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const willOpen = !profilePopup.classList.contains('open');
+            profilePopup.classList.toggle('open', willOpen);
+            profileTrigger.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        });
+
+        profilePopup.addEventListener('click', (e) => e.stopPropagation());
+        document.addEventListener('click', closePopup);
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closePopup();
+        });
+
+        // 계정 설정 — 아직 기능 없음 (인터랙션만)
+        popupAccountBtn.addEventListener('click', (e) => e.preventDefault());
 
         loginBtn.addEventListener('click', async () => {
             try {
@@ -361,6 +585,7 @@
         });
 
         logoutBtn.addEventListener('click', async () => {
+            closePopup();
             await signOutUser();
         });
 
@@ -368,11 +593,17 @@
             if (user) {
                 loginBtn.style.display = 'none';
                 userArea.style.display = 'flex';
-                userPhoto.src = user.photoURL || '';
-                userName.textContent = user.displayName || user.email;
+                const photo = user.photoURL || '';
+                const nick = user.displayName || user.email;
+                userPhoto.src = photo;
+                userName.textContent = nick;
+                popupPhoto.src = photo;
+                popupName.textContent = nick;
+                popupEmail.textContent = user.email || '';
             } else {
                 loginBtn.style.display = 'inline-block';
                 userArea.style.display = 'none';
+                closePopup();
             }
         });
     </script>
