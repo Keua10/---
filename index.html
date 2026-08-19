@@ -394,10 +394,11 @@
             transition: background 0.15s;
         }
         a.app-cell:hover .app-icon-chip { background: var(--icon-chip-bg-hover); }
-        /* 이미지 형태 앱 아이콘(투명 배경 로고 파일) — 칩 안을 꽉 채우도록 크게 표시 */
+        /* 이미지 형태 앱 아이콘(투명 배경 로고 파일) — 칩 안을 꽉 채우도록 크게 표시
+           (아이콘 원본 파일 자체를 여백 없이 다시 크롭해서 96%까지 올려도 칩 밖으로 안 넘침) */
         .app-icon-img {
-            width: 86%;
-            height: 86%;
+            width: 96%;
+            height: 96%;
             object-fit: contain;
             flex-shrink: 0;
         }
