@@ -408,6 +408,24 @@
             object-fit: contain;
             flex-shrink: 0;
         }
+        /* 아직 전용 로고 이미지 파일이 없는 앱을 위한 글자 아이콘.
+           위와 같은 이유로 선택자를 반드시 클래스 2개(.app-icon-chip .app-icon-text)로 유지할 것. */
+        .app-icon-chip .app-icon-text {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            padding: 0 6px;
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+            text-align: center;
+            color: #ffffff;
+            white-space: pre-line;
+        }
+        .app-icon-chip .app-icon-text em { font-style: normal; color: #ff4d4d; }
         /* 라벨은 트레이 위에 직접 놓이므로 테마 글자색을 그대로 따라감(고정 흰색 아님) */
         .app-label {
             display: block;
@@ -455,7 +473,7 @@
     </style>
 </head>
 <body>
-    <span class="version-tag">beta 1.1.2</span>
+    <span class="version-tag">beta 1.1.3</span>
     <div class="top-left-controls">
         <label class="theme-switch">
             <input type="checkbox" id="theme-checkbox">
@@ -551,6 +569,13 @@
                 /* ?v= 뒤 숫자는 캐시 무효화용. 아이콘 이미지를 교체할 때마다 이 숫자를 1 올릴 것
                    (파일명이 같으면 브라우저/CDN이 옛날 이미지를 계속 쓰기 때문) */
                 iconSrc: 'hyunil_video_icon.png?v=2'
+            },
+            {
+                name: 'HYUNIL TIER',
+                url: 'tier.html',
+                /* 아직 로고 이미지가 없어서 글자 아이콘으로 대신함.
+                   나중에 로고 PNG가 생기면 iconText를 지우고 iconSrc: 'hyunil_tier_icon.png?v=1' 로 바꾸면 됨 */
+                iconText: 'Hyunil\n<em>Tier</em>'
             }
         ];
 
@@ -568,12 +593,17 @@
         const appGrid = document.getElementById('app-grid');
 
         function renderAppGrid() {
-            appGrid.innerHTML = APPS.map(app => `
+            appGrid.innerHTML = APPS.map(app => {
+                // 로고 이미지가 있으면 이미지, 없으면 iconText 로 글자 아이콘을 그린다
+                const icon = app.iconSrc
+                    ? `<img class="app-icon-img" src="${app.iconSrc}" alt="${app.name}">`
+                    : `<span class="app-icon-text">${app.iconText || app.name}</span>`;
+                return `
                 <a class="app-cell" href="${app.url}" title="${app.name}">
-                    <span class="app-icon-chip"><img class="app-icon-img" src="${app.iconSrc}" alt="${app.name}"></span>
+                    <span class="app-icon-chip">${icon}</span>
                     <span class="app-label">${app.name}</span>
-                </a>
-            `).join('');
+                </a>`;
+            }).join('');
         }
         renderAppGrid();
 

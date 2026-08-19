@@ -371,6 +371,78 @@ export async function getAllDummyVideos() {
   return lists.flat();
 }
 
+// ---------- HYUNIL TIER (티어메이커) ----------
+// 컬렉션 구조: tiers/{tierId}
+//   title        : 티어표 제목
+//   description  : 설명(선택)
+//   coverUrl     : 목록 카드에 쓸 커버 이미지 URL(선택, 비우면 박스 이미지로 콜라주)
+//   rows         : [{ label, color }]  — 티어 행(S/A/B/C/D ...)
+//   items        : [{ id, name, imageUrl }] — 박스 목록(만든 사람이 정한 순서 그대로)
+//   creatorEmail / creatorName / creatorPhoto
+//   plays        : 누군가 이 티어표를 열어본 횟수
+// 만드는 건 로그인한 사람 누구나 가능하고, 고치거나 지우는 건 만든 사람과 관리자만 가능.
+
+export async function createTier({ title, description, coverUrl, rows, items, creatorEmail, creatorName, creatorPhoto }) {
+  const ref = await addDoc(collection(db, "tiers"), {
+    title,
+    description: description || "",
+    coverUrl: coverUrl || "",
+    rows: rows || [],
+    items: items || [],
+    creatorEmail: creatorEmail || "",
+    creatorName: creatorName || "",
+    creatorPhoto: creatorPhoto || "",
+    plays: 0,
+    createdAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+// 전체 티어표 목록. 최신순 정렬은 클라이언트에서 처리한다.
+// (orderBy를 서버 쿼리에 넣으면 색인이 필요하거나, createdAt이 아직 확정되지 않은
+//  문서가 통째로 빠지는 문제가 있어서 예전에 추천 비디오에서 겪었던 함정과 같음)
+export async function getAllTiers() {
+  const snap = await getDocs(collection(db, "tiers"));
+  const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  list.sort((a, b) => {
+    const ta = a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : 0;
+    const tb = b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : 0;
+    return tb - ta;
+  });
+  return list;
+}
+
+export async function getTier(tierId) {
+  const snap = await getDoc(doc(db, "tiers", tierId));
+  return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+}
+
+export async function updateTier(tierId, { title, description, coverUrl, rows, items }) {
+  const data = {};
+  if (title !== undefined) data.title = title;
+  if (description !== undefined) data.description = description;
+  if (coverUrl !== undefined) data.coverUrl = coverUrl;
+  if (rows !== undefined) data.rows = rows;
+  if (items !== undefined) data.items = items;
+  await updateDoc(doc(db, "tiers", tierId), data);
+}
+
+export async function deleteTier(tierId) {
+  await deleteDoc(doc(db, "tiers", tierId));
+}
+
+// 플레이 횟수 +1. 로그인하지 않은 사람도 셀 수 있어야 해서
+// firestore.rules에서 "plays 필드만 바꾸는 업데이트"는 따로 허용해 둠.
+export async function incrementTierPlay(tierId) {
+  await updateDoc(doc(db, "tiers", tierId), { plays: increment(1) });
+}
+
+// 이 티어표를 고치거나 지울 수 있는 사람인지 (만든 사람 본인 또는 사이트 관리자)
+export function canEditTier(tier, userEmail) {
+  if (!tier || !userEmail) return false;
+  return tier.creatorEmail === userEmail || isSiteOwner(userEmail);
+}
+
 export function timeAgo(timestamp) {
   if (!timestamp || !timestamp.toDate) return "";
   const seconds = Math.floor((Date.now() - timestamp.toDate().getTime()) / 1000);

@@ -1,0 +1,502 @@
+/* ============================================================
+   tier.css — HYUNIL TIER (티어메이커) 공통 스타일
+   tier.html(메인) / tier-make.html(만들기) / tier-play.html(플레이) 3개 페이지가 공유합니다.
+
+   디자인 방침: HYUNIL VIDEO(video.css)와 같은 디자인 언어를 그대로 계승합니다.
+   - 같은 색상 변수 이름(--bg-color, --panel-bg, --accent ...)과 같은 다크/라이트 전환 방식
+   - 같은 헤더 구조(신현일의 Search 로고 + 구분선 + 앱 배지 + 오른쪽 버튼들)
+   - 같은 모달(글래스모피즘) / 버튼 / 토글 스타일
+   Tier 앱만의 고유 요소는 "티어 행(색상 라벨 + 드롭존)"과 "1:1 박스"입니다.
+   ============================================================ */
+
+/* ----- 색상 변수 (video.css와 동일 팔레트) ----- */
+:root {
+    --bg-color: #ffffff;
+    --panel-bg: #f8f9fa;
+    --panel-bg-high: #eeeeee;
+    --text-color: #131313;
+    --sub-text: #606368;
+    --border-color: #e5e5e5;
+    --accent: #ff0000;
+    --link-color: #4285F4;
+    --glass-bg: rgba(255,255,255,0.75);
+    --radius-thumb: 1rem;
+    --radius-pill: 9999px;
+    /* 앱 배지(로고) 칩 배경 — 라이트 테마의 흰 헤더에서도 로고가 잘 보이도록 항상 어둡게 고정 */
+    --badge-chip-bg: #1c1c1e;
+    /* 드롭존(티어 칸) 바닥색 */
+    --drop-bg: #f1f1f1;
+    --drop-bg-hover: #e2e2e2;
+}
+[data-theme="dark"] {
+    --bg-color: #131313;
+    --panel-bg: #1c1b1b;
+    --panel-bg-high: #2a2a2a;
+    --text-color: #e5e2e1;
+    --sub-text: #a8a5a4;
+    --border-color: #262626;
+    --accent: #ff4d4d;
+    --link-color: #8ab4f8;
+    --glass-bg: rgba(28,27,27,0.75);
+    --badge-chip-bg: rgba(255,255,255,0.07);
+    --drop-bg: #1c1b1b;
+    --drop-bg-hover: #2a2a2a;
+}
+
+* { box-sizing: border-box; }
+html, body { overflow-x: hidden; max-width: 100%; }
+body {
+    margin: 0;
+    font-family: 'Inter', 'Malgun Gothic', sans-serif;
+    background: var(--bg-color);
+    color: var(--text-color);
+    letter-spacing: -0.01em;
+}
+
+/* ============================================================
+   상단 헤더
+   ============================================================ */
+header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 28px;
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg-color);
+}
+.home-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: var(--text-color);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.home-link .logo-stack { display: flex; flex-direction: column; align-items: center; line-height: 1.05; }
+.home-link .logo-top-line { font-size: 0.9rem; font-weight: 700; letter-spacing: -0.8px; }
+.home-link .logo-top-line span:nth-child(1) { color: #4285F4; }
+.home-link .logo-top-line span:nth-child(2) { color: #EA4335; }
+.home-link .logo-top-line span:nth-child(3) { color: #FBBC05; }
+.home-link .logo-top-line span:nth-child(4) { color: #34A853; }
+.home-link .logo-bottom-line { font-size: 1rem; font-weight: 700; color: var(--text-color); }
+.header-divider { width: 1px; height: 20px; background: var(--border-color); margin: 0 2px; flex-shrink: 0; }
+
+/* --- "Hyunil Tier" 앱 배지 ---
+   아직 전용 로고 이미지 파일이 없어서 글자 배지로 만들어 둔 것.
+   나중에 로고 PNG가 생기면 이 <a> 안의 내용을 HYUNIL VIDEO처럼
+   <img class="tier-badge-img" src="hyunil_tier_badge.png?v=1"> 로 교체하면 됨
+   (파일명을 재사용해 교체할 때는 ?v= 숫자를 반드시 1 올릴 것 — 캐시 때문에 안 바뀜) */
+.tier-badge-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    flex-shrink: 0;
+    padding: 6px 12px;
+    border-radius: 10px;
+    background: var(--badge-chip-bg);
+}
+.tier-badge-text {
+    font-size: 0.9rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: #ffffff;
+}
+.tier-badge-text em { font-style: normal; color: var(--accent); }
+.tier-badge-img { height: 22px; width: auto; display: block; }
+
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.login-btn, .make-btn {
+    background-color: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 9px 20px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: opacity 0.15s;
+}
+.login-btn:hover, .make-btn:hover { opacity: 0.88; }
+.user-area { display: none; align-items: center; gap: 8px; }
+.user-area .profile-btn {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--panel-bg-high); border: none; cursor: pointer;
+    color: var(--text-color); font-size: 13px; font-weight: 600;
+    padding: 5px 14px 5px 5px; border-radius: var(--radius-pill);
+}
+.user-area .profile-btn:hover { background: var(--border-color); }
+.user-area img { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; background: var(--sub-text); }
+.logout-btn {
+    background: var(--panel-bg); border: 1px solid var(--border-color);
+    border-radius: var(--radius-pill); padding: 8px 16px;
+    font-size: 13px; font-weight: 600; color: var(--text-color); cursor: pointer;
+    transition: background 0.15s;
+}
+.logout-btn:hover { background: var(--panel-bg-high); }
+.ghost-btn {
+    background: var(--panel-bg); border: 1px solid var(--border-color);
+    border-radius: var(--radius-pill); padding: 8px 16px;
+    font-size: 13px; font-weight: 600; color: var(--text-color);
+    cursor: pointer; text-decoration: none; display: inline-block;
+    transition: background 0.15s;
+}
+.ghost-btn:hover { background: var(--panel-bg-high); }
+
+/* ============================================================
+   본문 공통
+   ============================================================ */
+.content { padding: 24px 28px 60px; max-width: 1500px; margin: 0 auto; }
+
+/* 메인 상단 툴바: 왼쪽 검색창 / 오른쪽 Make Tier 버튼 */
+.toolbar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 26px;
+}
+.search-wrap {
+    flex: 1;
+    min-width: 0;
+    max-width: 460px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-pill);
+    padding: 9px 18px;
+    background: var(--panel-bg);
+    transition: border-color 0.15s;
+}
+.search-wrap:focus-within { border-color: var(--accent); }
+.search-wrap span { color: var(--sub-text); font-size: 0.9rem; flex-shrink: 0; }
+.search-wrap input {
+    flex: 1; min-width: 0; border: none; background: transparent; outline: none;
+    color: var(--text-color); font-family: inherit; font-size: 0.9rem;
+}
+.search-wrap input::placeholder { color: var(--sub-text); }
+
+h2.section-title { font-size: 1.15rem; font-weight: 700; margin: 0 0 18px; letter-spacing: -0.01em; }
+.empty-state { color: var(--sub-text); font-size: 0.88rem; padding: 40px 0; line-height: 1.6; }
+
+/* ============================================================
+   메인: 티어 카드 그리드
+   커버는 지정한 이미지 URL이 있으면 그걸 쓰고, 없으면 앞쪽 박스 이미지 4개를 모아
+   2x2 콜라주로 만들어 보여준다(TierMaker 목록과 비슷한 느낌).
+   ============================================================ */
+.tier-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 26px 22px;
+}
+.tier-card {
+    display: block;
+    text-decoration: none;
+    color: var(--text-color);
+}
+.tier-cover {
+    width: 100%;
+    aspect-ratio: 16/9;
+    border-radius: var(--radius-thumb);
+    overflow: hidden;
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    margin-bottom: 11px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    transition: border-color 0.15s;
+}
+.tier-card:hover .tier-cover { border-color: var(--accent); }
+.tier-cover .cover-cell {
+    width: 100%; height: 100%; overflow: hidden;
+    background: var(--panel-bg-high);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--sub-text); font-size: 0.9rem; font-weight: 700;
+}
+.tier-cover .cover-cell img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* 커버 이미지를 직접 지정한 경우엔 콜라주가 아니라 한 장을 꽉 채움 */
+.tier-cover.single { display: block; }
+.tier-cover.single img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.tier-card-title { margin: 0; font-size: 0.98rem; font-weight: 700; line-height: 1.35; }
+.tier-card:hover .tier-card-title { color: var(--accent); }
+.tier-card-meta { font-size: 0.8rem; color: var(--sub-text); margin-top: 5px; }
+
+/* ============================================================
+   티어 보드 (플레이 / 만들기 공용)
+   ============================================================ */
+.board-head { margin-bottom: 20px; }
+.board-title { font-size: 1.5rem; font-weight: 800; margin: 0 0 6px; letter-spacing: -0.02em; }
+.board-sub { font-size: 0.85rem; color: var(--sub-text); margin: 0; line-height: 1.5; }
+.board-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+
+.tier-board {
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--panel-bg);
+}
+.tier-row {
+    display: flex;
+    align-items: stretch;
+    border-bottom: 1px solid var(--border-color);
+    min-height: 84px;
+}
+.tier-row:last-child { border-bottom: none; }
+
+/* 왼쪽 색상 라벨 */
+.tier-label {
+    width: 96px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 8px 6px;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #1a1a1a;            /* 티어 색상이 대체로 밝아서 어두운 글자가 잘 보임 */
+    word-break: break-word;
+    line-height: 1.2;
+}
+/* 오른쪽 드롭존 */
+.tier-drop {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 6px;
+    padding: 8px;
+    background: var(--drop-bg);
+    transition: background 0.12s;
+}
+.tier-drop.drag-over { background: var(--drop-bg-hover); }
+
+/* 행 편집 버튼(만들기 페이지에서만 보임) */
+.row-tools {
+    width: 40px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: var(--panel-bg);
+    border-left: 1px solid var(--border-color);
+}
+.row-tools button {
+    background: none; border: none; cursor: pointer;
+    color: var(--sub-text); font-size: 0.95rem; line-height: 1;
+    padding: 3px; border-radius: 6px;
+}
+.row-tools button:hover { color: var(--text-color); background: var(--panel-bg-high); }
+
+/* 하단 보관함(아직 배치하지 않은 박스들) */
+.tray-head {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 10px;
+    margin: 26px 0 10px;
+}
+.tray-head h3 { font-size: 0.95rem; font-weight: 700; margin: 0; }
+.tray-hint { font-size: 0.8rem; color: var(--sub-text); }
+.tier-tray {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 6px;
+    padding: 10px;
+    min-height: 96px;
+    border: 1px dashed var(--border-color);
+    border-radius: 14px;
+    background: var(--panel-bg);
+    transition: background 0.12s, border-color 0.12s;
+}
+.tier-tray.drag-over { background: var(--panel-bg-high); border-color: var(--accent); }
+
+/* ============================================================
+   박스 (1:1 이미지 + 아래 이름)
+   ============================================================ */
+.tier-item {
+    width: 76px;
+    flex-shrink: 0;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;         /* 모바일에서 드래그 중 화면이 스크롤되지 않게 */
+    text-align: center;
+}
+.tier-item:active { cursor: grabbing; }
+.tier-item .item-img {
+    width: 76px;
+    height: 76px;              /* 1:1 비율 고정 */
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--panel-bg-high);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; font-weight: 800; color: var(--sub-text);
+    pointer-events: none;
+}
+.tier-item .item-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tier-item .item-name {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 600;
+    line-height: 1.25;
+    margin-top: 4px;
+    color: var(--text-color);
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    word-break: break-word;
+    pointer-events: none;
+}
+/* 만들기 페이지에서 아직 내용이 안 채워진 빈 박스 */
+.tier-item.empty .item-img {
+    border: 1px dashed var(--border-color);
+    background: transparent;
+    color: var(--sub-text);
+}
+.tier-item.editable { cursor: pointer; }
+/* 드래그 중 원래 자리에 남는 흐릿한 잔상 */
+.tier-item.dragging { opacity: 0.32; }
+/* 손가락/커서를 따라다니는 드래그 고스트 */
+.drag-ghost {
+    position: fixed;
+    z-index: 3000;
+    pointer-events: none;
+    opacity: 0.92;
+    transform: translate(-50%, -50%) scale(1.06);
+    filter: drop-shadow(0 8px 18px rgba(0,0,0,0.4));
+}
+
+/* 박스 추가 버튼 */
+.add-box-btn {
+    width: 76px; height: 76px;
+    border-radius: 8px;
+    border: 1px dashed var(--border-color);
+    background: transparent;
+    color: var(--sub-text);
+    font-size: 1.5rem; font-weight: 400; line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: border-color 0.15s, color 0.15s;
+}
+.add-box-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ============================================================
+   폼 / 버튼 / 모달 (video.css와 동일 톤)
+   ============================================================ */
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 0.8rem; color: var(--sub-text); margin: 0 0 5px; }
+input[type="text"], input[type="url"], input[type="email"], textarea, select {
+    width: 100%; padding: 10px 12px; border-radius: 10px;
+    border: 1px solid var(--border-color); background: var(--panel-bg);
+    color: var(--text-color); font-size: 0.88rem; font-family: inherit; outline: none;
+}
+input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+.title-input { font-size: 1.1rem; font-weight: 700; padding: 12px 14px; }
+
+button.action {
+    background: var(--accent); color: #fff; border: none;
+    border-radius: 10px; padding: 10px 18px;
+    font-size: 0.85rem; font-weight: 700; cursor: pointer; font-family: inherit;
+}
+button.action:hover { opacity: 0.88; }
+button.action.ghost { background: var(--panel-bg); color: var(--text-color); border: 1px solid var(--border-color); }
+button.action.ghost:hover { background: var(--panel-bg-high); opacity: 1; }
+button.action.danger { background: transparent; border: 1px solid #c0392b; color: #e57373; }
+button.action:disabled { opacity: 0.5; cursor: default; }
+
+.msg { font-size: 0.82rem; margin-top: 10px; min-height: 1em; }
+.msg.ok { color: #4ade80; }
+.msg.err { color: #e57373; }
+
+.modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.55); backdrop-filter: blur(3px);
+    z-index: 2000; align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    width: 92%; max-width: 420px; max-height: 85vh; overflow-y: auto;
+    border-radius: 20px; padding: 24px; position: relative;
+}
+.modal-box h3 { font-size: 0.98rem; font-weight: 700; margin: 0 0 16px; }
+.modal-close {
+    position: absolute; top: 16px; right: 18px;
+    background: none; border: none; font-size: 18px; cursor: pointer; color: var(--sub-text);
+}
+.modal-actions { display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
+
+/* 박스 편집 모달의 미리보기 */
+.preview-row { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+.preview-box {
+    width: 76px; height: 76px; border-radius: 8px; overflow: hidden; flex-shrink: 0;
+    background: var(--panel-bg-high);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--sub-text); font-size: 0.72rem;
+}
+.preview-box img { width: 100%; height: 100%; object-fit: cover; }
+.preview-hint { font-size: 0.78rem; color: var(--sub-text); line-height: 1.5; }
+
+/* 색상 선택 */
+.color-swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.color-swatches button {
+    width: 30px; height: 30px; border-radius: 8px; border: 2px solid transparent; cursor: pointer;
+}
+.color-swatches button.selected { border-color: var(--text-color); }
+
+/* 우측 하단 버전 표시 (index.html과 동일 규칙) */
+.version-tag {
+    position: fixed; right: 10px; bottom: 8px;
+    font-size: 10px; color: var(--sub-text); opacity: 0.45;
+    letter-spacing: 0.02em; pointer-events: none; z-index: 5; user-select: none;
+}
+
+/* ============================================================
+   모바일 (≤800px)
+   ============================================================ */
+@media (max-width: 800px) {
+    header { padding: 8px 12px; gap: 8px; }
+    .home-link .logo-top-line { font-size: 0.68rem; }
+    .home-link .logo-bottom-line { font-size: 0.76rem; }
+    .header-divider { display: none; }
+    .tier-badge-link { padding: 5px 9px; }
+    .tier-badge-text { font-size: 0.76rem; }
+    .header-right { gap: 6px; }
+    .login-btn, .make-btn { padding: 7px 12px; font-size: 12px; }
+    .logout-btn, .ghost-btn { padding: 6px 10px; font-size: 12px; }
+    .user-area .profile-btn { padding: 4px 8px 4px 4px; }
+    .user-area .profile-btn span { display: none; }
+
+    .content { padding: 16px 14px 60px; }
+    .toolbar { flex-wrap: wrap; }
+    .search-wrap { max-width: none; }
+    .tier-card-grid { grid-template-columns: repeat(2, 1fr); gap: 18px 12px; }
+    .board-title { font-size: 1.2rem; }
+
+    .tier-label { width: 62px; font-size: 0.85rem; }
+    .tier-row { min-height: 68px; }
+    .tier-drop { gap: 5px; padding: 6px; }
+    .row-tools { width: 32px; }
+    .tier-item, .tier-item .item-img, .add-box-btn { width: 58px; }
+    .tier-item .item-img, .add-box-btn { height: 58px; }
+    .tier-item .item-name { font-size: 0.6rem; }
+}
+
+/* 모션 최소화 설정을 존중 */
+@media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+}

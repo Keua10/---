@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>티어표 만들기 - HYUNIL TIER</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tier.css">
+</head>
+<body>
+
+<span class="version-tag">beta 1.1.3</span>
+
+<header>
+    <a href="index.html" class="home-link" title="신현일의 Search 홈으로 가기">
+        <span class="logo-stack">
+            <span class="logo-top-line"><span>신</span><span>현</span><span>일</span><span>의</span></span>
+            <span class="logo-bottom-line">Search</span>
+        </span>
+    </a>
+    <span class="header-divider"></span>
+    <a href="tier.html" class="tier-badge-link" title="HYUNIL TIER 홈으로 가기">
+        <span class="tier-badge-text">Hyunil <em>Tier</em></span>
+    </a>
+
+    <div class="header-right">
+        <a class="ghost-btn" href="tier.html">목록으로</a>
+        <button class="login-btn" id="login-btn">로그인</button>
+        <div class="user-area" id="user-area">
+            <button class="profile-btn" id="profile-btn">
+                <img id="user-photo" src="" alt="프로필">
+                <span id="user-name"></span>
+            </button>
+            <button class="logout-btn" id="logout-btn">로그아웃</button>
+        </div>
+    </div>
+</header>
+
+<div class="content" id="editor" style="display:none;">
+    <div class="board-head">
+        <div class="field">
+            <label for="title-input">제목</label>
+            <input type="text" id="title-input" class="title-input" placeholder="예: 신현일 영상 티어표">
+        </div>
+        <div class="field">
+            <label for="desc-input">설명 (선택)</label>
+            <input type="text" id="desc-input" placeholder="이 티어표가 무엇에 대한 것인지 한 줄로">
+        </div>
+        <div class="field">
+            <label for="cover-input">커버 이미지 URL (선택 — 비우면 박스 이미지로 자동 구성)</label>
+            <input type="url" id="cover-input" placeholder="https://...">
+        </div>
+    </div>
+
+    <h2 class="section-title">티어 칸</h2>
+    <div class="tier-board" id="rows-board"></div>
+    <div class="board-actions">
+        <button class="action ghost" id="add-row-btn">티어 칸 추가</button>
+        <span class="tray-hint" style="align-self:center;">칸 이름을 누르면 이름과 색을 바꿀 수 있습니다.</span>
+    </div>
+
+    <div class="tray-head">
+        <h3>박스</h3>
+        <span class="tray-hint">박스를 누르면 이미지 URL과 이름을 넣을 수 있습니다.</span>
+    </div>
+    <div class="tier-tray" id="box-tray"></div>
+
+    <div class="board-actions" style="margin-top:24px;">
+        <button class="action" id="upload-btn">업로드</button>
+        <button class="action ghost" id="delete-tier-btn" style="display:none;">이 티어표 삭제</button>
+    </div>
+    <div class="msg" id="save-msg"></div>
+</div>
+
+<div class="content" id="gate">
+    <div class="empty-state" id="gate-msg">불러오는 중...</div>
+</div>
+
+<!-- 박스 편집 모달 -->
+<div class="modal-overlay" id="box-modal">
+    <div class="modal-box">
+        <button class="modal-close" data-close="box-modal">✕</button>
+        <h3>박스 내용</h3>
+        <div class="preview-row">
+            <div class="preview-box" id="box-preview">미리보기</div>
+            <div class="preview-hint">이미지는 1:1(정사각형) 비율로 잘려서 보입니다.<br>이름은 이미지 아래에 표시됩니다.</div>
+        </div>
+        <div class="field">
+            <label for="box-image-input">이미지 URL</label>
+            <input type="url" id="box-image-input" placeholder="https://...">
+        </div>
+        <div class="field">
+            <label for="box-name-input">박스 이름</label>
+            <input type="text" id="box-name-input" placeholder="예: 1화 오프닝">
+        </div>
+        <div class="modal-actions">
+            <button class="action" id="box-save-btn">저장</button>
+            <button class="action danger" id="box-delete-btn">박스 삭제</button>
+        </div>
+    </div>
+</div>
+
+<!-- 티어 칸 편집 모달 -->
+<div class="modal-overlay" id="row-modal">
+    <div class="modal-box">
+        <button class="modal-close" data-close="row-modal">✕</button>
+        <h3>티어 칸</h3>
+        <div class="field">
+            <label for="row-label-input">칸 이름</label>
+            <input type="text" id="row-label-input" placeholder="예: S">
+        </div>
+        <div class="field">
+            <label>칸 색</label>
+            <div class="color-swatches" id="row-colors"></div>
+        </div>
+        <div class="modal-actions">
+            <button class="action" id="row-save-btn">저장</button>
+            <button class="action ghost" id="row-up-btn">위로</button>
+            <button class="action ghost" id="row-down-btn">아래로</button>
+            <button class="action danger" id="row-delete-btn">칸 삭제</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+</script>
+
+<script type="module">
+    // ============================================================
+    // tier-make.html — 티어표 만들기 / 고치기
+    //  ?id=... 가 붙어 있으면 기존 티어표를 불러와 고치는 화면이 되고,
+    //  없으면 새로 만드는 화면이 된다.
+    // ============================================================
+    import {
+        watchAuth, signInWithGoogle, signOutUser,
+        createTier, getTier, updateTier, deleteTier, canEditTier
+    } from './auth.js';
+
+    const loginBtn = document.getElementById('login-btn');
+    const userArea = document.getElementById('user-area');
+    const userPhoto = document.getElementById('user-photo');
+    const userName = document.getElementById('user-name');
+    const logoutBtn = document.getElementById('logout-btn');
+
+    const editor = document.getElementById('editor');
+    const gate = document.getElementById('gate');
+    const gateMsg = document.getElementById('gate-msg');
+
+    const titleInput = document.getElementById('title-input');
+    const descInput = document.getElementById('desc-input');
+    const coverInput = document.getElementById('cover-input');
+    const rowsBoard = document.getElementById('rows-board');
+    const boxTray = document.getElementById('box-tray');
+    const addRowBtn = document.getElementById('add-row-btn');
+    const uploadBtn = document.getElementById('upload-btn');
+    const deleteTierBtn = document.getElementById('delete-tier-btn');
+    const saveMsg = document.getElementById('save-msg');
+
+    const boxModal = document.getElementById('box-modal');
+    const boxPreview = document.getElementById('box-preview');
+    const boxImageInput = document.getElementById('box-image-input');
+    const boxNameInput = document.getElementById('box-name-input');
+    const boxSaveBtn = document.getElementById('box-save-btn');
+    const boxDeleteBtn = document.getElementById('box-delete-btn');
+
+    const rowModal = document.getElementById('row-modal');
+    const rowLabelInput = document.getElementById('row-label-input');
+    const rowColors = document.getElementById('row-colors');
+    const rowSaveBtn = document.getElementById('row-save-btn');
+    const rowUpBtn = document.getElementById('row-up-btn');
+    const rowDownBtn = document.getElementById('row-down-btn');
+    const rowDeleteBtn = document.getElementById('row-delete-btn');
+
+    // ----- 상태 -----
+    const params = new URLSearchParams(location.search);
+    const editingId = params.get('id');          // 있으면 "고치기" 모드
+    let currentUser = null;
+    let loadedTier = null;
+
+    const DEFAULT_COLORS = ['#ff7f7f', '#ffbf7f', '#ffdf7f', '#ffff7f', '#bfff7f', '#7fffbf', '#7fdfff', '#bf9fff', '#ff9fdf', '#cfcfcf'];
+    let rows = [
+        { label: 'S', color: '#ff7f7f' },
+        { label: 'A', color: '#ffbf7f' },
+        { label: 'B', color: '#ffdf7f' },
+        { label: 'C', color: '#ffff7f' },
+        { label: 'D', color: '#bfff7f' },
+    ];
+    let items = [];                              // [{ id, name, imageUrl }]
+    let nextItemNum = 1;
+    let editingItemIndex = -1;
+    let editingRowIndex = -1;
+    let pickedColor = DEFAULT_COLORS[0];
+
+    function newItemId() { return 'i' + (nextItemNum++) + '_' + Math.random().toString(36).slice(2, 7); }
+
+    function escapeHtml(str) {
+        return String(str || '').replace(/[&<>"']/g, (c) => (
+            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+        ));
+    }
+
+    // ----- 로그인 -----
+    loginBtn.addEventListener('click', async () => {
+        try { await signInWithGoogle(); }
+        catch (err) { alert('로그인에 실패했습니다: ' + err.message); }
+    });
+    logoutBtn.addEventListener('click', () => signOutUser());
+
+    // ----- 모달 공통 -----
+    document.querySelectorAll('.modal-close').forEach(btn => {
+        btn.addEventListener('click', () => document.getElementById(btn.dataset.close).classList.remove('open'));
+    });
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('open'); });
+    });
+
+    // ============================================================
+    // 티어 칸 렌더링
+    // ============================================================
+    function renderRows() {
+        rowsBoard.innerHTML = rows.map((r, i) => `
+            <div class="tier-row">
+                <div class="tier-label" style="background:${escapeHtml(r.color)}" data-row="${i}" role="button" tabindex="0"
+                     title="누르면 이름과 색을 바꿉니다">${escapeHtml(r.label)}</div>
+                <div class="tier-drop"></div>
+                <div class="row-tools">
+                    <button data-edit-row="${i}" title="칸 설정">⚙</button>
+                </div>
+            </div>
+        `).join('');
+
+        rowsBoard.querySelectorAll('[data-row]').forEach(el => {
+            el.addEventListener('click', () => openRowModal(Number(el.dataset.row)));
+            el.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openRowModal(Number(el.dataset.row)); }
+            });
+        });
+        rowsBoard.querySelectorAll('[data-edit-row]').forEach(btn => {
+            btn.addEventListener('click', () => openRowModal(Number(btn.dataset.editRow)));
+        });
+    }
+
+    addRowBtn.addEventListener('click', () => {
+        rows.push({ label: '새 칸', color: DEFAULT_COLORS[rows.length % DEFAULT_COLORS.length] });
+        renderRows();
+        openRowModal(rows.length - 1);
+    });
+
+    function openRowModal(index) {
+        editingRowIndex = index;
+        const r = rows[index];
+        rowLabelInput.value = r.label;
+        pickedColor = r.color;
+        renderColorSwatches();
+        rowDeleteBtn.style.display = rows.length > 1 ? 'inline-block' : 'none';
+        rowModal.classList.add('open');
+        rowLabelInput.focus();
+    }
+
+    function renderColorSwatches() {
+        rowColors.innerHTML = DEFAULT_COLORS.map(c => `
+            <button type="button" data-color="${c}" style="background:${c}"
+                    class="${c === pickedColor ? 'selected' : ''}" title="${c}"></button>
+        `).join('');
+        rowColors.querySelectorAll('[data-color]').forEach(btn => {
+            btn.addEventListener('click', () => { pickedColor = btn.dataset.color; renderColorSwatches(); });
+        });
+    }
+
+    rowSaveBtn.addEventListener('click', () => {
+        const label = rowLabelInput.value.trim();
+        if (!label) { rowLabelInput.focus(); return; }
+        rows[editingRowIndex] = { label, color: pickedColor };
+        renderRows();
+        rowModal.classList.remove('open');
+    });
+    rowUpBtn.addEventListener('click', () => {
+        if (editingRowIndex <= 0) return;
+        const i = editingRowIndex;
+        [rows[i - 1], rows[i]] = [rows[i], rows[i - 1]];
+        editingRowIndex = i - 1;
+        renderRows();
+    });
+    rowDownBtn.addEventListener('click', () => {
+        if (editingRowIndex >= rows.length - 1) return;
+        const i = editingRowIndex;
+        [rows[i + 1], rows[i]] = [rows[i], rows[i + 1]];
+        editingRowIndex = i + 1;
+        renderRows();
+    });
+    rowDeleteBtn.addEventListener('click', () => {
+        if (rows.length <= 1) return;
+        rows.splice(editingRowIndex, 1);
+        renderRows();
+        rowModal.classList.remove('open');
+    });
+
+    // ============================================================
+    // 박스 렌더링 — 만든 순서대로 티어 칸 아래에 놓인다
+    // ============================================================
+    function renderItems() {
+        const boxes = items.map((it, i) => {
+            const empty = !it.imageUrl && !it.name;
+            const inner = it.imageUrl
+                ? `<img src="${escapeHtml(it.imageUrl)}" alt="">`
+                : escapeHtml((it.name || '+').slice(0, 1));
+            return `
+                <div class="tier-item editable ${empty ? 'empty' : ''}" data-item="${i}" role="button" tabindex="0"
+                     title="${escapeHtml(it.name || '내용을 채우려면 누르세요')}">
+                    <div class="item-img">${inner}</div>
+                    <span class="item-name">${escapeHtml(it.name || '')}</span>
+                </div>`;
+        }).join('');
+        boxTray.innerHTML = boxes + `<button class="add-box-btn" id="add-box-btn" title="박스 생성">＋</button>`;
+
+        boxTray.querySelectorAll('[data-item]').forEach(el => {
+            el.addEventListener('click', () => openBoxModal(Number(el.dataset.item)));
+            el.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openBoxModal(Number(el.dataset.item)); }
+            });
+        });
+        document.getElementById('add-box-btn').addEventListener('click', addBox);
+    }
+
+    // 박스 생성: 빈 박스를 순서 맨 뒤에 놓고, 바로 내용 입력창을 띄운다
+    function addBox() {
+        items.push({ id: newItemId(), name: '', imageUrl: '' });
+        renderItems();
+        openBoxModal(items.length - 1);
+    }
+
+    function openBoxModal(index) {
+        editingItemIndex = index;
+        const it = items[index];
+        boxImageInput.value = it.imageUrl || '';
+        boxNameInput.value = it.name || '';
+        updateBoxPreview();
+        boxModal.classList.add('open');
+        boxImageInput.focus();
+    }
+
+    function updateBoxPreview() {
+        const url = boxImageInput.value.trim();
+        boxPreview.innerHTML = url ? `<img src="${escapeHtml(url)}" alt="">` : '미리보기';
+    }
+    boxImageInput.addEventListener('input', updateBoxPreview);
+
+    boxSaveBtn.addEventListener('click', () => {
+        items[editingItemIndex].imageUrl = boxImageInput.value.trim();
+        items[editingItemIndex].name = boxNameInput.value.trim();
+        renderItems();
+        boxModal.classList.remove('open');
+    });
+    boxDeleteBtn.addEventListener('click', () => {
+        items.splice(editingItemIndex, 1);
+        renderItems();
+        boxModal.classList.remove('open');
+    });
+
+    // ============================================================
+    // 업로드 / 저장
+    // ============================================================
+    function setMsg(text, kind) {
+        saveMsg.textContent = text;
+        saveMsg.className = 'msg' + (kind ? ' ' + kind : '');
+    }
+
+    uploadBtn.addEventListener('click', async () => {
+        const title = titleInput.value.trim();
+        if (!title) { setMsg('제목을 입력해 주세요.', 'err'); titleInput.focus(); return; }
+
+        // 이미지도 이름도 비어 있는 박스는 저장하지 않음
+        const filled = items.filter(it => it.imageUrl || it.name);
+        if (!filled.length) { setMsg('박스를 하나 이상 채워 주세요.', 'err'); return; }
+        const dropped = items.length - filled.length;
+
+        uploadBtn.disabled = true;
+        setMsg('저장하는 중...', '');
+        try {
+            const payload = {
+                title,
+                description: descInput.value.trim(),
+                coverUrl: coverInput.value.trim(),
+                rows,
+                items: filled,
+            };
+            let id = editingId;
+            if (editingId) {
+                await updateTier(editingId, payload);
+            } else {
+                id = await createTier({
+                    ...payload,
+                    creatorEmail: currentUser.email || '',
+                    creatorName: currentUser.displayName || currentUser.email || '',
+                    creatorPhoto: currentUser.photoURL || '',
+                });
+            }
+            setMsg(`저장했습니다.${dropped ? ` (내용이 비어 있는 박스 ${dropped}개는 빼고 저장했습니다.)` : ''} 잠시 후 이동합니다...`, 'ok');
+            setTimeout(() => { location.href = `tier-play.html?id=${encodeURIComponent(id)}`; }, 900);
+        } catch (err) {
+            console.error(err);
+            setMsg('저장하지 못했습니다: ' + err.message, 'err');
+            uploadBtn.disabled = false;
+        }
+    });
+
+    deleteTierBtn.addEventListener('click', async () => {
+        if (!editingId) return;
+        if (!confirm('이 티어표를 삭제할까요? 되돌릴 수 없습니다.')) return;
+        try {
+            await deleteTier(editingId);
+            location.href = 'tier.html';
+        } catch (err) {
+            setMsg('삭제하지 못했습니다: ' + err.message, 'err');
+        }
+    });
+
+    // ============================================================
+    // 시작
+    // ============================================================
+    function showEditor() {
+        gate.style.display = 'none';
+        editor.style.display = 'block';
+    }
+    function showGate(text) {
+        editor.style.display = 'none';
+        gate.style.display = 'block';
+        gateMsg.textContent = text;
+    }
+
+    async function start(user) {
+        if (!user) {
+            showGate('티어표를 만들려면 오른쪽 위에서 로그인해 주세요.');
+            return;
+        }
+        if (editingId) {
+            // 고치기 모드: 기존 내용을 불러오고 권한을 확인
+            try {
+                loadedTier = await getTier(editingId);
+            } catch (err) {
+                showGate('티어표를 불러오지 못했습니다.');
+                return;
+            }
+            if (!loadedTier) { showGate('없는 티어표입니다.'); return; }
+            if (!canEditTier(loadedTier, user.email)) {
+                showGate('이 티어표는 만든 사람만 고칠 수 있습니다.');
+                return;
+            }
+            titleInput.value = loadedTier.title || '';
+            descInput.value = loadedTier.description || '';
+            coverInput.value = loadedTier.coverUrl || '';
+            rows = (loadedTier.rows && loadedTier.rows.length) ? loadedTier.rows.slice() : rows;
+            items = (loadedTier.items || []).map(it => ({ ...it, id: it.id || newItemId() }));
+            uploadBtn.textContent = '저장';
+            deleteTierBtn.style.display = 'inline-block';
+        }
+        renderRows();
+        renderItems();
+        showEditor();
+    }
+
+    // 편집 화면을 이미 띄웠는지. 로그아웃 상태로 들어왔다가 여기서 로그인하는 경우에도
+    // 화면이 그대로 잠겨 있지 않도록, 로그인되는 순간 한 번 더 구성한다.
+    let editorReady = false;
+    watchAuth(async (user) => {
+        currentUser = user;
+        if (user) {
+            loginBtn.style.display = 'none';
+            userArea.style.display = 'flex';
+            userPhoto.src = user.photoURL || '';
+            userName.textContent = user.displayName || user.email;
+        } else {
+            loginBtn.style.display = 'inline-block';
+            userArea.style.display = 'none';
+        }
+
+        if (!user) {
+            editorReady = false;
+            showGate('티어표를 만들려면 오른쪽 위에서 로그인해 주세요.');
+            return;
+        }
+        if (editorReady) return;
+        editorReady = true;
+        await start(user);
+    });
+</script>
+
+</body>
+</html>

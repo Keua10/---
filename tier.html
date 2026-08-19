@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HYUNIL TIER</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tier.css">
+</head>
+<body>
+
+<span class="version-tag">beta 1.1.3</span>
+
+<header>
+    <a href="index.html" class="home-link" title="신현일의 Search 홈으로 가기">
+        <span class="logo-stack">
+            <span class="logo-top-line"><span>신</span><span>현</span><span>일</span><span>의</span></span>
+            <span class="logo-bottom-line">Search</span>
+        </span>
+    </a>
+    <span class="header-divider"></span>
+    <!-- 전용 로고 이미지가 아직 없어서 글자 배지로 대신함 -->
+    <a href="tier.html" class="tier-badge-link" title="HYUNIL TIER 홈으로 가기">
+        <span class="tier-badge-text">Hyunil <em>Tier</em></span>
+    </a>
+
+    <div class="header-right">
+        <a class="make-btn" id="make-btn" href="tier-make.html">Make Tier</a>
+        <button class="login-btn" id="login-btn">로그인</button>
+        <div class="user-area" id="user-area">
+            <button class="profile-btn" id="profile-btn">
+                <img id="user-photo" src="" alt="프로필">
+                <span id="user-name"></span>
+            </button>
+            <button class="logout-btn" id="logout-btn">로그아웃</button>
+        </div>
+    </div>
+</header>
+
+<div class="content">
+    <div class="toolbar">
+        <div class="search-wrap">
+            <span>🔍</span>
+            <input type="text" id="search-input" placeholder="티어표 제목이나 만든 사람으로 찾기">
+        </div>
+    </div>
+
+    <h2 class="section-title" id="list-title">티어표</h2>
+    <div class="tier-card-grid" id="tier-grid"></div>
+    <div class="empty-state" id="list-empty">불러오는 중...</div>
+</div>
+
+<script>
+    // 다크모드 저장값을 화면이 그려지기 전에 먼저 적용 (깜빡임 방지)
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+</script>
+
+<script type="module">
+    // ============================================================
+    // tier.html — HYUNIL TIER 메인
+    // 만들어진 티어표 목록을 카드로 보여주고, 검색으로 걸러낸다.
+    // 카드를 누르면 tier-play.html 로 이동해서 직접 티어를 매길 수 있다.
+    // ============================================================
+    import { watchAuth, signInWithGoogle, signOutUser, getAllTiers } from './auth.js';
+
+    const loginBtn = document.getElementById('login-btn');
+    const userArea = document.getElementById('user-area');
+    const userPhoto = document.getElementById('user-photo');
+    const userName = document.getElementById('user-name');
+    const logoutBtn = document.getElementById('logout-btn');
+    const makeBtn = document.getElementById('make-btn');
+    const searchInput = document.getElementById('search-input');
+    const grid = document.getElementById('tier-grid');
+    const listEmpty = document.getElementById('list-empty');
+    const listTitle = document.getElementById('list-title');
+
+    let allTiers = [];
+    let currentUser = null;
+
+    loginBtn.addEventListener('click', async () => {
+        try { await signInWithGoogle(); }
+        catch (err) { alert('로그인에 실패했습니다: ' + err.message); }
+    });
+    logoutBtn.addEventListener('click', () => signOutUser());
+
+    // 로그인하지 않은 상태에서 Make Tier를 누르면 먼저 로그인부터 안내
+    makeBtn.addEventListener('click', (e) => {
+        if (!currentUser) {
+            e.preventDefault();
+            alert('티어표를 만들려면 먼저 로그인해 주세요.');
+        }
+    });
+
+    function escapeHtml(str) {
+        return String(str || '').replace(/[&<>"']/g, (c) => (
+            { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+        ));
+    }
+
+    // 커버 만들기: coverUrl이 있으면 그 이미지 한 장, 없으면 박스 이미지 4개로 2x2 콜라주
+    function coverHtml(tier) {
+        if (tier.coverUrl) {
+            return `<div class="tier-cover single"><img src="${escapeHtml(tier.coverUrl)}" alt=""></div>`;
+        }
+        const items = (tier.items || []).filter(it => it && it.imageUrl).slice(0, 4);
+        const cells = [];
+        for (let i = 0; i < 4; i++) {
+            const it = items[i];
+            cells.push(it
+                ? `<div class="cover-cell"><img src="${escapeHtml(it.imageUrl)}" alt=""></div>`
+                : `<div class="cover-cell"></div>`);
+        }
+        return `<div class="tier-cover">${cells.join('')}</div>`;
+    }
+
+    function render(list) {
+        if (!list.length) {
+            grid.innerHTML = '';
+            listEmpty.style.display = 'block';
+            listEmpty.textContent = allTiers.length
+                ? '검색 결과가 없습니다.'
+                : '아직 만들어진 티어표가 없습니다. 오른쪽 위 Make Tier로 첫 티어표를 만들어 보세요.';
+            return;
+        }
+        listEmpty.style.display = 'none';
+        grid.innerHTML = list.map(t => `
+            <a class="tier-card" href="tier-play.html?id=${encodeURIComponent(t.id)}">
+                ${coverHtml(t)}
+                <h3 class="tier-card-title">${escapeHtml(t.title || '제목 없음')}</h3>
+                <div class="tier-card-meta">
+                    ${escapeHtml(t.creatorName || t.creatorEmail || '익명')} ·
+                    박스 ${(t.items || []).length}개 · ${t.plays || 0}회
+                </div>
+            </a>
+        `).join('');
+    }
+
+    function applySearch() {
+        const q = searchInput.value.trim().toLowerCase();
+        if (!q) {
+            listTitle.textContent = '티어표';
+            render(allTiers);
+            return;
+        }
+        const filtered = allTiers.filter(t =>
+            (t.title || '').toLowerCase().includes(q) ||
+            (t.creatorName || '').toLowerCase().includes(q) ||
+            (t.description || '').toLowerCase().includes(q)
+        );
+        listTitle.textContent = `"${searchInput.value.trim()}" 검색 결과`;
+        render(filtered);
+    }
+    searchInput.addEventListener('input', applySearch);
+
+    async function loadTiers() {
+        try {
+            allTiers = await getAllTiers();
+            applySearch();
+        } catch (err) {
+            console.error(err);
+            grid.innerHTML = '';
+            listEmpty.style.display = 'block';
+            listEmpty.textContent = '티어표를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.';
+        }
+    }
+    loadTiers();
+
+    watchAuth((user) => {
+        currentUser = user;
+        if (user) {
+            loginBtn.style.display = 'none';
+            userArea.style.display = 'flex';
+            userPhoto.src = user.photoURL || '';
+            userName.textContent = user.displayName || user.email;
+        } else {
+            loginBtn.style.display = 'inline-block';
+            userArea.style.display = 'none';
+        }
+    });
+</script>
+
+</body>
+</html>
