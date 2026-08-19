@@ -433,9 +433,23 @@
             .logo span:nth-child(5) { font-size: 1.8rem; }
             .search-box-wrapper { height: 46px; }
         }
+        /* 우측 하단 버전 표시 — 눈에 띄지 않게 아주 작고 흐리게, 다른 요소를 가리지 않도록 클릭 통과 */
+        .version-tag {
+            position: fixed;
+            right: 10px;
+            bottom: 8px;
+            font-size: 10px;
+            color: var(--icon-color);
+            opacity: 0.45;
+            letter-spacing: 0.02em;
+            pointer-events: none;
+            z-index: 5;
+            user-select: none;
+        }
     </style>
 </head>
 <body>
+    <span class="version-tag">beta 1.1.0</span>
     <div class="top-left-controls">
         <label class="theme-switch">
             <input type="checkbox" id="theme-checkbox">
