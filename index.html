@@ -396,9 +396,15 @@
         a.app-cell:hover .app-icon-chip { background: var(--icon-chip-bg-hover); }
         /* 이미지 형태 앱 아이콘(투명 배경 로고 파일) — 칩 안을 꽉 채우도록 크게 표시
            (아이콘 원본 파일 자체를 여백 없이 다시 크롭해서 96%까지 올려도 칩 밖으로 안 넘침) */
-        .app-icon-img {
+        /* 이미지 형태 앱 아이콘(투명 배경 로고 파일) — 칩 안을 꽉 채우도록 크게 표시.
+           ⚠️ 선택자를 반드시 `.app-icon-chip .app-icon-img`(클래스 2개)로 유지할 것.
+           이 아이콘은 #user-area 안에 들어있어서, 위쪽의 `.user-area img { width:32px; height:32px; border-radius:50% }`
+           규칙이 클래스 1개 + 태그 1개로 `.app-icon-img`(클래스 1개)보다 우선순위가 높아 32px로 덮어써버림.
+           클래스를 2개로 만들어야 그 규칙을 이긴다. border-radius도 50%로 상속되므로 명시적으로 0으로 되돌림. */
+        .app-icon-chip .app-icon-img {
             width: 96%;
             height: 96%;
+            border-radius: 0;
             object-fit: contain;
             flex-shrink: 0;
         }
@@ -449,7 +455,7 @@
     </style>
 </head>
 <body>
-    <span class="version-tag">beta 1.1.1</span>
+    <span class="version-tag">beta 1.1.2</span>
     <div class="top-left-controls">
         <label class="theme-switch">
             <input type="checkbox" id="theme-checkbox">
