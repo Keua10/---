@@ -449,7 +449,7 @@
     </style>
 </head>
 <body>
-    <span class="version-tag">beta 1.1.0</span>
+    <span class="version-tag">beta 1.1.1</span>
     <div class="top-left-controls">
         <label class="theme-switch">
             <input type="checkbox" id="theme-checkbox">
@@ -542,7 +542,9 @@
             {
                 name: 'HYUNIL VIDEO',
                 url: 'video.html',
-                iconSrc: 'hyunil_video_icon.png'
+                /* ?v= 뒤 숫자는 캐시 무효화용. 아이콘 이미지를 교체할 때마다 이 숫자를 1 올릴 것
+                   (파일명이 같으면 브라우저/CDN이 옛날 이미지를 계속 쓰기 때문) */
+                iconSrc: 'hyunil_video_icon.png?v=2'
             }
         ];
 
