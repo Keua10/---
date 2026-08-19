@@ -404,10 +404,12 @@
             color: #fff;
             flex-shrink: 0;
         }
-        .app-icon-video {
-            background: linear-gradient(145deg, #ff453a, #c1121f);
-            padding-left: 2px;
-            box-shadow: 0 3px 8px rgba(193,18,31,0.35);
+        /* 이미지 형태 앱 아이콘(투명 배경 로고 파일) 공용 스타일 */
+        .app-icon-img {
+            width: 38px;
+            height: 38px;
+            object-fit: contain;
+            flex-shrink: 0;
         }
 
         @media (max-width: 600px) {
@@ -521,7 +523,7 @@
             {
                 name: 'HYUNIL VIDEO',
                 url: 'video.html',
-                icon: '<span class="app-icon app-icon-video">&#9654;</span>'
+                icon: '<img class="app-icon-img" src="assets/hyunil_video_icon.png" alt="HYUNIL VIDEO">'
             }
         ];
 

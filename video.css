@@ -78,23 +78,17 @@ header {
 .home-link .logo-top-line span:nth-child(4) { color: #34A853; }
 .home-link .logo-bottom-line { font-size: 1rem; font-weight: 700; color: var(--text-color); }
 .header-divider { width: 1px; height: 20px; background: var(--border-color); margin: 0 2px; flex-shrink: 0; }
-/* --- "HYUNIL VIDEO" 뱃지 --- */
+/* --- "HYUNIL VIDEO" 뱃지 (이미지 로고, 배경 투명) --- */
 .video-badge-link {
     display: flex;
-    align-items: baseline;
-    gap: 5px;
+    align-items: center;
     text-decoration: none;
-    color: var(--text-color);
-    font-weight: 800;
-    font-size: 1.5rem;
-    letter-spacing: -0.02em;
     flex-shrink: 0;
 }
-.video-badge-link .play-icon {
-    font-weight: 500;
-    font-size: 0.9rem;
-    color: var(--sub-text);
-    letter-spacing: 0.02em;
+.video-badge-img {
+    height: 26px;
+    width: auto;
+    display: block;
 }
 /* 검색창 (가운데, 남는 너비를 채움) */
 .search-bar {
@@ -452,8 +446,7 @@ html, body { overflow-x: hidden; max-width: 100%; }
     .home-link .logo-top-line { font-size: 0.68rem; }
     .home-link .logo-bottom-line { font-size: 0.76rem; }
     .header-divider { display: none; }
-    .video-badge-link { font-size: 1.15rem; }
-    .video-badge-link .play-icon { font-size: 0.7rem; }
+    .video-badge-img { height: 20px; }
     .search-bar { padding: 7px 12px; font-size: 0.8rem; }
     .header-right { gap: 6px; }
     .login-btn, .upload-btn { padding: 7px 12px; font-size: 12px; }
