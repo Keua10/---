@@ -79,12 +79,12 @@ export function isSiteOwner(email) {
 // ---------- 전역 권한 (permissions/{email}) ----------
 // 사이트 관리자(SITE_OWNER_EMAILS)가 다른 계정에게 "시리즈 생성 권한" / "시리즈 삭제 권한"을 부여할 수 있음
 export async function getPermissions(email) {
-  if (!email) return { canCreateSeries: false, canDeleteSeries: false };
+  if (!email) return { canCreateSeries: false, canDeleteSeries: false, canManageTiers: false };
   const snap = await getDoc(doc(db, "permissions", email));
-  return snap.exists() ? snap.data() : { canCreateSeries: false, canDeleteSeries: false };
+  return snap.exists() ? snap.data() : { canCreateSeries: false, canDeleteSeries: false, canManageTiers: false };
 }
 
-// field: "canCreateSeries" | "canDeleteSeries"
+// field: "canCreateSeries" | "canDeleteSeries" | "canManageTiers"
 export async function setPermission(email, field, enabled) {
   await setDoc(doc(db, "permissions", email), { [field]: enabled }, { merge: true });
 }
@@ -437,10 +437,41 @@ export async function incrementTierPlay(tierId) {
   await updateDoc(doc(db, "tiers", tierId), { plays: increment(1) });
 }
 
-// 이 티어표를 고치거나 지울 수 있는 사람인지 (만든 사람 본인 또는 사이트 관리자)
-export function canEditTier(tier, userEmail) {
+// "티어표 관리 권한" (남이 만든 티어표도 수정/삭제할 수 있는 권한).
+// 사이트 관리자가 tier.html 프로필 > 관리자 탭에서 계정별로 켜고 끌 수 있다.
+// permissions/{email} 문서의 canManageTiers 필드를 사용한다.
+export async function canUserManageTiers(email) {
+  if (isSiteOwner(email)) return true;
+  const perm = await getPermissions(email);
+  return !!(perm && perm.canManageTiers);
+}
+
+// 이 티어표를 고치거나 지울 수 있는 사람인지.
+// 만든 사람 본인 / 사이트 관리자 / "티어표 관리 권한"을 받은 사람.
+// 세 번째 인자는 canUserManageTiers()로 미리 구해둔 값을 넘기면 된다(동기 함수로 쓰기 위함).
+export function canEditTier(tier, userEmail, hasManagePermission = false) {
   if (!tier || !userEmail) return false;
-  return tier.creatorEmail === userEmail || isSiteOwner(userEmail);
+  return tier.creatorEmail === userEmail || isSiteOwner(userEmail) || !!hasManagePermission;
+}
+
+// 이미지 URL이 없는 박스/커버를 "이름 글자"로 채울 때, 글자가 상자 밖으로
+// 넘치지 않도록 상자 크기 대비 알맞은 글자 크기 비율을 구한다.
+// 한글·한자·가나는 한 글자를 1em, 나머지는 0.56em(공백 0.32em)으로 어림잡아 계산한다.
+// 반환값은 비율이라서 CSS에서 calc(var(--box-size) * 비율) 로 쓰면
+// 화면 크기에 따라 박스가 작아져도 글자가 같이 줄어든다.
+export function textFillRatio(text, { max = 0.32, min = 0.1 } = {}) {
+  const t = String(text || "").trim();
+  if (!t) return max;
+  let em = 0;
+  for (const ch of t) {
+    if (ch === " ") em += 0.32;
+    else if (/[\u1100-\u11FF\u3130-\u318F\uAC00-\uD7AF\u4E00-\u9FFF\u3040-\u30FF\uFF00-\uFF60]/.test(ch)) em += 1;
+    else em += 0.56;
+  }
+  const lines = em > 5 ? 3 : 2;          // 글자가 많으면 세 줄까지 쓴다
+  const usableWidth = 0.88;              // 상자 너비에서 안쪽 여백을 뺀 비율
+  const ratio = usableWidth / Math.max(em / lines, 0.8);
+  return Math.max(min, Math.min(max, Math.round(ratio * 1000) / 1000));
 }
 
 export function timeAgo(timestamp) {

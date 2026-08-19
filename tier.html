@@ -9,7 +9,7 @@
 </head>
 <body>
 
-<span class="version-tag">beta 1.1.3</span>
+<span class="version-tag">beta 1.1.4</span>
 
 <header>
     <a href="index.html" class="home-link" title="신현일의 Search 홈으로 가기">
@@ -45,9 +45,52 @@
         </div>
     </div>
 
-    <h2 class="section-title" id="list-title">티어표</h2>
-    <div class="tier-card-grid" id="tier-grid"></div>
-    <div class="empty-state" id="list-empty">불러오는 중...</div>
+    <!-- 내가 만든 티어표 (로그인했고 만든 게 있을 때만 보임) -->
+    <div class="section-block" id="my-section" style="display:none;">
+        <h2 class="section-title">내 티어표</h2>
+        <div class="tier-card-grid" id="my-grid"></div>
+    </div>
+
+    <!-- 전체 티어표 (내가 만든 것은 위에 이미 나오므로 여기서는 뺀다) -->
+    <div class="section-block">
+        <h2 class="section-title" id="list-title">전체 티어표</h2>
+        <div class="tier-card-grid" id="tier-grid"></div>
+        <div class="empty-state" id="list-empty">불러오는 중...</div>
+    </div>
+</div>
+
+<!-- 설정 / 관리자 모달 (프로필 버튼) -->
+<div class="modal-overlay" id="settings-modal">
+    <div class="modal-box">
+        <button class="modal-close" data-close="settings-modal">✕</button>
+        <div class="modal-tabs" id="settings-tabs"></div>
+
+        <div class="modal-panel active" id="tab-general">
+            <div class="empty-state">설정 기능은 준비 중입니다.</div>
+        </div>
+
+        <div class="modal-panel" id="tab-admin">
+            <h3>계정별 권한 관리</h3>
+            <div class="field">
+                <label for="perm-email-input">이메일</label>
+                <input type="email" id="perm-email-input" placeholder="user@gmail.com">
+            </div>
+            <button class="action" id="perm-lookup-btn">조회</button>
+            <div class="msg" id="perm-lookup-msg"></div>
+
+            <div id="perm-toggles" style="display:none;">
+                <div class="toggle-row">
+                    <div>
+                        <div>티어표 수정/삭제 권한</div>
+                        <div class="toggle-desc">켜면 남이 만든 티어표도 고치거나 지울 수 있습니다.</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="toggle-manage-tiers"><span class="switch-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -59,24 +102,34 @@
 <script type="module">
     // ============================================================
     // tier.html — HYUNIL TIER 메인
-    // 만들어진 티어표 목록을 카드로 보여주고, 검색으로 걸러낸다.
-    // 카드를 누르면 tier-play.html 로 이동해서 직접 티어를 매길 수 있다.
+    // 위쪽에 "내 티어표", 아래쪽에 "전체 티어표"(내 것은 빼고)를 보여준다.
+    // 내가 고칠 수 있는 티어표 카드에는 제목 오른쪽에 점 3개 메뉴가 붙는다.
+    // 사이트 관리자는 프로필 버튼으로 계정별 권한 관리 창을 연다.
     // ============================================================
-    import { watchAuth, signInWithGoogle, signOutUser, getAllTiers } from './auth.js';
+    import {
+        watchAuth, signInWithGoogle, signOutUser,
+        getAllTiers, deleteTier, canEditTier, textFillRatio,
+        isSiteOwner, getPermissions, setPermission, canUserManageTiers
+    } from './auth.js';
 
     const loginBtn = document.getElementById('login-btn');
     const userArea = document.getElementById('user-area');
     const userPhoto = document.getElementById('user-photo');
     const userName = document.getElementById('user-name');
     const logoutBtn = document.getElementById('logout-btn');
+    const profileBtn = document.getElementById('profile-btn');
     const makeBtn = document.getElementById('make-btn');
     const searchInput = document.getElementById('search-input');
+
+    const mySection = document.getElementById('my-section');
+    const myGrid = document.getElementById('my-grid');
     const grid = document.getElementById('tier-grid');
     const listEmpty = document.getElementById('list-empty');
     const listTitle = document.getElementById('list-title');
 
     let allTiers = [];
     let currentUser = null;
+    let iCanManageTiers = false;   // 남의 티어표까지 고칠 수 있는 권한이 있는지
 
     loginBtn.addEventListener('click', async () => {
         try { await signInWithGoogle(); }
@@ -84,12 +137,19 @@
     });
     logoutBtn.addEventListener('click', () => signOutUser());
 
-    // 로그인하지 않은 상태에서 Make Tier를 누르면 먼저 로그인부터 안내
     makeBtn.addEventListener('click', (e) => {
         if (!currentUser) {
             e.preventDefault();
             alert('티어표를 만들려면 먼저 로그인해 주세요.');
         }
+    });
+
+    // ----- 모달 공통 -----
+    document.querySelectorAll('.modal-close').forEach(btn => {
+        btn.addEventListener('click', () => document.getElementById(btn.dataset.close).classList.remove('open'));
+    });
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('open'); });
     });
 
     function escapeHtml(str) {
@@ -98,48 +158,119 @@
         ));
     }
 
-    // 커버 만들기: coverUrl이 있으면 그 이미지 한 장, 없으면 박스 이미지 4개로 2x2 콜라주
+    // ============================================================
+    // 카드 그리기
+    // ============================================================
+    // 커버 이미지 URL이 없으면 제목 글자로 커버를 채운다.
     function coverHtml(tier) {
         if (tier.coverUrl) {
-            return `<div class="tier-cover single"><img src="${escapeHtml(tier.coverUrl)}" alt=""></div>`;
+            return `<span class="tier-cover"><img src="${escapeHtml(tier.coverUrl)}" alt=""></span>`;
         }
-        const items = (tier.items || []).filter(it => it && it.imageUrl).slice(0, 4);
-        const cells = [];
-        for (let i = 0; i < 4; i++) {
-            const it = items[i];
-            cells.push(it
-                ? `<div class="cover-cell"><img src="${escapeHtml(it.imageUrl)}" alt=""></div>`
-                : `<div class="cover-cell"></div>`);
-        }
-        return `<div class="tier-cover">${cells.join('')}</div>`;
+        const title = tier.title || '제목 없음';
+        // 커버는 카드 너비(대략 260px) 기준으로 글자 크기를 정한다
+        const size = Math.round(textFillRatio(title, { max: 0.16, min: 0.045 }) * 260);
+        return `<span class="tier-cover">
+                    <span class="cover-text" style="font-size:${size}px">${escapeHtml(title)}</span>
+                </span>`;
     }
 
+    function cardHtml(tier, canEdit) {
+        const href = `tier-play.html?id=${encodeURIComponent(tier.id)}`;
+        const menu = canEdit ? `
+            <button class="card-menu-btn" data-menu="${escapeHtml(tier.id)}" title="더보기" aria-label="더보기">⋮</button>
+            <div class="card-menu" data-menu-for="${escapeHtml(tier.id)}">
+                <button data-edit="${escapeHtml(tier.id)}">티어표 수정</button>
+                <button class="danger" data-delete="${escapeHtml(tier.id)}">티어표 삭제</button>
+            </div>` : '';
+        return `
+            <div class="tier-card">
+                <a href="${href}">${coverHtml(tier)}</a>
+                <div class="card-title-row">
+                    <a class="tier-card-title" href="${href}">${escapeHtml(tier.title || '제목 없음')}</a>
+                    ${menu}
+                </div>
+                <div class="tier-card-meta">
+                    ${escapeHtml(tier.creatorName || tier.creatorEmail || '익명')} ·
+                    박스 ${(tier.items || []).length}개 · ${tier.plays || 0}회
+                </div>
+            </div>`;
+    }
+
+    // 카드 안 점 3개 메뉴 동작 연결
+    function wireCardMenus(container) {
+        container.querySelectorAll('[data-menu]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const menu = container.querySelector(`[data-menu-for="${CSS.escape(btn.dataset.menu)}"]`);
+                const willOpen = !menu.classList.contains('open');
+                closeAllMenus();
+                menu.classList.toggle('open', willOpen);
+            });
+        });
+        container.querySelectorAll('[data-edit]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                location.href = `tier-make.html?id=${encodeURIComponent(btn.dataset.edit)}`;
+            });
+        });
+        container.querySelectorAll('[data-delete]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.dataset.delete;
+                const target = allTiers.find(t => t.id === id);
+                if (!confirm(`"${target ? target.title : '이 티어표'}"를 삭제할까요? 되돌릴 수 없습니다.`)) return;
+                try {
+                    await deleteTier(id);
+                    allTiers = allTiers.filter(t => t.id !== id);
+                    applySearch();
+                } catch (err) {
+                    alert('삭제하지 못했습니다: ' + err.message);
+                }
+            });
+        });
+    }
+    function closeAllMenus() {
+        document.querySelectorAll('.card-menu.open').forEach(m => m.classList.remove('open'));
+    }
+    document.addEventListener('click', closeAllMenus);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAllMenus(); });
+
     function render(list) {
-        if (!list.length) {
+        const email = currentUser ? currentUser.email : null;
+        // 내가 만든 것과 나머지를 나눈다 (내 것은 아래 전체 목록에 다시 나오지 않음)
+        const mine = email ? list.filter(t => t.creatorEmail === email) : [];
+        const others = email ? list.filter(t => t.creatorEmail !== email) : list;
+
+        if (mine.length) {
+            mySection.style.display = 'block';
+            myGrid.innerHTML = mine.map(t => cardHtml(t, true)).join('');
+            wireCardMenus(myGrid);
+        } else {
+            mySection.style.display = 'none';
+            myGrid.innerHTML = '';
+        }
+
+        if (!others.length) {
             grid.innerHTML = '';
             listEmpty.style.display = 'block';
-            listEmpty.textContent = allTiers.length
-                ? '검색 결과가 없습니다.'
-                : '아직 만들어진 티어표가 없습니다. 오른쪽 위 Make Tier로 첫 티어표를 만들어 보세요.';
+            if (allTiers.length === 0) {
+                listEmpty.textContent = '아직 만들어진 티어표가 없습니다. 오른쪽 위 Make Tier로 첫 티어표를 만들어 보세요.';
+            } else if (mine.length) {
+                listEmpty.textContent = '다른 사람이 만든 티어표가 아직 없습니다.';
+            } else {
+                listEmpty.textContent = '검색 결과가 없습니다.';
+            }
             return;
         }
         listEmpty.style.display = 'none';
-        grid.innerHTML = list.map(t => `
-            <a class="tier-card" href="tier-play.html?id=${encodeURIComponent(t.id)}">
-                ${coverHtml(t)}
-                <h3 class="tier-card-title">${escapeHtml(t.title || '제목 없음')}</h3>
-                <div class="tier-card-meta">
-                    ${escapeHtml(t.creatorName || t.creatorEmail || '익명')} ·
-                    박스 ${(t.items || []).length}개 · ${t.plays || 0}회
-                </div>
-            </a>
-        `).join('');
+        // 관리 권한이 있으면 남의 티어표에도 수정/삭제 메뉴를 붙인다
+        grid.innerHTML = others.map(t => cardHtml(t, canEditTier(t, email, iCanManageTiers))).join('');
+        wireCardMenus(grid);
     }
 
     function applySearch() {
         const q = searchInput.value.trim().toLowerCase();
         if (!q) {
-            listTitle.textContent = '티어표';
+            listTitle.textContent = '전체 티어표';
             render(allTiers);
             return;
         }
@@ -166,17 +297,79 @@
     }
     loadTiers();
 
-    watchAuth((user) => {
+    // ============================================================
+    // 설정 / 관리자 모달
+    // ============================================================
+    profileBtn.addEventListener('click', () => {
+        buildSettingsTabs();
+        document.getElementById('settings-modal').classList.add('open');
+    });
+
+    function buildSettingsTabs() {
+        const tabsWrap = document.getElementById('settings-tabs');
+        const iAmAdmin = currentUser && isSiteOwner(currentUser.email);
+        tabsWrap.innerHTML = '<button class="modal-tab active" data-tab="general">설정</button>'
+            + (iAmAdmin ? '<button class="modal-tab" data-tab="admin">관리자</button>' : '');
+
+        document.querySelectorAll('.modal-panel').forEach(p => p.classList.remove('active'));
+        document.getElementById('tab-general').classList.add('active');
+
+        tabsWrap.querySelectorAll('.modal-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabsWrap.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                document.querySelectorAll('.modal-panel').forEach(p => p.classList.remove('active'));
+                document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+            });
+        });
+    }
+
+    // 관리자 탭: 이메일로 권한 조회 후 토글로 켜고 끄기
+    document.getElementById('perm-lookup-btn').addEventListener('click', async () => {
+        const email = document.getElementById('perm-email-input').value.trim();
+        const msg = document.getElementById('perm-lookup-msg');
+        const togglesWrap = document.getElementById('perm-toggles');
+        if (!email) { msg.textContent = '이메일을 입력해 주세요.'; msg.className = 'msg err'; return; }
+        try {
+            if (isSiteOwner(email)) {
+                msg.textContent = '이 계정은 사이트 관리자라서 아래 토글과 상관없이 이미 모든 권한을 가지고 있습니다.';
+                msg.className = 'msg ok';
+            } else {
+                msg.textContent = ''; msg.className = 'msg';
+            }
+            const perm = await getPermissions(email);
+            document.getElementById('toggle-manage-tiers').checked = !!perm.canManageTiers;
+            togglesWrap.style.display = 'block';
+        } catch (e) {
+            msg.textContent = '오류: ' + e.message; msg.className = 'msg err';
+        }
+    });
+
+    document.getElementById('toggle-manage-tiers').addEventListener('change', async (e) => {
+        const email = document.getElementById('perm-email-input').value.trim();
+        try { await setPermission(email, 'canManageTiers', e.target.checked); }
+        catch (err) { alert('오류: ' + err.message); e.target.checked = !e.target.checked; } // 실패하면 토글 원복
+    });
+
+    // ============================================================
+    // 로그인 상태
+    // ============================================================
+    watchAuth(async (user) => {
         currentUser = user;
         if (user) {
             loginBtn.style.display = 'none';
             userArea.style.display = 'flex';
             userPhoto.src = user.photoURL || '';
             userName.textContent = user.displayName || user.email;
+            try { iCanManageTiers = await canUserManageTiers(user.email); }
+            catch (e) { iCanManageTiers = false; }
         } else {
             loginBtn.style.display = 'inline-block';
             userArea.style.display = 'none';
+            iCanManageTiers = false;
+            document.getElementById('settings-modal').classList.remove('open');
         }
+        applySearch();   // 로그인 여부에 따라 "내 티어표" 분리를 다시 계산
     });
 </script>
 

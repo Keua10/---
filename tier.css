@@ -27,6 +27,13 @@
     /* 드롭존(티어 칸) 바닥색 */
     --drop-bg: #f1f1f1;
     --drop-bg-hover: #e2e2e2;
+    /* 박스 크기 관련 값들 — 티어 칸 높이를 이 값들로 계산해서 고정하기 때문에
+       박스 크기를 바꿀 때는 반드시 여기만 고치면 전부 따라온다.
+       칸 높이 = 박스 이미지 + 이름줄 높이 + 이름 위 여백 + 드롭존 위아래 안쪽여백 */
+    --box-size: 76px;          /* 박스 이미지 한 변 (1:1) */
+    --box-name-h: 28px;        /* 이름 두 줄이 들어가는 고정 높이 */
+    --box-name-gap: 4px;       /* 이미지와 이름 사이 */
+    --drop-pad: 8px;           /* 드롭존 안쪽 여백 */
 }
 [data-theme="dark"] {
     --bg-color: #131313;
@@ -196,10 +203,11 @@ h2.section-title { font-size: 1.15rem; font-weight: 700; margin: 0 0 18px; lette
 }
 .tier-card {
     display: block;
-    text-decoration: none;
     color: var(--text-color);
 }
+.tier-card a { display: block; text-decoration: none; color: inherit; }
 .tier-cover {
+    display: block;
     width: 100%;
     aspect-ratio: 16/9;
     border-radius: var(--radius-thumb);
@@ -207,26 +215,67 @@ h2.section-title { font-size: 1.15rem; font-weight: 700; margin: 0 0 18px; lette
     background: var(--panel-bg);
     border: 1px solid var(--border-color);
     margin-bottom: 11px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
     transition: border-color 0.15s;
 }
 .tier-card:hover .tier-cover { border-color: var(--accent); }
-.tier-cover .cover-cell {
-    width: 100%; height: 100%; overflow: hidden;
-    background: var(--panel-bg-high);
+.tier-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* 커버 이미지 URL을 넣지 않았으면 제목 글자로 커버를 채운다 */
+.tier-cover .cover-text {
+    width: 100%; height: 100%;
     display: flex; align-items: center; justify-content: center;
-    color: var(--sub-text); font-size: 0.9rem; font-weight: 700;
+    padding: 10px 14px;
+    background: var(--panel-bg-high);
+    color: var(--text-color);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    text-align: center;
+    word-break: break-word;
+    overflow: hidden;
 }
-.tier-cover .cover-cell img { width: 100%; height: 100%; object-fit: cover; display: block; }
-/* 커버 이미지를 직접 지정한 경우엔 콜라주가 아니라 한 장을 꽉 채움 */
-.tier-cover.single { display: block; }
-.tier-cover.single img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-.tier-card-title { margin: 0; font-size: 0.98rem; font-weight: 700; line-height: 1.35; }
+/* 제목 줄: 왼쪽 제목 + 오른쪽 점 3개 버튼(수정 권한이 있을 때만) */
+.card-title-row { display: flex; align-items: flex-start; gap: 4px; position: relative; }
+.tier-card-title {
+    flex: 1; min-width: 0;
+    margin: 0; font-size: 0.98rem; font-weight: 700; line-height: 1.35;
+    color: var(--text-color); text-decoration: none;
+}
 .tier-card:hover .tier-card-title { color: var(--accent); }
 .tier-card-meta { font-size: 0.8rem; color: var(--sub-text); margin-top: 5px; }
+.card-menu-btn {
+    flex-shrink: 0;
+    background: none; border: none; cursor: pointer;
+    color: var(--sub-text); font-size: 1.15rem; line-height: 1;
+    padding: 0 4px; border-radius: 50%;
+}
+.card-menu-btn:hover { color: var(--text-color); }
+/* 점 3개를 눌렀을 때 나오는 작은 메뉴 */
+.card-menu {
+    position: absolute;
+    top: 22px; right: 0;
+    z-index: 60;
+    min-width: 128px;
+    padding: 6px;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 10px 26px rgba(0,0,0,0.35);
+    display: none;
+}
+.card-menu.open { display: block; }
+.card-menu button {
+    display: block; width: 100%;
+    background: none; border: none; cursor: pointer;
+    text-align: left; padding: 8px 10px; border-radius: 8px;
+    font-family: inherit; font-size: 0.82rem; font-weight: 600;
+    color: var(--text-color);
+}
+.card-menu button:hover { background: var(--panel-bg); }
+.card-menu button.danger { color: #e57373; }
+
+/* "내 티어표" 섹션과 "전체 티어표" 섹션 사이 간격 */
+.section-block { margin-bottom: 38px; }
 
 /* ============================================================
    티어 보드 (플레이 / 만들기 공용)
@@ -234,7 +283,10 @@ h2.section-title { font-size: 1.15rem; font-weight: 700; margin: 0 0 18px; lette
 .board-head { margin-bottom: 20px; }
 .board-title { font-size: 1.5rem; font-weight: 800; margin: 0 0 6px; letter-spacing: -0.02em; }
 .board-sub { font-size: 0.85rem; color: var(--sub-text); margin: 0; line-height: 1.5; }
-.board-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.board-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 14px; }
+/* 액션 줄에서 특정 버튼을 줄의 맨 오른쪽 끝으로 밀어붙일 때 사용 */
+.board-actions .push-right { margin-left: auto; }
+/* 카드 안의 링크는 밑줄/기본 색을 쓰지 않음 */
 
 .tier-board {
     border: 1px solid var(--border-color);
@@ -242,11 +294,14 @@ h2.section-title { font-size: 1.15rem; font-weight: 700; margin: 0 0 18px; lette
     overflow: hidden;
     background: var(--panel-bg);
 }
+/* 칸 높이를 박스 높이에 딱 맞춰 고정한다.
+   이렇게 하지 않으면 빈 칸일 때와 박스를 넣었을 때의 높이가 달라서
+   박스를 넣는 순간 칸이 아래로 늘어나 보인다. */
 .tier-row {
     display: flex;
     align-items: stretch;
     border-bottom: 1px solid var(--border-color);
-    min-height: 84px;
+    min-height: calc(var(--box-size) + var(--box-name-gap) + var(--box-name-h) + var(--drop-pad) * 2);
 }
 .tier-row:last-child { border-bottom: none; }
 
@@ -272,8 +327,9 @@ h2.section-title { font-size: 1.15rem; font-weight: 700; margin: 0 0 18px; lette
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
+    align-items: flex-start;   /* 박스가 세로로 늘어나지 않도록 */
     gap: 6px;
-    padding: 8px;
+    padding: var(--drop-pad);
     background: var(--drop-bg);
     transition: background 0.12s;
 }
@@ -310,9 +366,10 @@ h2.section-title { font-size: 1.15rem; font-weight: 700; margin: 0 0 18px; lette
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
+    align-items: flex-start;
     gap: 6px;
     padding: 10px;
-    min-height: 96px;
+    min-height: calc(var(--box-size) + var(--box-name-gap) + var(--box-name-h) + 20px);
     border: 1px dashed var(--border-color);
     border-radius: 14px;
     background: var(--panel-bg);
@@ -324,7 +381,8 @@ h2.section-title { font-size: 1.15rem; font-weight: 700; margin: 0 0 18px; lette
    박스 (1:1 이미지 + 아래 이름)
    ============================================================ */
 .tier-item {
-    width: 76px;
+    width: var(--box-size);
+    height: calc(var(--box-size) + var(--box-name-gap) + var(--box-name-h));
     flex-shrink: 0;
     cursor: grab;
     user-select: none;
@@ -334,8 +392,8 @@ h2.section-title { font-size: 1.15rem; font-weight: 700; margin: 0 0 18px; lette
 }
 .tier-item:active { cursor: grabbing; }
 .tier-item .item-img {
-    width: 76px;
-    height: 76px;              /* 1:1 비율 고정 */
+    width: var(--box-size);
+    height: var(--box-size);   /* 1:1 비율 고정 */
     border-radius: 8px;
     overflow: hidden;
     background: var(--panel-bg-high);
@@ -344,12 +402,13 @@ h2.section-title { font-size: 1.15rem; font-weight: 700; margin: 0 0 18px; lette
     pointer-events: none;
 }
 .tier-item .item-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* 이름줄은 글자가 없어도 자리를 차지하도록 높이를 고정한다 (칸 높이 계산과 맞물림) */
 .tier-item .item-name {
-    display: block;
+    height: var(--box-name-h);
     font-size: 0.68rem;
     font-weight: 600;
     line-height: 1.25;
-    margin-top: 4px;
+    margin-top: var(--box-name-gap);
     color: var(--text-color);
     overflow: hidden;
     display: -webkit-box;
@@ -357,6 +416,18 @@ h2.section-title { font-size: 1.15rem; font-weight: 700; margin: 0 0 18px; lette
     -webkit-box-orient: vertical;
     word-break: break-word;
     pointer-events: none;
+}
+/* 이미지 URL이 없을 때: 박스 이름 글자로 미리보기를 채운다.
+   글자 크기는 이름 길이에 따라 JS가 인라인 style로 정해준다. */
+.tier-item .item-img.text-fill {
+    padding: 4px;
+    color: var(--text-color);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    text-align: center;
+    word-break: break-word;
+    overflow: hidden;
 }
 /* 만들기 페이지에서 아직 내용이 안 채워진 빈 박스 */
 .tier-item.empty .item-img {
@@ -377,9 +448,10 @@ h2.section-title { font-size: 1.15rem; font-weight: 700; margin: 0 0 18px; lette
     filter: drop-shadow(0 8px 18px rgba(0,0,0,0.4));
 }
 
-/* 박스 추가 버튼 */
+/* 박스 추가 버튼 — 보관함 맨 왼쪽에 고정해 두고(마크업 순서상 항상 첫 번째),
+   그 오른쪽으로 새 박스가 쌓인다 */
 .add-box-btn {
-    width: 76px; height: 76px;
+    width: var(--box-size); height: var(--box-size);
     border-radius: 8px;
     border: 1px dashed var(--border-color);
     background: transparent;
@@ -404,16 +476,19 @@ input[type="text"], input[type="url"], input[type="email"], textarea, select {
 input:focus, textarea:focus, select:focus { border-color: var(--accent); }
 .title-input { font-size: 1.1rem; font-weight: 700; padding: 12px 14px; }
 
-button.action {
+/* .action 은 <button> 뿐 아니라 <a> 에도 붙는다 (예: "티어표 수정" 링크 버튼) */
+.action {
+    display: inline-block;
     background: var(--accent); color: #fff; border: none;
     border-radius: 10px; padding: 10px 18px;
     font-size: 0.85rem; font-weight: 700; cursor: pointer; font-family: inherit;
+    text-decoration: none; line-height: 1.2;
 }
-button.action:hover { opacity: 0.88; }
-button.action.ghost { background: var(--panel-bg); color: var(--text-color); border: 1px solid var(--border-color); }
-button.action.ghost:hover { background: var(--panel-bg-high); opacity: 1; }
-button.action.danger { background: transparent; border: 1px solid #c0392b; color: #e57373; }
-button.action:disabled { opacity: 0.5; cursor: default; }
+.action:hover { opacity: 0.88; }
+.action.ghost { background: var(--panel-bg); color: var(--text-color); border: 1px solid var(--border-color); }
+.action.ghost:hover { background: var(--panel-bg-high); opacity: 1; }
+.action.danger { background: transparent; border: 1px solid #c0392b; color: #e57373; }
+.action:disabled { opacity: 0.5; cursor: default; }
 
 .msg { font-size: 0.82rem; margin-top: 10px; min-height: 1em; }
 .msg.ok { color: #4ade80; }
@@ -440,15 +515,55 @@ button.action:disabled { opacity: 0.5; cursor: default; }
 }
 .modal-actions { display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
 
+/* --- 설정/관리자 모달의 탭 + 토글 스위치 (video.css와 동일 톤) --- */
+.modal-tabs { display: flex; gap: 8px; margin: 4px 0 18px; border-bottom: 1px solid var(--border-color); }
+.modal-tab {
+    background: none; border: none; padding: 8px 4px;
+    font-family: inherit; font-size: 0.88rem; font-weight: 600; cursor: pointer;
+    color: var(--sub-text); border-bottom: 2px solid transparent;
+}
+.modal-tab.active { color: var(--text-color); border-bottom-color: var(--accent); }
+.modal-panel { display: none; }
+.modal-panel.active { display: block; }
+.toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; padding: 10px 0; font-size: 0.85rem;
+}
+.toggle-row .toggle-desc { font-size: 0.76rem; color: var(--sub-text); margin-top: 3px; line-height: 1.4; }
+.switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.switch-slider {
+    position: absolute; cursor: pointer; inset: 0;
+    background: var(--border-color); border-radius: 22px; transition: 0.2s;
+}
+.switch-slider:before {
+    content: ""; position: absolute; height: 16px; width: 16px; left: 3px; bottom: 3px;
+    background: #fff; border-radius: 50%; transition: 0.2s;
+}
+.switch input:checked + .switch-slider { background: var(--accent); }
+.switch input:checked + .switch-slider:before { transform: translateX(18px); }
+
 /* 박스 편집 모달의 미리보기 */
 .preview-row { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
 .preview-box {
-    width: 76px; height: 76px; border-radius: 8px; overflow: hidden; flex-shrink: 0;
+    width: var(--box-size); height: var(--box-size);
+    border-radius: 8px; overflow: hidden; flex-shrink: 0;
     background: var(--panel-bg-high);
     display: flex; align-items: center; justify-content: center;
     color: var(--sub-text); font-size: 0.72rem;
 }
 .preview-box img { width: 100%; height: 100%; object-fit: cover; }
+/* 이미지 URL 없이 이름 글자로 채운 미리보기 */
+.preview-box.text-fill {
+    padding: 4px;
+    color: var(--text-color);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    text-align: center;
+    word-break: break-word;
+    overflow: hidden;
+}
 .preview-hint { font-size: 0.78rem; color: var(--sub-text); line-height: 1.5; }
 
 /* 색상 선택 */
@@ -487,12 +602,15 @@ button.action:disabled { opacity: 0.5; cursor: default; }
     .tier-card-grid { grid-template-columns: repeat(2, 1fr); gap: 18px 12px; }
     .board-title { font-size: 1.2rem; }
 
+    /* 박스 크기를 줄이면 칸 높이도 위 calc() 식을 통해 자동으로 따라 줄어든다 */
+    :root, [data-theme="dark"] {
+        --box-size: 58px;
+        --box-name-h: 24px;
+        --drop-pad: 6px;
+    }
     .tier-label { width: 62px; font-size: 0.85rem; }
-    .tier-row { min-height: 68px; }
-    .tier-drop { gap: 5px; padding: 6px; }
+    .tier-drop { gap: 5px; }
     .row-tools { width: 32px; }
-    .tier-item, .tier-item .item-img, .add-box-btn { width: 58px; }
-    .tier-item .item-img, .add-box-btn { height: 58px; }
     .tier-item .item-name { font-size: 0.6rem; }
 }
 

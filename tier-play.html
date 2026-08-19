@@ -9,7 +9,7 @@
 </head>
 <body>
 
-<span class="version-tag">beta 1.1.3</span>
+<span class="version-tag">beta 1.1.4</span>
 
 <header>
     <a href="index.html" class="home-link" title="신현일의 Search 홈으로 가기">
@@ -25,7 +25,6 @@
 
     <div class="header-right">
         <a class="ghost-btn" href="tier.html">목록으로</a>
-        <a class="ghost-btn" id="edit-link" href="#" style="display:none;">고치기</a>
         <button class="login-btn" id="login-btn">로그인</button>
         <div class="user-area" id="user-area">
             <button class="profile-btn" id="profile-btn">
@@ -53,6 +52,8 @@
 
     <div class="board-actions" id="play-actions" style="display:none;">
         <button class="action ghost" id="reset-btn">전부 다시 빼기</button>
+        <!-- 만든 사람(또는 티어표 관리 권한이 있는 계정)에게만 보임. 줄의 맨 오른쪽에 붙는다 -->
+        <a class="action ghost push-right" id="edit-link" href="#" style="display:none;">티어표 수정</a>
     </div>
 
     <div class="empty-state" id="state-msg">불러오는 중...</div>
@@ -74,7 +75,10 @@
     // 배치 결과는 브라우저(localStorage)에만 저장된다. 새로고침해도 남아 있지만
     // 다른 기기나 다른 사람에게는 보이지 않는다. (결과 공유는 아직 미구현)
     // ============================================================
-    import { watchAuth, signInWithGoogle, signOutUser, getTier, incrementTierPlay, canEditTier } from './auth.js';
+    import {
+        watchAuth, signInWithGoogle, signOutUser,
+        getTier, incrementTierPlay, canEditTier, canUserManageTiers, textFillRatio
+    } from './auth.js';
 
     const loginBtn = document.getElementById('login-btn');
     const userArea = document.getElementById('user-area');
@@ -97,6 +101,7 @@
     const tierId = new URLSearchParams(location.search).get('id');
     let tier = null;
     let currentUser = null;
+    let iCanManageTiers = false;
     let itemsById = {};
     let rows = [];
     let rowItems = [];   // rowItems[행 번호] = [박스 id, ...]
@@ -146,16 +151,23 @@
     }
 
     // ---------- 그리기 ----------
+    // 이미지 URL이 없는 박스는 박스 이름 글자로 미리보기를 채운다
     function itemHtml(id) {
         const it = itemsById[id];
         if (!it) return '';
-        const inner = it.imageUrl
-            ? `<img src="${escapeHtml(it.imageUrl)}" alt="" draggable="false">`
-            : escapeHtml((it.name || '?').slice(0, 1));
+        let inner, label;
+        if (it.imageUrl) {
+            inner = `<div class="item-img"><img src="${escapeHtml(it.imageUrl)}" alt="" draggable="false"></div>`;
+            label = escapeHtml(it.name || '');
+        } else {
+            const ratio = textFillRatio(it.name || '?');
+            inner = `<div class="item-img text-fill" style="font-size:calc(var(--box-size) * ${ratio})">${escapeHtml(it.name || '?')}</div>`;
+            label = '';   // 글자로 채운 경우 아래에 같은 이름을 또 쓰지 않음
+        }
         return `
             <div class="tier-item" data-id="${escapeHtml(id)}" title="${escapeHtml(it.name || '')}">
-                <div class="item-img">${inner}</div>
-                <span class="item-name">${escapeHtml(it.name || '')}</span>
+                ${inner}
+                <span class="item-name">${label}</span>
             </div>`;
     }
 
@@ -351,7 +363,7 @@
     // 만든 사람(또는 관리자)에게만 "고치기" 버튼을 보여준다.
     // 로그인 확인과 티어표 불러오기는 서로 순서를 보장할 수 없어서, 둘 다 끝난 뒤 다시 확인한다.
     function updateEditLink() {
-        if (tier && currentUser && canEditTier(tier, currentUser.email)) {
+        if (tier && currentUser && canEditTier(tier, currentUser.email, iCanManageTiers)) {
             editLink.href = `tier-make.html?id=${encodeURIComponent(tierId)}`;
             editLink.style.display = 'inline-block';
         } else {
@@ -359,16 +371,19 @@
         }
     }
 
-    watchAuth((user) => {
+    watchAuth(async (user) => {
         currentUser = user;
         if (user) {
             loginBtn.style.display = 'none';
             userArea.style.display = 'flex';
             userPhoto.src = user.photoURL || '';
             userName.textContent = user.displayName || user.email;
+            try { iCanManageTiers = await canUserManageTiers(user.email); }
+            catch (e) { iCanManageTiers = false; }
         } else {
             loginBtn.style.display = 'inline-block';
             userArea.style.display = 'none';
+            iCanManageTiers = false;
         }
         updateEditLink();
     });
