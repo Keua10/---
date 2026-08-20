@@ -5,7 +5,7 @@ service cloud.firestore {
     // ⚠️ firebase-config.js 의 SITE_OWNER_EMAILS 와 반드시 동일하게 맞춰주세요.
     function isAdmin() {
       return request.auth != null && request.auth.token.email in [
-        "여기에_내_구글_이메일@gmail.com"
+        "ekcjs20100329@gmail.com"
       ];
     }
 
@@ -16,7 +16,13 @@ service cloud.firestore {
          get(/databases/$(database)/documents/permissions/$(request.auth.token.email)).data.canCreateSeries == true);
     }
 
-    // users/{uid} : 본인만 자기 문서를 읽고 쓸 수 있음 (구독 목록 등)
+    function hasManageTiersPermission() {
+      return isAdmin() ||
+        (request.auth != null &&
+         exists(/databases/$(database)/documents/permissions/$(request.auth.token.email)) &&
+         get(/databases/$(database)/documents/permissions/$(request.auth.token.email)).data.canManageTiers == true);
+    }
+
     match /users/{uid} {
       allow read: if request.auth != null && request.auth.uid == uid;
       allow create: if request.auth != null && request.auth.uid == uid;
@@ -24,14 +30,11 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // permissions/{email} : "시리즈 생성 권한" 등을 저장. 본인은 읽기만, 관리자만 쓰기 가능
     match /permissions/{email} {
       allow read: if request.auth != null && (request.auth.token.email == email || isAdmin());
       allow write: if isAdmin();
     }
 
-    // series/{seriesId} : 누구나 읽기 가능(로그인 없이도 목록/채널 페이지 열람 가능)
-    // 생성은 "시리즈 생성 권한"이 있는 사람만, 수정은 ownerEmails 에 포함된 사람만
     match /series/{seriesId} {
       allow read: if true;
       allow create: if request.auth != null
@@ -41,15 +44,48 @@ service cloud.firestore {
                     && (request.auth.token.email in resource.data.ownerEmails || isAdmin());
       allow delete: if false;
 
-      // series/{seriesId}/videos/{videoId} : 누구나 읽기 가능
-      // 업로드는 해당 시리즈의 ownerEmails 에 포함된 사람만 가능
       match /videos/{videoId} {
         allow read: if true;
         allow create: if request.auth != null
                       && request.auth.token.email in get(/databases/$(database)/documents/series/$(seriesId)).data.ownerEmails;
-        allow update, delete: if request.auth != null
+        allow update: if (request.auth != null
+                      && request.auth.token.email in get(/databases/$(database)/documents/series/$(seriesId)).data.ownerEmails)
+                      || (request.auth != null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']))
+                      || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views']);
+        allow delete: if request.auth != null
                       && request.auth.token.email in get(/databases/$(database)/documents/series/$(seriesId)).data.ownerEmails;
+
+        match /comments/{commentId} {
+          allow read: if true;
+          allow create: if request.auth != null && (
+            commentId == request.auth.uid ||
+            (isAdmin() && request.resource.data.isDummy == true)
+          );
+          allow update: if request.auth != null && (
+            commentId == request.auth.uid ||
+            (isAdmin() && resource.data.isDummy == true) ||
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes'])
+          );
+          allow delete: if request.auth != null && (
+            commentId == request.auth.uid || isAdmin()
+          );
+        }
       }
+    }
+
+    match /tiers/{tierId} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.resource.data.creatorEmail == request.auth.token.email;
+      allow update: if (request.auth != null && (
+                      resource.data.creatorEmail == request.auth.token.email ||
+                      isAdmin() || hasManageTiersPermission()
+                    ))
+                    || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['plays']);
+      allow delete: if request.auth != null && (
+                    resource.data.creatorEmail == request.auth.token.email ||
+                    isAdmin() || hasManageTiersPermission()
+                  );
     }
   }
 }
