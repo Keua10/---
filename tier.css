@@ -543,6 +543,14 @@ input:focus, textarea:focus, select:focus { border-color: var(--accent); }
 .switch input:checked + .switch-slider { background: var(--accent); }
 .switch input:checked + .switch-slider:before { transform: translateX(18px); }
 
+/* 업로드 버튼 옆 "익명으로 업로드" 토글 (tier-make.html) */
+.anon-toggle {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 0.85rem; color: var(--sub-text); cursor: pointer;
+    user-select: none;
+}
+.anon-toggle .anon-toggle-text { white-space: nowrap; }
+
 /* 박스 편집 모달의 미리보기 */
 .preview-row { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
 .preview-box {

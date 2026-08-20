@@ -9,7 +9,7 @@
 </head>
 <body>
 
-<span class="version-tag">beta 1.1.4</span>
+<span class="version-tag">beta 1.1.5</span>
 
 <header>
     <a href="index.html" class="home-link" title="신현일의 Search 홈으로 가기">
@@ -109,7 +109,8 @@
     import {
         watchAuth, signInWithGoogle, signOutUser,
         getAllTiers, deleteTier, canEditTier, textFillRatio,
-        isSiteOwner, getPermissions, setPermission, canUserManageTiers
+        isSiteOwner, getPermissions, setPermission, canUserManageTiers,
+        getTierCreatorLabel
     } from './auth.js';
 
     const loginBtn = document.getElementById('login-btn');
@@ -190,7 +191,7 @@
                     ${menu}
                 </div>
                 <div class="tier-card-meta">
-                    ${escapeHtml(tier.creatorName || tier.creatorEmail || '익명')} ·
+                    ${escapeHtml(getTierCreatorLabel(tier, currentUser ? currentUser.email : null))} ·
                     박스 ${(tier.items || []).length}개 · ${tier.plays || 0}회
                 </div>
             </div>`;
@@ -276,7 +277,7 @@
         }
         const filtered = allTiers.filter(t =>
             (t.title || '').toLowerCase().includes(q) ||
-            (t.creatorName || '').toLowerCase().includes(q) ||
+            (!t.isAnonymous && (t.creatorName || '').toLowerCase().includes(q)) ||
             (t.description || '').toLowerCase().includes(q)
         );
         listTitle.textContent = `"${searchInput.value.trim()}" 검색 결과`;

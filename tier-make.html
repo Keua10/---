@@ -9,7 +9,7 @@
 </head>
 <body>
 
-<span class="version-tag">beta 1.1.4</span>
+<span class="version-tag">beta 1.1.5</span>
 
 <header>
     <a href="index.html" class="home-link" title="신현일의 Search 홈으로 가기">
@@ -67,8 +67,16 @@
 
     <div class="board-actions" style="margin-top:24px;">
         <button class="action" id="upload-btn">업로드</button>
+        <label class="anon-toggle" for="anon-toggle-input" title="다른 사람에게는 만든이가 &quot;익명&quot;으로 보입니다. 계정 정보는 지워지지 않고 그대로 저장되어, 문제가 생기면 관리자가 확인할 수 있습니다.">
+            <span class="switch">
+                <input type="checkbox" id="anon-toggle-input">
+                <span class="switch-slider"></span>
+            </span>
+            <span class="anon-toggle-text">익명으로 업로드</span>
+        </label>
         <button class="action ghost" id="delete-tier-btn" style="display:none;">이 티어표 삭제</button>
     </div>
+    <div class="tray-hint" id="anon-hint" style="display:none;">익명으로 업로드해도 계정 정보는 저장되며, 악용 시 관리자가 확인할 수 있습니다.</div>
     <div class="msg" id="save-msg"></div>
 </div>
 
@@ -157,7 +165,14 @@
     const addRowBtn = document.getElementById('add-row-btn');
     const uploadBtn = document.getElementById('upload-btn');
     const deleteTierBtn = document.getElementById('delete-tier-btn');
+    const anonToggleInput = document.getElementById('anon-toggle-input');
+    const anonHint = document.getElementById('anon-hint');
     const saveMsg = document.getElementById('save-msg');
+
+    // 토글을 켜면 계정 정보는 그대로 저장된다는 안내 문구를 보여준다
+    anonToggleInput.addEventListener('change', () => {
+        anonHint.style.display = anonToggleInput.checked ? 'block' : 'none';
+    });
 
     const boxModal = document.getElementById('box-modal');
     const boxPreview = document.getElementById('box-preview');
@@ -413,6 +428,7 @@
                 coverUrl: coverInput.value.trim(),
                 rows,
                 items: filled,
+                isAnonymous: anonToggleInput.checked,
             };
             let id = editingId;
             if (editingId) {
@@ -483,6 +499,8 @@
             coverInput.value = loadedTier.coverUrl || '';
             rows = (loadedTier.rows && loadedTier.rows.length) ? loadedTier.rows.slice() : rows;
             items = (loadedTier.items || []).map(it => ({ ...it, id: it.id || newItemId() }));
+            anonToggleInput.checked = !!loadedTier.isAnonymous;
+            anonHint.style.display = anonToggleInput.checked ? 'block' : 'none';
             uploadBtn.textContent = '저장';
             deleteTierBtn.style.display = 'inline-block';
         }

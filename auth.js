@@ -378,11 +378,14 @@ export async function getAllDummyVideos() {
 //   coverUrl     : 목록 카드에 쓸 커버 이미지 URL(선택, 비우면 박스 이미지로 콜라주)
 //   rows         : [{ label, color }]  — 티어 행(S/A/B/C/D ...)
 //   items        : [{ id, name, imageUrl }] — 박스 목록(만든 사람이 정한 순서 그대로)
-//   creatorEmail / creatorName / creatorPhoto
+//   creatorEmail / creatorName / creatorPhoto  — 실제 계정 정보. isAnonymous여도 항상 그대로 저장됨(관리자 확인용)
+//   isAnonymous  : true면 화면에는 작성자를 "익명"으로만 보여줌. 계정 정보 자체는 지우지 않고
+//                  계속 creatorEmail/creatorName에 남겨둬서, 문제가 생기면 관리자가 누가 만들었는지
+//                  확인할 수 있게 한다(= 완전 익명이 아니라 "화면상 익명"). getTierCreatorLabel() 참고.
 //   plays        : 누군가 이 티어표를 열어본 횟수
 // 만드는 건 로그인한 사람 누구나 가능하고, 고치거나 지우는 건 만든 사람과 관리자만 가능.
 
-export async function createTier({ title, description, coverUrl, rows, items, creatorEmail, creatorName, creatorPhoto }) {
+export async function createTier({ title, description, coverUrl, rows, items, creatorEmail, creatorName, creatorPhoto, isAnonymous }) {
   const ref = await addDoc(collection(db, "tiers"), {
     title,
     description: description || "",
@@ -392,6 +395,7 @@ export async function createTier({ title, description, coverUrl, rows, items, cr
     creatorEmail: creatorEmail || "",
     creatorName: creatorName || "",
     creatorPhoto: creatorPhoto || "",
+    isAnonymous: !!isAnonymous,
     plays: 0,
     createdAt: serverTimestamp(),
   });
@@ -417,13 +421,14 @@ export async function getTier(tierId) {
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 }
 
-export async function updateTier(tierId, { title, description, coverUrl, rows, items }) {
+export async function updateTier(tierId, { title, description, coverUrl, rows, items, isAnonymous }) {
   const data = {};
   if (title !== undefined) data.title = title;
   if (description !== undefined) data.description = description;
   if (coverUrl !== undefined) data.coverUrl = coverUrl;
   if (rows !== undefined) data.rows = rows;
   if (items !== undefined) data.items = items;
+  if (isAnonymous !== undefined) data.isAnonymous = !!isAnonymous;
   await updateDoc(doc(db, "tiers", tierId), data);
 }
 
@@ -452,6 +457,18 @@ export async function canUserManageTiers(email) {
 export function canEditTier(tier, userEmail, hasManagePermission = false) {
   if (!tier || !userEmail) return false;
   return tier.creatorEmail === userEmail || isSiteOwner(userEmail) || !!hasManagePermission;
+}
+
+// 화면에 표시할 "만든이" 이름을 계산한다.
+// isAnonymous가 아니면 실제 이름을 그대로 보여준다.
+// isAnonymous면 누구에게나 "익명"으로 보이되, 사이트 관리자가 보는 화면에서만
+// 괄호로 실제 계정을 덧붙여준다 — 악성 업로드 발생 시 관리자가 확인할 수 있어야 하기 때문.
+// (Firestore 문서 자체에는 creatorEmail/creatorName이 항상 남아있고, 이 함수는 "표시 문구"만 계산함)
+export function getTierCreatorLabel(tier, viewerEmail) {
+  const realName = (tier && (tier.creatorName || tier.creatorEmail)) || "익명";
+  if (!tier || !tier.isAnonymous) return realName;
+  if (viewerEmail && isSiteOwner(viewerEmail)) return `익명 (관리자 확인: ${realName})`;
+  return "익명";
 }
 
 // 이미지 URL이 없는 박스/커버를 "이름 글자"로 채울 때, 글자가 상자 밖으로

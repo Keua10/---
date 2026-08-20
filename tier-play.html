@@ -9,7 +9,7 @@
 </head>
 <body>
 
-<span class="version-tag">beta 1.1.4</span>
+<span class="version-tag">beta 1.1.5</span>
 
 <header>
     <a href="index.html" class="home-link" title="신현일의 Search 홈으로 가기">
@@ -77,7 +77,8 @@
     // ============================================================
     import {
         watchAuth, signInWithGoogle, signOutUser,
-        getTier, incrementTierPlay, canEditTier, canUserManageTiers, textFillRatio
+        getTier, incrementTierPlay, canEditTier, canUserManageTiers, textFillRatio,
+        getTierCreatorLabel
     } from './auth.js';
 
     const loginBtn = document.getElementById('login-btn');
@@ -338,11 +339,7 @@
         loadProgress();
 
         boardTitle.textContent = tier.title || '제목 없음';
-        boardSub.textContent = [
-            tier.description,
-            `${tier.creatorName || tier.creatorEmail || '익명'} 만듦`,
-            `박스 ${Object.keys(itemsById).length}개`
-        ].filter(Boolean).join(' · ');
+        renderBoardSub();
         document.title = `${tier.title || '티어표'} - HYUNIL TIER`;
 
         stateMsg.style.display = 'none';
@@ -359,6 +356,18 @@
         incrementTierPlay(tierId).catch(() => {});
     }
     load();
+
+    // 티어표 설명 줄. 익명 업로드면 "익명"으로 보이고, 관리자가 로그인했을 때만
+    // 실제 만든이가 괄호로 함께 보인다. 로그인 여부가 나중에 바뀔 수 있어서
+    // load() 이후와 watchAuth 콜백 양쪽에서 다시 불러준다.
+    function renderBoardSub() {
+        if (!tier) return;
+        boardSub.textContent = [
+            tier.description,
+            `${getTierCreatorLabel(tier, currentUser ? currentUser.email : null)} 만듦`,
+            `박스 ${Object.keys(itemsById).length}개`
+        ].filter(Boolean).join(' · ');
+    }
 
     // 만든 사람(또는 관리자)에게만 "고치기" 버튼을 보여준다.
     // 로그인 확인과 티어표 불러오기는 서로 순서를 보장할 수 없어서, 둘 다 끝난 뒤 다시 확인한다.
@@ -386,6 +395,7 @@
             iCanManageTiers = false;
         }
         updateEditLink();
+        renderBoardSub();
     });
 </script>
 
